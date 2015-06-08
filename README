@@ -1,0 +1,20 @@
+libxm
+=====
+
+Libxm is a library designed to provide an efficient contraction of huge (on
+order of terabytes) disk-based block-tensors with arbitrary symmetry and
+sparsity. If tensors are stored on hard disk they are asynchronously prefetched
+to main memory for fast access. Libxm uses completely asynchronous new
+algorithm to do this as efficiently as possible. Optimized BLAS implementation
+is used to perform actual contractions and can be efficiently accelerated
+using GPUs or other accelerators like Intel Xeon Phi. Libxm reaches close to
+peak performance even in cases where data size is much larger than the
+available amount of fast random access memory.
+
+To compile libxm you need a sane POSIX environment, an efficient BLAS library,
+and an ANSI C complaint compiler. See Makefile for sample compiler flags and
+configurations.
+
+See benchmark.c file for sample code using libxm. To start using libxm in your
+project simply add xm.c to the project files and include xm.h to get function
+definitions. Detailed API documentation can be found in xm.h file.
