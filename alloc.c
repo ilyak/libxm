@@ -245,7 +245,7 @@ fail:
 	return (XM_NULL_PTR);
 }
 
-ssize_t
+void
 xm_allocator_read(struct xm_allocator *allocator, uintptr_t data_ptr,
     void *mem, size_t size_bytes)
 {
@@ -256,16 +256,19 @@ xm_allocator_read(struct xm_allocator *allocator, uintptr_t data_ptr,
 
 	if (allocator->path == NULL) {
 		memcpy(mem, (const void *)data_ptr, size_bytes);
-		return ((ssize_t)size_bytes);
+		return;
 	}
 
 	offset = (off_t)data_ptr;
 	read_bytes = pread(allocator->fd, mem, size_bytes, offset);
 
-	return (read_bytes);
+	if (read_bytes != (ssize_t)size_bytes) {
+		perror("pread");
+		abort();
+	}
 }
 
-ssize_t
+void
 xm_allocator_write(struct xm_allocator *allocator, uintptr_t data_ptr,
     const void *mem, size_t size_bytes)
 {
@@ -276,13 +279,16 @@ xm_allocator_write(struct xm_allocator *allocator, uintptr_t data_ptr,
 
 	if (allocator->path == NULL) {
 		memcpy((void *)data_ptr, mem, size_bytes);
-		return ((ssize_t)size_bytes);
+		return;
 	}
 
 	offset = (off_t)data_ptr;
 	write_bytes = pwrite(allocator->fd, mem, size_bytes, offset);
 
-	return (write_bytes);
+	if (write_bytes != (ssize_t)size_bytes) {
+		perror("pwrite");
+		abort();
+	}
 }
 
 void

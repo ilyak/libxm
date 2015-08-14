@@ -582,13 +582,11 @@ xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 		if (dstblk->is_source) {
 			size = xm_dim_dot(&dstblk->dim) * sizeof(double);
 			assert(srcblk->data_ptr != XM_NULL_PTR);
-			if (xm_allocator_read(src->allocator, srcblk->data_ptr,
-			    dst->block_buf, size) != (ssize_t)size)
-				abort();
+			xm_allocator_read(src->allocator, srcblk->data_ptr,
+			    dst->block_buf, size);
 			assert(dstblk->data_ptr != XM_NULL_PTR);
-			if (xm_allocator_write(dst->allocator, dstblk->data_ptr,
-			    dst->block_buf, size) != (ssize_t)size)
-				abort();
+			xm_allocator_write(dst->allocator, dstblk->data_ptr,
+			    dst->block_buf, size);
 		}
 	}
 }
@@ -1424,7 +1422,6 @@ tensor_prefetch(struct xm_tensor *tensor, xm_dim_t blk_idx,
 	struct xm_block *block;
 	xm_dim_t blk_idx2;
 	size_t i, j, size_bytes, size;
-	ssize_t read_bytes;
 
 	blk_idx2 = blk_idx;
 
@@ -1440,11 +1437,8 @@ tensor_prefetch(struct xm_tensor *tensor, xm_dim_t blk_idx,
 			if (block->is_nonzero) {
 				size_bytes = size * sizeof(double);
 				assert(block->data_ptr != XM_NULL_PTR);
-				read_bytes = xm_allocator_read(
-				    tensor->allocator,
+				xm_allocator_read(tensor->allocator,
 				    block->data_ptr, data, size_bytes);
-				if (read_bytes != (ssize_t)size_bytes)
-					xm_log_perror("pread");
 			}
 			data += size;
 
