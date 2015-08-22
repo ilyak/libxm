@@ -38,6 +38,6 @@ int xm_tensor_init_13(struct xm_tensor *, struct xm_allocator *, size_t, int);
 int xm_tensor_init_13c(struct xm_tensor *, struct xm_allocator *, size_t, int);
 int xm_tensor_init_14(struct xm_tensor *, struct xm_allocator *, size_t, int);
 int xm_tensor_init_14b(struct xm_tensor *, struct xm_allocator *, size_t, int);
-void xm_tensor_print(struct xm_tensor *, FILE *);
+xm_scalar_t xm_random_scalar(void);
 
 #endif /* XM_AUX_H */

@@ -30,6 +30,20 @@ extern "C" {
 #define XM_RESULT_SUCCESS         0  /* Success. */
 #define XM_RESULT_NO_MEMORY       1  /* Cannot allocate memory. */
 
+#if defined(XM_SCALAR_DOUBLE)
+typedef double xm_scalar_t;
+#elif defined(XM_SCALAR_FLOAT)
+typedef float xm_scalar_t;
+#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
+#include <complex.h>
+typedef double complex xm_scalar_t;
+#elif defined(XM_SCALAR_FLOAT_COMPLEX)
+#include <complex.h>
+typedef float complex xm_scalar_t;
+#else
+#error Please define scalar type.
+#endif
+
 /* Opaque tensor struct. */
 struct xm_tensor;
 
@@ -108,12 +122,13 @@ xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
 
 /* Get tensor element given block index and element index within a block.
  * Note: this function is very slow. */
-double xm_tensor_get_element(struct xm_tensor *tensor, const xm_dim_t *blk_i,
-    const xm_dim_t *el_i);
+xm_scalar_t xm_tensor_get_element(struct xm_tensor *tensor,
+    const xm_dim_t *blk_i, const xm_dim_t *el_i);
 
 /* Get an element of a tensor given its absolute index.
  * Note: this function is very slow. */
-double xm_tensor_get_abs_element(struct xm_tensor *tensor, const xm_dim_t *idx);
+xm_scalar_t xm_tensor_get_abs_element(struct xm_tensor *tensor,
+    const xm_dim_t *idx);
 
 /* Check if the block is non-zero. */
 int xm_tensor_block_is_nonzero(const struct xm_tensor *tensor,
@@ -136,7 +151,7 @@ xm_dim_t xm_tensor_get_block_permutation(const struct xm_tensor *tensor,
     const xm_dim_t *idx);
 
 /* Get scalar multiplier for a block. */
-double xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
+xm_scalar_t xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
     const xm_dim_t *idx);
 
 /* Set block to zero. */
@@ -155,7 +170,7 @@ void xm_tensor_set_source_block(struct xm_tensor *tensor, const xm_dim_t *idx,
  * Note: if blocks are allocated using a disk-backed allocator they should
  * be at least several megabytes in size for best performance. */
 void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *idx,
-    const xm_dim_t *source_idx, const xm_dim_t *perm, double scalar);
+    const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
 
 /* Returns non-zero if all blocks of a tensor are initialized. */
 int xm_tensor_is_initialized(const struct xm_tensor *tensor);
@@ -170,8 +185,8 @@ void xm_tensor_free(struct xm_tensor *tensor);
  *
  * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
  */
-int xm_contract(double alpha, struct xm_tensor *a, struct xm_tensor *b,
-    double beta, struct xm_tensor *c, const char *idxa, const char *idxb,
+int xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+    xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
     const char *idxc);
 
 #ifdef __cplusplus

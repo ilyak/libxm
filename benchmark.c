@@ -28,7 +28,6 @@ struct args {
 	size_t size_v;
 	size_t block_size;
 	size_t buf_mbytes;
-	int is_print;
 	int is_inmem;
 };
 
@@ -39,8 +38,8 @@ struct setup {
 	const char *idxa;
 	const char *idxb;
 	const char *idxc;
-	double alpha;
-	double beta;
+	xm_scalar_t alpha;
+	xm_scalar_t beta;
 	int (*init_a)(struct xm_tensor *, struct xm_allocator *, size_t, int);
 	int (*init_b)(struct xm_tensor *, struct xm_allocator *, size_t, int);
 	int (*init_c)(struct xm_tensor *, struct xm_allocator *, size_t, int);
@@ -146,8 +145,7 @@ fatal(const char *msg)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: benchmark [-hmp] [-i id] [-o no] [-v nv] [-c buf_mbytes] [-b block_size]\n");
-
+	fprintf(stderr, "usage: benchmark [-hm] [-i id] [-o no] [-v nv] [-c buf_mbytes] [-b block_size]\n");
 	exit(1);
 }
 
@@ -161,7 +159,6 @@ args_default(void)
 	args.size_v = 80;
 	args.block_size = 16;
 	args.buf_mbytes = 1024;
-	args.is_print = 0;
 	args.is_inmem = 0;
 
 	return (args);
@@ -175,7 +172,6 @@ args_print(const struct args *args)
 	fprintf(stderr, "args.size_v=%zu\n", args->size_v);
 	fprintf(stderr, "args.block_size=%zu\n", args->block_size);
 	fprintf(stderr, "args.buf_mbytes=%zu\n", args->buf_mbytes);
-	fprintf(stderr, "args.is_print=%d\n", args->is_print);
 	fprintf(stderr, "args.is_inmem=%d\n", args->is_inmem);
 }
 
@@ -188,7 +184,7 @@ args_parse(int argc, char **argv)
 
 	args = args_default();
 
-	while ((c = getopt(argc, argv, "b:c:hi:mo:pv:")) != -1) {
+	while ((c = getopt(argc, argv, "b:c:hi:mo:v:")) != -1) {
 		switch (c) {
 		case 'b':
 			arg = strtol(optarg, NULL, 10);
@@ -216,9 +212,6 @@ args_parse(int argc, char **argv)
 			if (arg < 1)
 				usage();
 			args.size_o = (size_t)arg;
-			break;
-		case 'p':
-			args.is_print = 1;
 			break;
 		case 'v':
 			arg = strtol(optarg, NULL, 10);
@@ -268,16 +261,8 @@ main(int argc, char **argv)
 	if (s.init_c(c, allocator, args.block_size, XM_INIT_ZERO))
 		fatal("init(c)");
 
-	if (args.is_print) {
-		xm_tensor_print(a, stdout);
-		xm_tensor_print(b, stdout);
-	}
-
 	if (xm_contract(s.alpha, a, b, s.beta, c, s.idxa, s.idxb, s.idxc))
 		fatal("xm_contract");
-
-	if (args.is_print)
-		xm_tensor_print(c, stdout);
 
 	xm_tensor_free(a);
 	xm_tensor_free(b);

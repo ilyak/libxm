@@ -20,7 +20,21 @@
 
 #include "aux.h"
 
+#if defined(XM_SCALAR_DOUBLE)
 #define EPSILON 1.0e-8
+#define xm_abs fabs
+#elif defined(XM_SCALAR_FLOAT)
+#define EPSILON 1.0e-4
+#define xm_abs fabsf
+#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
+#define EPSILON 1.0e-8
+#define xm_abs cabs
+#elif defined(XM_SCALAR_FLOAT_COMPLEX)
+#define EPSILON 1.0e-4
+#define xm_abs cabsf
+#else
+#error Please define scalar type.
+#endif
 
 typedef struct test (*make_test_fn_t)(void);
 typedef int (*init_fn_t)(struct xm_tensor *, struct xm_allocator *,
@@ -40,13 +54,13 @@ struct test {
 	init_fn_t init_a;
 	init_fn_t init_b;
 	init_fn_t init_c;
-	double alpha;
-	double beta;
+	xm_scalar_t alpha;
+	xm_scalar_t beta;
 	void (*ref_compare)(struct xm_tensor *,
 			    struct xm_tensor *,
 			    struct xm_tensor *,
 			    struct xm_tensor *,
-			    double, double);
+			    xm_scalar_t, xm_scalar_t);
 };
 
 static void
@@ -72,11 +86,12 @@ rnd(size_t from, size_t to)
 
 static void
 ref_compare_1(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -98,18 +113,19 @@ ref_compare_1(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
 }
 
 static void
 ref_compare_3(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -135,18 +151,19 @@ ref_compare_3(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
 }
 
 static void
 ref_compare_4(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i, j;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -171,18 +188,19 @@ ref_compare_4(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		} }
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
 }
 
 static void
 ref_compare_5(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i, j;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -211,18 +229,19 @@ ref_compare_5(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		} }
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
 }
 
 static void
 ref_compare_7(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i, j;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -251,18 +270,19 @@ ref_compare_7(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		} }
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
 }
 
 static void
 ref_compare_9(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -286,18 +306,19 @@ ref_compare_9(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } }
 }
 
 static void
 ref_compare_10(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -323,18 +344,19 @@ ref_compare_10(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
 }
 
 static void
 ref_compare_11(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -364,18 +386,19 @@ ref_compare_11(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } } } }
 }
 
 static void
 ref_compare_12(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -405,18 +428,19 @@ ref_compare_12(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } } } }
 }
 
 static void
 ref_compare_13(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -438,18 +462,19 @@ ref_compare_13(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		}
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
 }
 
 static void
 ref_compare_15(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	size_t i, j;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -474,17 +499,18 @@ ref_compare_15(struct xm_tensor *a, struct xm_tensor *b,
 			ref += alpha * aa * bb;
 		} }
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
 }
 
 static void
 ref_compare_16(struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, struct xm_tensor *d, double alpha, double beta)
+    struct xm_tensor *c, struct xm_tensor *d, xm_scalar_t alpha,
+    xm_scalar_t beta)
 {
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
-	double aa, bb, dd, ref;
+	xm_scalar_t aa, bb, dd, ref;
 
 	dima = xm_tensor_get_abs_dim(a);
 	dimb = xm_tensor_get_abs_dim(b);
@@ -506,7 +532,7 @@ ref_compare_16(struct xm_tensor *a, struct xm_tensor *b,
 		bb = xm_tensor_get_abs_element(b, &idxb);
 		ref += alpha * aa * bb;
 		dd = xm_tensor_get_abs_element(d, &idxc);
-		if (fabs(ref - dd) > EPSILON)
+		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
 }
@@ -533,8 +559,8 @@ make_test_1(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_1;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -562,8 +588,8 @@ make_test_2(void)
 	t.init_b = xm_tensor_init_oo;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_1;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -597,8 +623,8 @@ make_test_3(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_3;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -630,8 +656,8 @@ make_test_4(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_4;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -667,8 +693,8 @@ make_test_5(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_5;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -704,8 +730,8 @@ make_test_6(void)
 	t.init_b = xm_tensor_init_oovv;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_5;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -735,8 +761,8 @@ make_test_7(void)
 	t.init_b = xm_tensor_init_oovv;
 	t.init_c = xm_tensor_init_oovv;
 	t.ref_compare = ref_compare_7;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -765,8 +791,8 @@ make_test_8(void)
 	t.init_b = xm_tensor_init_oovv;
 	t.init_c = xm_tensor_init_oovv;
 	t.ref_compare = ref_compare_7;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -793,8 +819,8 @@ make_test_9(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_9;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -827,8 +853,8 @@ make_test_10(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_10;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -866,8 +892,8 @@ make_test_11(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_11;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -896,8 +922,8 @@ make_test_12(void)
 	t.init_b = xm_tensor_init_ovvv;
 	t.init_c = xm_tensor_init_ooovvv;
 	t.ref_compare = ref_compare_12;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -921,8 +947,8 @@ make_test_13(void)
 	t.init_b = xm_tensor_init_13;
 	t.init_c = xm_tensor_init_13c;
 	t.ref_compare = ref_compare_13;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -946,8 +972,8 @@ make_test_14(void)
 	t.init_b = xm_tensor_init_14b;
 	t.init_c = xm_tensor_init_14b;
 	t.ref_compare = ref_compare_7;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -977,8 +1003,8 @@ make_test_15(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_15;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -1006,8 +1032,8 @@ make_test_16(void)
 	t.init_b = xm_tensor_init;
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_16;
-	t.alpha = (double)(rnd(1, 10)) / 10.0;
-	t.beta = (double)(rnd(0, 3)) / 10.0;
+	t.alpha = xm_random_scalar();
+	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -1034,9 +1060,9 @@ static const make_test_fn_t tests[] = {
 static void
 print_test_info(const struct test *test)
 {
-	printf("dima=%-2zudimb=%-2zudimc=%-2zubs=%-2zual=%-4.1lfbt=%-4.1lf",
-	    test->dima.n, test->dimb.n, test->dimc.n, test->block_size,
-	    test->alpha, test->beta);
+	printf("dima=%-2zudimb=%-2zudimc=%-2zubs=%-2zu",
+	    test->dima.n, test->dimb.n, test->dimc.n,
+	    test->block_size);
 	fflush(stdout);
 }
 

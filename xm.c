@@ -40,7 +40,7 @@ struct xm_block {
 	xm_dim_t                dim;
 	xm_dim_t                permutation;
 	xm_dim_t                source_idx;
-	double                  scalar;
+	xm_scalar_t             scalar;
 	int                     is_source;
 	int                     is_nonzero;
 	int                     is_initialized;
@@ -54,7 +54,7 @@ struct xm_tensor {
 	xm_dim_t                pidx;
 	struct xm_allocator    *allocator;
 	struct xm_block        *blocks;
-	double                 *block_buf;
+	xm_scalar_t            *block_buf;
 	size_t                  block_buf_bytes;
 };
 
@@ -67,19 +67,33 @@ struct async {
 	size_t                  nblk_j;
 	bitstr_t               *skip_i;
 	bitstr_t               *skip_j;
-	double                 *data;
+	xm_scalar_t            *data;
 	size_t                  stride;
-	double                 *from;
+	xm_scalar_t            *from;
 };
 
-void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *,
-    double *, int *, double *, double *, int *);
+#if defined(XM_SCALAR_DOUBLE)
+#define xm_blas_gemm dgemm_
+#elif defined(XM_SCALAR_FLOAT)
+#define xm_blas_gemm sgemm_
+#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
+#define xm_blas_gemm zgemm_
+#elif defined(XM_SCALAR_FLOAT_COMPLEX)
+#define xm_blas_gemm cgemm_
+#else
+#error Please define scalar type.
+#endif
+
+void xm_blas_gemm(char *, char *, int *, int *, int *, xm_scalar_t *,
+    xm_scalar_t *, int *, xm_scalar_t *, int *, xm_scalar_t *,
+    xm_scalar_t *, int *);
 
 static void
-dgemm_c(char transa, char transb, int m, int n, int k, double alpha, double *a,
-    int lda, double *b, int ldb, double beta, double *c, int ldc)
+gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
+    xm_scalar_t *a, int lda, xm_scalar_t *b, int ldb, xm_scalar_t beta,
+    xm_scalar_t *c, int ldc)
 {
-	dgemm_(&transa, &transb, &m, &n, &k, &alpha, a, &lda,
+	xm_blas_gemm(&transa, &transb, &m, &n, &k, &alpha, a, &lda,
 	    b, &ldb, &beta, c, &ldc);
 }
 
@@ -150,9 +164,9 @@ timer_stop(struct timer *timer)
 }
 
 static void
-swap_ptr(double **a, double **b)
+swap_ptr(xm_scalar_t **a, xm_scalar_t **b)
 {
-	double *t = *a;
+	xm_scalar_t *t = *a;
 	*a = *b;
 	*b = t;
 }
@@ -580,7 +594,7 @@ xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 		assert(srcblk->is_nonzero == dstblk->is_nonzero);
 		assert(xm_dim_eq(&srcblk->dim, &dstblk->dim));
 		if (dstblk->is_source) {
-			size = xm_dim_dot(&dstblk->dim) * sizeof(double);
+			size = xm_dim_dot(&dstblk->dim) * sizeof(xm_scalar_t);
 			assert(srcblk->data_ptr != XM_NULL_PTR);
 			xm_allocator_read(src->allocator, srcblk->data_ptr,
 			    dst->block_buf, size);
@@ -591,7 +605,7 @@ xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 	}
 }
 
-double
+xm_scalar_t
 xm_tensor_get_element(struct xm_tensor *tensor, const xm_dim_t *blk_i,
     const xm_dim_t *el_i)
 {
@@ -602,7 +616,7 @@ xm_tensor_get_element(struct xm_tensor *tensor, const xm_dim_t *blk_i,
 	block = xm_tensor_get_block(tensor, blk_i);
 	if (!block->is_nonzero)
 		return (0.0);
-	size_bytes = xm_dim_dot(&block->dim) * sizeof(double);
+	size_bytes = xm_dim_dot(&block->dim) * sizeof(xm_scalar_t);
 	assert(block->data_ptr != XM_NULL_PTR);
 	xm_allocator_read(tensor->allocator, block->data_ptr,
 	    tensor->block_buf, size_bytes);
@@ -643,7 +657,7 @@ xm_tensor_get_idx(struct xm_tensor *tensor, const xm_dim_t *abs_idx,
 	}
 }
 
-double
+xm_scalar_t
 xm_tensor_get_abs_element(struct xm_tensor *tensor, const xm_dim_t *idx)
 {
 	xm_dim_t blk_i, el_i;
@@ -700,7 +714,7 @@ xm_tensor_get_block_permutation(const struct xm_tensor *tensor,
 	return (block->permutation);
 }
 
-double
+xm_scalar_t
 xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
     const xm_dim_t *idx)
 {
@@ -713,7 +727,7 @@ xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
 static void
 xm_tensor_set_block_buf(struct xm_tensor *a, const xm_dim_t *blkdim)
 {
-	size_t size = xm_dim_dot(blkdim) * sizeof(double);
+	size_t size = xm_dim_dot(blkdim) * sizeof(xm_scalar_t);
 
 	if (size > a->block_buf_bytes) {
 		if ((a->block_buf = realloc(a->block_buf, size)) == NULL) {
@@ -779,7 +793,8 @@ xm_tensor_set_source_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 
 void
 xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *idx,
-    const xm_dim_t *source_idx, const xm_dim_t *permutation, double scalar)
+    const xm_dim_t *source_idx, const xm_dim_t *permutation,
+    xm_scalar_t scalar)
 {
 	struct xm_block *block, *source_block;
 	xm_dim_t blkdim;
@@ -898,12 +913,12 @@ skip_idx(xm_dim_t *idx, struct xm_tensor *a, const xm_dim_t *mask,
 
 static void
 block_get_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
-    size_t block_size_i, size_t block_size_j, double *from, double *to,
-    size_t stride)
+    size_t block_size_i, size_t block_size_j, xm_scalar_t *from,
+    xm_scalar_t *to, size_t stride)
 {
 	xm_dim_t el_dim, el_dim_p, el_i, idx, permutation;
 	size_t ii, jj, offset, inc, lead_ii, kk, el_dim_lead_ii;
-	double scalar = block->scalar;
+	xm_scalar_t scalar = block->scalar;
 
 	assert(from);
 	assert(to);
@@ -935,7 +950,7 @@ block_get_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 				offset = xm_dim_offset(&idx, &el_dim_p);
 				memcpy(&to[jj * stride + ii],
 				    from + offset,
-				    sizeof(double) * el_dim_lead_ii);
+				    sizeof(xm_scalar_t) * el_dim_lead_ii);
 				xm_dim_inc_mask(&el_i, &el_dim, &mask_i);
 			}
 			xm_dim_inc_mask(&el_i, &el_dim, &mask_j);
@@ -966,13 +981,13 @@ block_get_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 static void
 tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
-    double *data, bitstr_t *skip_i, bitstr_t *skip_j, size_t stride,
-    double *from)
+    xm_scalar_t *data, bitstr_t *skip_i, bitstr_t *skip_j, size_t stride,
+    xm_scalar_t *from)
 {
 	struct xm_block *block;
 	xm_dim_t blk_idx2;
 	size_t i, j, block_size_i, block_size_j = 0;
-	double *ptr, *buf = from;
+	xm_scalar_t *ptr, *buf = from;
 
 	if (from == NULL) {
 		/* accessed from multiple threads */
@@ -1002,11 +1017,11 @@ tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 					xm_allocator_read(tensor->allocator,
 					    block->data_ptr, buf,
 					    block_size_i * block_size_j *
-					    sizeof(double));
+					    sizeof(xm_scalar_t));
 				}
 			} else {
 				memset(buf, 0, block_size_i *
-				    block_size_j * sizeof(double));
+				    block_size_j * sizeof(xm_scalar_t));
 			}
 			block_get_matrix(block, mask_i, mask_j,
 			    block_size_i, block_size_j,
@@ -1047,8 +1062,8 @@ async_tensor_get_submatrix_routine(void *arg)
 static pthread_t
 async_tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
-    bitstr_t *skip_i, bitstr_t *skip_j,
-    size_t stride, double *from, double *to)
+    bitstr_t *skip_i, bitstr_t *skip_j, size_t stride,
+    xm_scalar_t *from, xm_scalar_t *to)
 {
 	struct async *async;
 	pthread_t thread;
@@ -1081,8 +1096,8 @@ async_tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 
 static void
 block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
-    size_t block_size_i, size_t block_size_j, double *data,
-    size_t stride, double *buf, struct xm_allocator *allocator)
+    size_t block_size_i, size_t block_size_j, xm_scalar_t *data,
+    size_t stride, xm_scalar_t *buf, struct xm_allocator *allocator)
 {
 	xm_dim_t el_dim, el_i;
 	size_t ii, jj, offset;
@@ -1105,7 +1120,7 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 			offset = xm_dim_offset(&el_i, &el_dim);
 			memcpy(buf + offset,
 			    &data[jj * stride + ii],
-			    sizeof(double) * el_dim.i[0]);
+			    sizeof(xm_scalar_t) * el_dim.i[0]);
 			xm_dim_inc_mask(&el_i, &el_dim, &mask_i);
 		}
 		xm_dim_inc_mask(&el_i, &el_dim, &mask_j);
@@ -1113,18 +1128,18 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 
 	assert(block->data_ptr != XM_NULL_PTR);
 	xm_allocator_write(allocator, block->data_ptr, buf,
-	    block_size_i * block_size_j * sizeof(double));
+	    block_size_i * block_size_j * sizeof(xm_scalar_t));
 }
 
 static void
 tensor_set_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
-    bitstr_t *skip_i, bitstr_t *skip_j, double *data, size_t stride)
+    bitstr_t *skip_i, bitstr_t *skip_j, xm_scalar_t *data, size_t stride)
 {
 	struct xm_block *block;
 	xm_dim_t blk_idx2;
 	size_t i, j, block_size_i, block_size_j = 0;
-	double *ptr, *buf;
+	xm_scalar_t *ptr, *buf;
 
 	/* accessed from multiple threads */
 	if ((buf = malloc(tensor->block_buf_bytes)) == NULL) {
@@ -1182,7 +1197,7 @@ static pthread_t
 async_tensor_set_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
     bitstr_t *skip_i, bitstr_t *skip_j,
-    size_t stride, double *data)
+    size_t stride, xm_scalar_t *data)
 {
 	struct async *async;
 	pthread_t thread;
@@ -1372,7 +1387,7 @@ count_zero_bits(const bitstr_t *bits, size_t len)
 static void
 calc_max_chunk_size(size_t m, size_t n, size_t k, size_t *cs_m, size_t *cs_n)
 {
-	size_t size = xm_memory_limit / sizeof(double);
+	size_t size = xm_memory_limit / sizeof(xm_scalar_t);
 	size_t cs_m2, cs_n2;
 
 	/* both a and b fit in buffer */
@@ -1417,7 +1432,7 @@ done:
 static void
 tensor_prefetch(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
-    bitstr_t *skip_i, bitstr_t *skip_j, double *data)
+    bitstr_t *skip_i, bitstr_t *skip_j, xm_scalar_t *data)
 {
 	struct xm_block *block;
 	xm_dim_t blk_idx2;
@@ -1435,7 +1450,7 @@ tensor_prefetch(struct xm_tensor *tensor, xm_dim_t blk_idx,
 			block = xm_tensor_get_block(tensor, &blk_idx);
 			size = xm_dim_dot(&block->dim);
 			if (block->is_nonzero) {
-				size_bytes = size * sizeof(double);
+				size_bytes = size * sizeof(xm_scalar_t);
 				assert(block->data_ptr != XM_NULL_PTR);
 				xm_allocator_read(tensor->allocator,
 				    block->data_ptr, data, size_bytes);
@@ -1470,7 +1485,7 @@ async_tensor_prefetch_routine(void *arg)
 static pthread_t
 async_tensor_prefetch(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
-    bitstr_t *skip_i, bitstr_t *skip_j, double *data)
+    bitstr_t *skip_i, bitstr_t *skip_j, xm_scalar_t *data)
 {
 	struct async *async;
 	pthread_t thread;
@@ -1502,7 +1517,7 @@ async_tensor_prefetch(struct xm_tensor *tensor, xm_dim_t blk_idx,
 static pthread_t
 async_tensor_prefetch_next(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
-    bitstr_t *skip_i, bitstr_t *skip_j, double *data, size_t max_cs_m,
+    bitstr_t *skip_i, bitstr_t *skip_j, xm_scalar_t *data, size_t max_cs_m,
     int wrap)
 {
 	int done;
@@ -1629,20 +1644,20 @@ set_k_symmetry(struct xm_tensor *a, xm_dim_t cidxa, xm_dim_t aidxa,
 }
 
 static int
-xm_contract_part(double alpha, struct xm_tensor *a, struct xm_tensor *b,
-    double beta, struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa,
+xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+    xm_scalar_t beta, struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa,
     xm_dim_t cidxb, xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc)
 {
 	bitstr_t *skip_m, *skip_n, *skip_k;
-	double *blk_a1, *blk_a2, *blk_a3, *blk_a4;
-	double *blk_b1, *blk_b2, *blk_b3, *blk_b4;
-	double *buf, *blk_c1, *blk_c2, *blk_c3;
+	xm_scalar_t *blk_a1, *blk_a2, *blk_a3, *blk_a4;
+	xm_scalar_t *blk_b1, *blk_b2, *blk_b3, *blk_b4;
+	xm_scalar_t *buf, *blk_c1, *blk_c2, *blk_c3;
 	int done_a, done_b, get_c, split_a, split_b;
 	pthread_t thr_a1, thr_a2, thr_b1, thr_b2, thr_c1, thr_c2;
 	size_t m, n, k, max_cs_m, max_cs_n;
 	size_t nblk_k, blk_cs_m, blk_cs_n;
 	size_t size, size_a, size_b, size_c;
-	struct timer dgemm_timer;
+	struct timer gemm_timer;
 	xm_dim_t blk_ia, blk_ib, blk_ic, blk_ic2;
 
 	get_c = beta != 0.0;
@@ -1693,9 +1708,9 @@ xm_contract_part(double alpha, struct xm_tensor *a, struct xm_tensor *b,
 	xm_log("m=%zu n=%zu k=%zu max_cs_m=%zu max_cs_n=%zu",
 	    m, n, k, max_cs_m, max_cs_n);
 	xm_log("allocating %zu mb buffer",
-	    size * sizeof(double) / 1024 / 1024);
+	    size * sizeof(xm_scalar_t) / 1024 / 1024);
 
-	if ((buf = malloc(size * sizeof(double))) == NULL) {
+	if ((buf = malloc(size * sizeof(xm_scalar_t))) == NULL) {
 		xm_log_line("out of memory");
 		free(skip_m);
 		free(skip_n);
@@ -1835,17 +1850,17 @@ xm_contract_part(double alpha, struct xm_tensor *a, struct xm_tensor *b,
 			m = get_chunk_size(c, blk_ic2, cidxc, skip_m, max_cs_m);
 			n = get_chunk_size(c, blk_ic2, aidxc, skip_n, max_cs_n);
 
-			dgemm_timer = timer_start("blas_dgemm");
+			gemm_timer = timer_start("blas_gemm");
 			if (aidxc.n > 0 && aidxc.i[0] == 0) {
-				dgemm_c('T', 'N', (int)n, (int)m, (int)k, alpha,
-				    blk_b1, (int)k, blk_a1, (int)k, beta,
-				    blk_c1, (int)max_cs_n);
+				gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
+				    alpha, blk_b1, (int)k, blk_a1, (int)k,
+				    beta, blk_c1, (int)max_cs_n);
 			} else {
-				dgemm_c('T', 'N', (int)m, (int)n, (int)k, alpha,
-				    blk_a1, (int)k, blk_b1, (int)k, beta,
-				    blk_c1, (int)max_cs_m);
+				gemm_wrapper('T', 'N', (int)m, (int)n, (int)k,
+				    alpha, blk_a1, (int)k, blk_b1, (int)k,
+				    beta, blk_c1, (int)max_cs_m);
 			}
-			timer_stop(&dgemm_timer);
+			timer_stop(&gemm_timer);
 
 			if (!pthread_equal(thr_c2, pthread_self())) {
 				if (pthread_join(thr_c2, NULL))
@@ -1877,8 +1892,8 @@ xm_contract_part(double alpha, struct xm_tensor *a, struct xm_tensor *b,
 }
 
 int
-xm_contract(double alpha, struct xm_tensor *a, struct xm_tensor *b,
-    double beta, struct xm_tensor *c, const char *idxa, const char *idxb,
+xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+    xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
     const char *idxc)
 {
 	struct timer timer, timer2;

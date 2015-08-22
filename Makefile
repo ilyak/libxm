@@ -1,30 +1,39 @@
-# Clang with Netlib BLAS on FreeBSD
+# Scalar type is double
+SCALAR_TYPE= XM_SCALAR_DOUBLE
+# Scalar type is float
+#SCALAR_TYPE= XM_SCALAR_FLOAT
+# Scalar type is double complex
+#SCALAR_TYPE= XM_SCALAR_DOUBLE_COMPLEX
+# Scalar type is float complex
+#SCALAR_TYPE= XM_SCALAR_FLOAT_COMPLEX
+
+# Clang with Netlib BLAS on FreeBSD (debug build)
 CC= clang
-CFLAGS= -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-complex-component-init -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
 LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
 LIBS= -lblas -lgfortran -lpthread -lm
 
-# Intel Compiler with MKL on Linux
+# Intel Compiler with MKL on Linux (release build)
 #CC= icc
-#CFLAGS= -DNDEBUG -Wall -Wextra -O3 -I./compat -mkl=parallel
+#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -I./compat -mkl=parallel
 #LDFLAGS=
 #LIBS= -lpthread -lm
 
-# Intel Compiler with CUDA on Linux
+# Intel Compiler with CUDA on Linux (release build)
 #CC= icc
-#CFLAGS= -DNDEBUG -Wall -Wextra -O3 -I./compat
+#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -I./compat
 #LDFLAGS= -L/usr/usc/cuda/default/lib64
 #LIBS= -lnvblas -lpthread -lm
 
-# GNU gcc with Netlib BLAS on Linux
+# GNU gcc with Netlib BLAS on Linux (debug build)
 #CC= gcc
-#CFLAGS= -Wall -Wextra -g -I./compat
+#CFLAGS= -D$(SCALAR_TYPE) -Wall -Wextra -g -I./compat
 #LDFLAGS=
 #LIBS= -lblas -lpthread -lm
 
-# Clang with Netlib BLAS on OpenBSD
+# Clang with Netlib BLAS on OpenBSD (debug build)
 #CC= clang
-#CFLAGS= -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
 #LDFLAGS= -L/usr/local/lib
 #LIBS= -lblas -lg2c -lpthread -lm
 

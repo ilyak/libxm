@@ -22,16 +22,35 @@
 
 #include "aux.h"
 
+xm_scalar_t
+xm_random_scalar(void)
+{
+	double a = drand48() - 0.5;
+#if defined(XM_SCALAR_DOUBLE)
+	return (a);
+#elif defined(XM_SCALAR_FLOAT)
+	return ((float)a);
+#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
+	double b = drand48() - 0.5;
+	return (CMPLX(a, b));
+#elif defined(XM_SCALAR_FLOAT_COMPLEX)
+	double b = drand48() - 0.5;
+	return (CMPLXF(a, b));
+#else
+#error Please define scalar type.
+#endif
+}
+
 static uintptr_t
 xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
     int type)
 {
 	uintptr_t ptr;
 	size_t size, size_bytes, i;
-	double *data;
+	xm_scalar_t *data;
 
 	size = xm_dim_dot(dim);
-	size_bytes = size * sizeof(double);
+	size_bytes = size * sizeof(xm_scalar_t);
 
 	ptr = xm_allocator_allocate(allocator, size_bytes);
 	if (ptr == XM_NULL_PTR)
@@ -49,7 +68,7 @@ xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
 		memset(data, 0, size_bytes);
 		break;
 	case XM_INIT_RAND:
-		for (i = 0; i < size; i++) data[i] = drand48();
+		for (i = 0; i < size; i++) data[i] = xm_random_scalar();
 		break;
 	}
 
@@ -982,34 +1001,4 @@ xm_tensor_init_14b(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	fprintf(stderr, "%s done in %d sec\n", __func__, (int)wall);
 
 	return (XM_RESULT_SUCCESS);
-}
-
-void
-xm_tensor_print(struct xm_tensor *tensor, FILE *stream)
-{
-	xm_dim_t dim, idx;
-	double el;
-	size_t i, size;
-
-	assert(tensor);
-
-	if (stream == NULL)
-		stream = stdout;
-
-	dim = xm_tensor_get_abs_dim(tensor);
-	idx = xm_dim_zero(dim.n);
-
-	fprintf(stream, "%zu", dim.n);
-	for (i = 0; i < dim.n; i++)
-		fprintf(stream, " %zu", dim.i[i]);
-	fprintf(stream, "\n");
-
-	size = xm_dim_dot(&dim);
-	for (i = 0; i < size; i++) {
-		el = xm_tensor_get_abs_element(tensor, &idx);
-		fprintf(stream, "%10.3e", el);
-		if (i % 4 == 0 || i == size - 1)
-			fprintf(stream, "\n");
-		xm_dim_inc(&idx, &dim);
-	}
 }
