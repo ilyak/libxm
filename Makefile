@@ -9,7 +9,7 @@ SCALAR_TYPE= XM_SCALAR_DOUBLE
 
 # Clang with Netlib BLAS on FreeBSD (debug build)
 CC= clang
-CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-complex-component-init -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-gnu-imaginary-constant -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
 LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
 LIBS= -lblas -lgfortran -lpthread -lm
 

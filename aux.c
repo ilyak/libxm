@@ -26,16 +26,11 @@ xm_scalar_t
 xm_random_scalar(void)
 {
 	double a = drand48() - 0.5;
-#if defined(XM_SCALAR_DOUBLE)
-	return (a);
-#elif defined(XM_SCALAR_FLOAT)
-	return ((float)a);
-#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
+#if defined(XM_SCALAR_DOUBLE) || defined(XM_SCALAR_FLOAT)
+	return ((xm_scalar_t)a);
+#elif defined(XM_SCALAR_DOUBLE_COMPLEX) || defined(XM_SCALAR_FLOAT_COMPLEX)
 	double b = drand48() - 0.5;
-	return (CMPLX(a, b));
-#elif defined(XM_SCALAR_FLOAT_COMPLEX)
-	double b = drand48() - 0.5;
-	return (CMPLXF(a, b));
+	return ((xm_scalar_t)(a + b * I));
 #else
 #error Please define scalar type.
 #endif
