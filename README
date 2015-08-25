@@ -22,6 +22,17 @@ project simply add xm.c to the project files and include xm.h to get function
 definitions. Detailed API documentation can be found in xm.h file.
 
 
+Features
+--------
+
+ - Speed-up tensor contractions with GPU(s) and accelerators
+ - Arbitrary symmetry and sparsity of tensors
+ - Support for very large tensors backed by hard disk storage
+ - Computations in single and double precision
+ - Support for complex numbers
+ - Very simple API
+
+
 Source code overview
 --------------------
 
