@@ -176,6 +176,7 @@ xm_banner(void)
 {
 	const char *s =
 "This program uses libxm tensor contraction code.\n"
+"See https://github.com/ilyak/libxm for more info.\n"
 "libxm is (c) Ilya Kaliman 2014-2015.\n";
 	return (s);
 }
