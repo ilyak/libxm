@@ -526,7 +526,7 @@ xm_tensor_create(struct xm_allocator *allocator, const xm_dim_t *dim,
 	struct xm_tensor *tensor;
 	size_t i, size;
 
-	assert(dim->n >= 2 && dim->n <= XM_MAX_DIM);
+	assert(dim->n >= 1 && dim->n <= XM_MAX_DIM);
 
 	if ((tensor = calloc(1, sizeof(*tensor))) == NULL) {
 		xm_log_line("out of memory");
