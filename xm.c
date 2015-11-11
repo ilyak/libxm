@@ -108,6 +108,9 @@ static FILE *xm_log_stream = NULL;
 /* memory limit in bytes */
 static size_t xm_memory_limit = 32ULL * 1024 * 1024 * 1024;
 
+/* tile size for batches */
+static size_t xm_tile_size = 4096;
+
 void
 xm_set_log_stream(FILE *stream)
 {
@@ -117,7 +120,15 @@ xm_set_log_stream(FILE *stream)
 void
 xm_set_memory_limit(size_t size)
 {
-	xm_memory_limit = size;
+	if (size > 0)
+		xm_memory_limit = size;
+}
+
+void
+xm_set_tile_size(size_t size)
+{
+	if (size > 0)
+		xm_tile_size = size;
 }
 
 static void
@@ -1385,6 +1396,22 @@ count_zero_bits(const bitstr_t *bits, size_t len)
 	return (cnt);
 }
 
+static size_t
+round_to_tile(size_t size, size_t min_size, size_t max_size, size_t tile_size)
+{
+	assert(size >= min_size);
+	assert(size <= max_size);
+
+	if (max_size <= tile_size)
+		return (max_size);
+	if (size <= tile_size)
+		return (size);
+	if (tile_size <= min_size)
+		return (size);
+
+	return ((size / tile_size) * tile_size);
+}
+
 static void
 calc_max_chunk_size(size_t m, size_t n, size_t k, size_t *cs_m, size_t *cs_n)
 {
@@ -1426,8 +1453,8 @@ done:
 	assert(cs_n2 <= n);
 	assert(cs_m2 >= *cs_m);
 	assert(cs_n2 >= *cs_n);
-	*cs_m = cs_m2;
-	*cs_n = cs_n2;
+	*cs_m = round_to_tile(cs_m2, *cs_m, m, xm_tile_size);
+	*cs_n = round_to_tile(cs_n2, *cs_n, n, xm_tile_size);
 }
 
 static void
@@ -1833,8 +1860,8 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 				    skip_m, max_cs_m);
 				blk_cs_n = get_chunk_blocks(c, blk_ic, aidxc,
 				    skip_n, max_cs_n);
-				assert(blk_cs_m);
-				assert(blk_cs_n);
+				assert(blk_cs_m > 0);
+				assert(blk_cs_n > 0);
 				if (aidxc.n > 0 && aidxc.i[0] == 0) {
 					thr_c1 = async_tensor_get_submatrix(c,
 					    blk_ic, aidxc, cidxc, blk_cs_n,

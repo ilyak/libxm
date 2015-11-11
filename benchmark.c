@@ -28,6 +28,7 @@ struct args {
 	size_t size_v;
 	size_t block_size;
 	size_t buf_mbytes;
+	size_t tile_size;
 	int is_inmem;
 };
 
@@ -145,7 +146,8 @@ fatal(const char *msg)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: benchmark [-hm] [-i id] [-o no] [-v nv] [-c buf_mbytes] [-b block_size]\n");
+	fprintf(stderr, "usage: benchmark [-hm] [-i id] [-o no] [-v nv] "
+	    "[-t tile_size] [-c buf_mbytes] [-b block_size]\n");
 	exit(1);
 }
 
@@ -159,6 +161,7 @@ args_default(void)
 	args.size_v = 80;
 	args.block_size = 16;
 	args.buf_mbytes = 1024;
+	args.tile_size = 4096;
 	args.is_inmem = 0;
 
 	return (args);
@@ -172,6 +175,7 @@ args_print(const struct args *args)
 	fprintf(stderr, "args.size_v=%zu\n", args->size_v);
 	fprintf(stderr, "args.block_size=%zu\n", args->block_size);
 	fprintf(stderr, "args.buf_mbytes=%zu\n", args->buf_mbytes);
+	fprintf(stderr, "args.tile_size=%zu\n", args->tile_size);
 	fprintf(stderr, "args.is_inmem=%d\n", args->is_inmem);
 }
 
@@ -184,7 +188,7 @@ args_parse(int argc, char **argv)
 
 	args = args_default();
 
-	while ((c = getopt(argc, argv, "b:c:hi:mo:v:")) != -1) {
+	while ((c = getopt(argc, argv, "b:c:hi:mo:t:v:")) != -1) {
 		switch (c) {
 		case 'b':
 			arg = strtol(optarg, NULL, 10);
@@ -212,6 +216,12 @@ args_parse(int argc, char **argv)
 			if (arg < 1)
 				usage();
 			args.size_o = (size_t)arg;
+			break;
+		case 't':
+			arg = strtol(optarg, NULL, 10);
+			if (arg < 1)
+				usage();
+			args.tile_size = (size_t)arg;
 			break;
 		case 'v':
 			arg = strtol(optarg, NULL, 10);
@@ -241,6 +251,7 @@ main(int argc, char **argv)
 	args_print(&args);
 
 	xm_set_memory_limit(args.buf_mbytes * 1024 * 1024);
+	xm_set_tile_size(args.tile_size);
 	s = make_benchmark[args.id-1](args.size_o, args.size_v);
 
 	path = args.is_inmem ? NULL : "mapping";

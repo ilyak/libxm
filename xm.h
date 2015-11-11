@@ -98,6 +98,9 @@ void xm_set_log_stream(FILE *stream);
  * than limited by this value. */
 void xm_set_memory_limit(size_t size);
 
+/* Set tile size for batches. */
+void xm_set_tile_size(size_t size);
+
 /* Create a labeled tensor specifying its dimensions in blocks. */
 struct xm_tensor *xm_tensor_create(struct xm_allocator *allocator,
     const xm_dim_t *dim, const char *label);
