@@ -1399,17 +1399,17 @@ count_zero_bits(const bitstr_t *bits, size_t len)
 static size_t
 round_to_tile(size_t size, size_t min_size, size_t max_size, size_t tile_size)
 {
+	size_t new_size;
+
 	assert(size >= min_size);
 	assert(size <= max_size);
 
-	if (max_size <= tile_size)
-		return (max_size);
-	if (size <= tile_size)
-		return (size);
-	if (tile_size <= min_size)
+	if (size == max_size)
 		return (size);
 
-	return ((size / tile_size) * tile_size);
+	new_size = (size / tile_size) * tile_size;
+
+	return (new_size < min_size ? size : new_size);
 }
 
 static void
