@@ -1879,6 +1879,7 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 			n = get_chunk_size(c, blk_ic2, aidxc, skip_n, max_cs_n);
 
 			gemm_timer = timer_start("blas_gemm");
+			xm_log("blas_gemm: m=%zu n=%zu k=%zu", m, n, k);
 			if (aidxc.n > 0 && aidxc.i[0] == 0) {
 				gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
 				    alpha, blk_b1, (int)k, blk_a1, (int)k,
