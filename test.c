@@ -1072,7 +1072,7 @@ run_test(int test_num, int skip)
 	struct xm_allocator *allocator;
 	struct xm_tensor *a, *b, *c, *d;
 	struct test t;
-	const char *path, *message;
+	const char *path;
 	size_t id;
 
 	id = rnd(1, sizeof(tests) / sizeof(*tests));
@@ -1109,8 +1109,6 @@ run_test(int test_num, int skip)
 		fatal("tensor_init(d)");
 	xm_tensor_copy_data(d, c);
 
-	message = skip ? "skipping" : "success";
-
 	if (!skip) {
 		if (xm_contract(t.alpha, a, b, t.beta, d, t.idxa,
 		    t.idxb, t.idxc)) {
@@ -1126,7 +1124,7 @@ run_test(int test_num, int skip)
 	xm_tensor_free(d);
 	xm_allocator_destroy(allocator);
 
-	printf("   %s\n", message);
+	printf("   %s\n", skip ? "skipping" : "success");
 }
 
 int
