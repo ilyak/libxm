@@ -108,9 +108,6 @@ static FILE *xm_log_stream = NULL;
 /* memory limit in bytes */
 static size_t xm_memory_limit = 32ULL * 1024 * 1024 * 1024;
 
-/* tile size for batches */
-static size_t xm_tile_size = 4096;
-
 void
 xm_set_log_stream(FILE *stream)
 {
@@ -122,13 +119,6 @@ xm_set_memory_limit(size_t size)
 {
 	if (size > 0)
 		xm_memory_limit = size;
-}
-
-void
-xm_set_tile_size(size_t size)
-{
-	if (size > 0)
-		xm_tile_size = size;
 }
 
 static void
@@ -1396,22 +1386,6 @@ count_zero_bits(const bitstr_t *bits, size_t len)
 	return (cnt);
 }
 
-static size_t
-round_to_tile(size_t size, size_t min_size, size_t max_size, size_t tile_size)
-{
-	size_t new_size;
-
-	assert(size >= min_size);
-	assert(size <= max_size);
-
-	if (size == max_size)
-		return (size);
-
-	new_size = (size / tile_size) * tile_size;
-
-	return (new_size < min_size ? size : new_size);
-}
-
 static void
 calc_max_chunk_size(size_t m, size_t n, size_t k, size_t *cs_m, size_t *cs_n)
 {
@@ -1453,8 +1427,8 @@ done:
 	assert(cs_n2 <= n);
 	assert(cs_m2 >= *cs_m);
 	assert(cs_n2 >= *cs_n);
-	*cs_m = round_to_tile(cs_m2, *cs_m, m, xm_tile_size);
-	*cs_n = round_to_tile(cs_n2, *cs_n, n, xm_tile_size);
+	*cs_m = cs_m2;
+	*cs_n = cs_n2;
 }
 
 static void

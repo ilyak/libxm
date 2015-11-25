@@ -1073,7 +1073,7 @@ run_test(int test_num, int skip)
 	struct xm_tensor *a, *b, *c, *d;
 	struct test t;
 	const char *path, *message;
-	size_t id, buf_bytes, tile_size;
+	size_t id, buf_bytes;
 
 	id = rnd(1, sizeof(tests) / sizeof(*tests));
 	printf("test=%-4did=%-3zu", test_num, id);
@@ -1111,9 +1111,7 @@ run_test(int test_num, int skip)
 
 	message = skip ? "skipping" : "success";
 	buf_bytes = rnd(1000, 100000);
-	tile_size = rnd(1, 100);
 	xm_set_memory_limit(buf_bytes);
-	xm_set_tile_size(tile_size);
 
 	if (!skip) {
 		if (xm_contract(t.alpha, a, b, t.beta, d, t.idxa,
