@@ -27,7 +27,6 @@ struct args {
 	size_t size_o;
 	size_t size_v;
 	size_t block_size;
-	size_t buf_mbytes;
 	int is_inmem;
 };
 
@@ -146,7 +145,7 @@ static void
 usage(void)
 {
 	fprintf(stderr, "usage: benchmark [-hm] [-i id] [-o no] [-v nv] "
-	    "[-c buf_mbytes] [-b block_size]\n");
+	    "[-b block_size]\n");
 	exit(1);
 }
 
@@ -155,11 +154,10 @@ args_default(void)
 {
 	struct args args;
 
-	args.id = 1;
-	args.size_o = 8;
-	args.size_v = 80;
-	args.block_size = 16;
-	args.buf_mbytes = 1024;
+	args.id = 2;
+	args.size_o = 5;
+	args.size_v = 40;
+	args.block_size = 32;
 	args.is_inmem = 0;
 
 	return (args);
@@ -172,7 +170,6 @@ args_print(const struct args *args)
 	fprintf(stderr, "args.size_o=%zu\n", args->size_o);
 	fprintf(stderr, "args.size_v=%zu\n", args->size_v);
 	fprintf(stderr, "args.block_size=%zu\n", args->block_size);
-	fprintf(stderr, "args.buf_mbytes=%zu\n", args->buf_mbytes);
 	fprintf(stderr, "args.is_inmem=%d\n", args->is_inmem);
 }
 
@@ -192,12 +189,6 @@ args_parse(int argc, char **argv)
 			if (arg < 1)
 				usage();
 			args.block_size = (size_t)arg;
-			break;
-		case 'c':
-			arg = strtol(optarg, NULL, 10);
-			if (arg < 1)
-				usage();
-			args.buf_mbytes = (size_t)arg;
 			break;
 		case 'i':
 			arg = strtol(optarg, NULL, 10);
@@ -241,7 +232,6 @@ main(int argc, char **argv)
 	args = args_parse(argc, argv);
 	args_print(&args);
 
-	xm_set_memory_limit(args.buf_mbytes * 1024 * 1024);
 	s = make_benchmark[args.id-1](args.size_o, args.size_v);
 
 	path = args.is_inmem ? NULL : "mapping";

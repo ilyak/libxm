@@ -25,6 +25,7 @@
 #include <time.h>
 
 #include <pthread.h>
+#include <unistd.h>
 
 #ifdef HAVE_BITSTRING_H
 #include <bitstring.h>
@@ -105,20 +106,27 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 /* stream to log to */
 static FILE *xm_log_stream = NULL;
 
-/* memory limit in bytes */
-static size_t xm_memory_limit = 32ULL * 1024 * 1024 * 1024;
-
 void
 xm_set_log_stream(FILE *stream)
 {
 	xm_log_stream = stream;
 }
 
-void
-xm_set_memory_limit(size_t size)
+static size_t
+get_total_physmem(void)
 {
-	if (size > 0)
-		xm_memory_limit = size;
+	long pagesize, npages;
+
+	pagesize = sysconf(_SC_PAGESIZE);
+	npages = sysconf(_SC_PHYS_PAGES);
+
+	return ((size_t)pagesize * (size_t)npages);
+}
+
+static size_t
+get_buffer_size(void)
+{
+	return (get_total_physmem() / 2);
 }
 
 static void
@@ -1389,8 +1397,9 @@ count_zero_bits(const bitstr_t *bits, size_t len)
 static void
 calc_max_chunk_size(size_t m, size_t n, size_t k, size_t *cs_m, size_t *cs_n)
 {
-	size_t size = xm_memory_limit / sizeof(xm_scalar_t);
-	size_t cs_m2, cs_n2;
+	size_t size, cs_m2, cs_n2;
+
+	size = get_buffer_size() / sizeof(xm_scalar_t);
 
 	/* both a and b fit in buffer */
 	cs_m2 = m;
