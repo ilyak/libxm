@@ -47,5 +47,5 @@ Source code overview
 Who uses libxm
 --------------
 
-   - libxm is integrated with Q-Chem package to accelerate quantum chemistry
-     calculations
+ - libxm is integrated with Q-Chem package to accelerate quantum chemistry
+   calculations
