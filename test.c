@@ -20,10 +20,7 @@
 
 #include "aux.h"
 
-#if defined(XM_SCALAR_DOUBLE)
-#define EPSILON 1.0e-8
-#define xm_abs fabs
-#elif defined(XM_SCALAR_FLOAT)
+#if defined(XM_SCALAR_FLOAT)
 #define EPSILON 1.0e-4
 #define xm_abs fabsf
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
@@ -32,8 +29,9 @@
 #elif defined(XM_SCALAR_FLOAT_COMPLEX)
 #define EPSILON 1.0e-4
 #define xm_abs cabsf
-#else
-#error Please define scalar type.
+#else /* assume double */
+#define EPSILON 1.0e-8
+#define xm_abs fabs
 #endif
 
 typedef struct test (*make_test_fn_t)(void);

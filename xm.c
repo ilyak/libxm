@@ -73,16 +73,14 @@ struct async {
 	xm_scalar_t            *from;
 };
 
-#if defined(XM_SCALAR_DOUBLE)
-#define xm_blas_gemm dgemm_
-#elif defined(XM_SCALAR_FLOAT)
+#if defined(XM_SCALAR_FLOAT)
 #define xm_blas_gemm sgemm_
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
 #define xm_blas_gemm zgemm_
 #elif defined(XM_SCALAR_FLOAT_COMPLEX)
 #define xm_blas_gemm cgemm_
-#else
-#error Please define scalar type.
+#else /* assume double */
+#define xm_blas_gemm dgemm_
 #endif
 
 void xm_blas_gemm(char *, char *, int *, int *, int *, xm_scalar_t *,

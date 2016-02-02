@@ -30,9 +30,7 @@ extern "C" {
 #define XM_RESULT_SUCCESS         0  /* Success. */
 #define XM_RESULT_NO_MEMORY       1  /* Cannot allocate memory. */
 
-#if defined(XM_SCALAR_DOUBLE)
-typedef double xm_scalar_t;
-#elif defined(XM_SCALAR_FLOAT)
+#if defined(XM_SCALAR_FLOAT)
 typedef float xm_scalar_t;
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
 #include <complex.h>
@@ -40,8 +38,8 @@ typedef double complex xm_scalar_t;
 #elif defined(XM_SCALAR_FLOAT_COMPLEX)
 #include <complex.h>
 typedef float complex xm_scalar_t;
-#else
-#error Please define scalar type.
+#else /* assume double */
+typedef double xm_scalar_t;
 #endif
 
 /* Opaque tensor struct. */
