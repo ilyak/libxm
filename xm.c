@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015 Ilya Kaliman <ilya.kaliman@gmail.com>
+ * Copyright (c) 2014-2016 Ilya Kaliman <ilya.kaliman@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -184,7 +184,7 @@ xm_banner(void)
 	const char *s =
 "This program uses libxm tensor contraction code.\n"
 "See https://github.com/ilyak/libxm for more info.\n"
-"libxm is (c) Ilya Kaliman 2014-2015.\n";
+"libxm is (c) Ilya Kaliman 2014-2016.\n";
 	return (s);
 }
 
