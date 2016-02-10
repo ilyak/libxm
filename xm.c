@@ -104,10 +104,19 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 /* stream to log to */
 static FILE *xm_log_stream = NULL;
 
+/* memory limit */
+static size_t xm_memory_limit = (size_t)(-1);
+
 void
 xm_set_log_stream(FILE *stream)
 {
 	xm_log_stream = stream;
+}
+
+void
+xm_set_memory_limit(size_t size)
+{
+	xm_memory_limit = size;
 }
 
 static size_t
@@ -124,7 +133,9 @@ get_total_physmem(void)
 static size_t
 get_buffer_size(void)
 {
-	return (get_total_physmem() / 2);
+	if (xm_memory_limit == (size_t)(-1))
+		return (get_total_physmem() / 2);
+	return (xm_memory_limit);
 }
 
 static void
@@ -747,6 +758,19 @@ xm_tensor_set_block_buf(struct xm_tensor *a, const xm_dim_t *blkdim)
 }
 
 void
+xm_tensor_reset_block(struct xm_tensor *tensor, const xm_dim_t *idx)
+{
+	struct xm_block *block;
+
+	assert(tensor != NULL);
+	assert(idx != NULL);
+
+	block = xm_tensor_get_block(tensor, idx);
+	memset(block, 0, sizeof(*block));
+	block->data_ptr = XM_NULL_PTR;
+}
+
+void
 xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *idx,
     const xm_dim_t *blkdim)
 {
@@ -1321,17 +1345,14 @@ get_chunk_size(struct xm_tensor *tensor, xm_dim_t blk_idx, xm_dim_t mask,
 }
 
 static bitstr_t *
-make_skip(struct xm_tensor *c, xm_dim_t cidxc, xm_dim_t aidxc)
+make_skip(bitstr_t *skip, struct xm_tensor *c, xm_dim_t cidxc, xm_dim_t aidxc)
 {
-	bitstr_t *skip;
 	struct xm_block *block;
 	xm_dim_t blk_idx;
 	size_t i, j, nblk_i, nblk_j;
 
 	nblk_i = xm_dim_dot_mask(&c->dim, &cidxc);
 	nblk_j = xm_dim_dot_mask(&c->dim, &aidxc);
-	skip = bit_alloc(nblk_i);
-	bit_nset(skip, 0, nblk_i - 1);
 
 	blk_idx = xm_dim_zero(c->dim.n);
 	for (i = 0; i < nblk_i; i++) {
@@ -1675,16 +1696,28 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	blk_ib = xm_dim_zero(b->dim.n);
 	blk_ic = xm_dim_zero(c->dim.n);
 
-	nblk_k = xm_dim_dot_mask(&a->dim, &cidxa);
+	m = xm_dim_dot_mask(&c->dim, &cidxc);
+	n = xm_dim_dot_mask(&c->dim, &aidxc);
+	k = xm_dim_dot_mask(&a->dim, &cidxa);
 
-	skip_m = make_skip(c, cidxc, aidxc);
-	skip_n = make_skip(c, aidxc, cidxc);
-	skip_k = bit_alloc(nblk_k);
-	bit_nclear(skip_k, 0, nblk_k - 1);
+	skip_m = bit_alloc(m);
+	skip_n = bit_alloc(n);
+	skip_k = bit_alloc(k);
+
+	bit_nset(skip_m, 0, m - 1);
+	make_skip(skip_m, c, cidxc, aidxc);
+	if (beta == 0.0 || beta == 1.0)
+		set_skip_zero(skip_m, a, aidxa, cidxa);
+
+	bit_nset(skip_n, 0, n - 1);
+	make_skip(skip_n, c, aidxc, cidxc);
+	if (beta == 0.0 || beta == 1.0)
+		set_skip_zero(skip_n, b, aidxb, cidxb);
+
+	bit_nclear(skip_k, 0, k - 1);
 	set_skip_zero(skip_k, a, cidxa, aidxa);
 	set_skip_zero(skip_k, b, cidxb, aidxb);
-
-	nblk_k = count_zero_bits(skip_k, nblk_k);
+	nblk_k = count_zero_bits(skip_k, k);
 
 	m = get_chunk_size(c, blk_ic, cidxc, skip_m, ULONG_MAX);
 	n = get_chunk_size(c, blk_ic, aidxc, skip_n, ULONG_MAX);

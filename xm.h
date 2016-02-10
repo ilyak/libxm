@@ -92,6 +92,10 @@ size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 /* Set stream to log to. Setting stream to NULL disables logging. */
 void xm_set_log_stream(FILE *stream);
 
+/* Set physical memory limit in bytes. Memory limit will be determined
+ * automatically if not set using this function. */
+void xm_set_memory_limit(size_t size);
+
 /* Create a labeled tensor specifying its dimensions in blocks. */
 struct xm_tensor *xm_tensor_create(struct xm_allocator *allocator,
     const xm_dim_t *dim, const char *label);
@@ -147,6 +151,10 @@ xm_dim_t xm_tensor_get_block_permutation(const struct xm_tensor *tensor,
 /* Get scalar multiplier for a block. */
 xm_scalar_t xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
     const xm_dim_t *idx);
+
+/* Reset block to the uninitialized state. This does not deallocate memory
+ * pointed to by data ptr. */
+void xm_tensor_reset_block(struct xm_tensor *tensor, const xm_dim_t *idx);
 
 /* Set block to zero. */
 void xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *idx,

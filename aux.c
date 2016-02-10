@@ -222,6 +222,50 @@ xm_tensor_init_vv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
+xm_tensor_init_vvx(struct xm_tensor *tensor, struct xm_allocator *allocator,
+    size_t block_size, int type)
+{
+	uintptr_t block;
+	xm_dim_t blk_dim, dim, idx, idx2, perm, perm2;
+	time_t wall;
+
+	wall = time(NULL);
+	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
+
+	dim = xm_tensor_get_dim(tensor);
+	assert(dim.n == 3);
+
+	blk_dim = xm_dim_same(dim.n, block_size);
+	idx = xm_dim_zero(dim.n);
+	perm = xm_dim_identity_permutation(dim.n);
+
+	for (idx.i[0] = 0; idx.i[0] < dim.i[0]; idx.i[0]++) {
+	for (idx.i[1] = 0; idx.i[1] < dim.i[1]; idx.i[1]++) {
+	for (idx.i[2] = 0; idx.i[2] < dim.i[2]; idx.i[2]++) {
+		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
+			continue;
+		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		if (block == XM_NULL_PTR)
+			return (XM_RESULT_NO_MEMORY);
+		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
+
+		idx2 = idx;
+		idx2.i[0] = idx.i[1];
+		idx2.i[1] = idx.i[0];
+		perm2 = perm;
+		perm2.i[0] = perm.i[1];
+		perm2.i[1] = perm.i[0];
+		if (xm_tensor_get_block_data_ptr(tensor, &idx2) == XM_NULL_PTR)
+			xm_tensor_set_block(tensor, &idx2, &idx, &perm2, -1.0);
+	} } }
+
+	wall = time(NULL) - wall;
+	fprintf(stderr, "%s done in %d sec\n", __func__, (int)wall);
+
+	return (XM_RESULT_SUCCESS);
+}
+
+int
 xm_tensor_init_oooo(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
