@@ -39,9 +39,8 @@ and compile the code:
 
    cc myprog.c xm.c alloc.c -lblas -lpthread -lm
 
-To compile benchmarks and tests use the provided Makefile. See benchmark.c file
-for sample code using libxm. Detailed API documentation can be found in xm.h
-file.
+To compile benchmarks and tests use the provided Makefile. Detailed API
+documentation can be found in xm.h file.
 
 
 Source code overview
