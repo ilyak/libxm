@@ -14,17 +14,8 @@ multiple GPUs or other accelerators like Intel Xeon Phi. Libxm reaches close to
 peak floating-point performance even in cases when data size is much larger
 than the available amount of fast random access memory. For very large problems
 libxm shows considerable speedups (10x or more) compared to similar tensor
-contraction codes.
-
-
-Features
---------
-
- - Speed-up tensor contractions with multiple GPUs and accelerators
- - Arbitrary symmetry and sparsity of tensors
- - Support for very large tensors backed by hard disk storage
- - Computations in single and double precision
- - Support for complex numbers
+contraction codes. Libxm supports single and double precision scalar and
+complex numbers.
 
 
 Usage
