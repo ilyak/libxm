@@ -5,9 +5,9 @@ Libxm is a library that provides routines for efficient contractions of very
 large (up to many terabytes) disk-based block-tensors on multi-core CPUs, GPUs,
 and various floating point accelerators.
 
-With libxm tensors can be stored on hard disk which allows virtually unlimited
-size. Data are asynchronously prefetched to main memory for fast access. Tensor
-contractions are reformulated as multiplications of big matrices done in
+With libxm tensors can be stored on hard disks which allow virtually unlimited
+data size. Data are asynchronously prefetched to main memory for fast access.
+Tensor contractions are reformulated as multiplications of big matrices done in
 batches. Tensor symmetry and sparsity is used to decrease storage and
 computational requirements. Computations can be efficiently accelerated using
 multiple GPUs or other accelerators like Intel Xeon Phi. Libxm reaches close to
@@ -59,3 +59,5 @@ Who uses libxm
 
  - libxm is integrated with Q-Chem package to accelerate high-level quantum
    chemistry calculations
+
+ - libxm is used by a C++ tensor library libtensor
