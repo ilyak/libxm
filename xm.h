@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-/* Maximum number of tensor dimensions. */
+/* Maximum number of tensor dimensions. This can be increased if necessary. */
 #define XM_MAX_DIM                6
 
 /* Result return codes. */
