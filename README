@@ -33,13 +33,15 @@ This will preform the following contraction of two 4-index tensors A and B:
 Compilation
 -----------
 
-To compile libxm you need a sane POSIX environment, an efficient BLAS library,
-and an ANSI C complaint compiler. See Makefile for sample compiler flags and
-configurations.
+To compile libxm you need a POSIX environment, an efficient BLAS library, and
+an ANSI C complaint compiler. To use libxm in your project include xm.h file
+and compile the code:
 
-See benchmark.c file for sample code using libxm. To start using libxm in your
-project simply add xm.c to the project files and include xm.h to get function
-definitions. Detailed API documentation can be found in xm.h file.
+   cc myprog.c xm.c alloc.c -lblas -lpthread -lm
+
+To compile benchmarks and tests use the provided Makefile. See benchmark.c file
+for sample code using libxm. Detailed API documentation can be found in xm.h
+file.
 
 
 Source code overview
