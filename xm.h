@@ -42,15 +42,15 @@ typedef float complex xm_scalar_t;
 typedef double xm_scalar_t;
 #endif
 
-/* Opaque tensor struct. */
+/* Opaque tensor structure. */
 struct xm_tensor;
 
-/* Tensor index. */
+/* Multidimensional tensor index. */
 typedef struct {
 	size_t n, i[XM_MAX_DIM];
 } xm_dim_t;
 
-/* Returns libxm banner string. Print this in the program output. */
+/* Returns libxm info string. */
 const char *xm_banner(void);
 
 /* Initialize all indices of a dim to zero. */
@@ -121,7 +121,7 @@ xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
 /* Get tensor element given block index and element index within a block.
  * Note: this function is very slow. */
 xm_scalar_t xm_tensor_get_element(struct xm_tensor *tensor,
-    const xm_dim_t *blk_i, const xm_dim_t *el_i);
+    const xm_dim_t *blk_idx, const xm_dim_t *el_idx);
 
 /* Get an element of a tensor given its absolute index.
  * Note: this function is very slow. */
@@ -130,48 +130,48 @@ xm_scalar_t xm_tensor_get_abs_element(struct xm_tensor *tensor,
 
 /* Check if the block is non-zero. */
 int xm_tensor_block_is_nonzero(const struct xm_tensor *tensor,
-    const xm_dim_t *idx);
+    const xm_dim_t *blk_idx);
 
 /* Check if the block is initialized. */
 int xm_tensor_block_is_initialized(const struct xm_tensor *tensor,
-    const xm_dim_t *idx);
+    const xm_dim_t *blk_idx);
 
 /* Get block dimensions. */
 xm_dim_t xm_tensor_get_block_dim(const struct xm_tensor *tensor,
-    const xm_dim_t *idx);
+    const xm_dim_t *blk_idx);
 
 /* Get block data pointer. */
 uintptr_t xm_tensor_get_block_data_ptr(const struct xm_tensor *tensor,
-    const xm_dim_t *idx);
+    const xm_dim_t *blk_idx);
 
 /* Get permutation of a block. */
 xm_dim_t xm_tensor_get_block_permutation(const struct xm_tensor *tensor,
-    const xm_dim_t *idx);
+    const xm_dim_t *blk_idx);
 
 /* Get scalar multiplier for a block. */
 xm_scalar_t xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
-    const xm_dim_t *idx);
+    const xm_dim_t *blk_idx);
 
 /* Reset block to the uninitialized state. This does not deallocate memory
  * pointed to by data ptr. */
-void xm_tensor_reset_block(struct xm_tensor *tensor, const xm_dim_t *idx);
+void xm_tensor_reset_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx);
 
 /* Set block to zero. */
-void xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *idx,
-    const xm_dim_t *blkdim);
+void xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
+    const xm_dim_t *blk_dim);
 
 /* Set the source block. Each unique source block must be used once and must be
  * set using this function before being used in xm_tensor_set_block.
  * Note: if blocks are allocated using a disk-backed allocator they must
  * be at least several megabytes in size for best performance. */
-void xm_tensor_set_source_block(struct xm_tensor *tensor, const xm_dim_t *idx,
-    const xm_dim_t *blkdim, uintptr_t data);
+void xm_tensor_set_source_block(struct xm_tensor *tensor,
+    const xm_dim_t *blk_idx, const xm_dim_t *blk_dim, uintptr_t data);
 
 /* Set a copy of a source block applying permutation and multiplying
  * by a scalar factor.
  * Note: if blocks are allocated using a disk-backed allocator they should
  * be at least several megabytes in size for best performance. */
-void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *idx,
+void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
 
 /* Returns non-zero if all blocks of a tensor are initialized. */
