@@ -1,14 +1,14 @@
 libxm
 =====
 
-Libxm is a library which provides routines for efficient contractions of large
-(up to many terabytes) disk-based block-tensors on CPUs, GPUs, and various
-floating point accelerators.
+Libxm is a library that provides routines for efficient contractions of very
+large (up to many terabytes) disk-based block-tensors on multi-core CPUs, GPUs,
+and various floating point accelerators.
 
 With libxm tensors can be stored on hard disk which allows virtually unlimited
 size. Data are asynchronously prefetched to main memory for fast access. Tensor
 contractions are reformulated as multiplications of big matrices done in
-batches. Symmetry and sparsity information is used to decrease storage and
+batches. Tensor symmetry and sparsity is used to decrease storage and
 computational requirements. Computations can be efficiently accelerated using
 multiple GPUs or other accelerators like Intel Xeon Phi. Libxm reaches close to
 peak floating-point performance even in cases when data size is much larger
