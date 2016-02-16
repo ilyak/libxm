@@ -1344,7 +1344,7 @@ get_chunk_size(struct xm_tensor *tensor, xm_dim_t blk_idx, xm_dim_t mask,
 	return (cs);
 }
 
-static bitstr_t *
+static void
 make_skip(bitstr_t *skip, struct xm_tensor *c, xm_dim_t cidxc, xm_dim_t aidxc)
 {
 	struct xm_block *block;
@@ -1367,8 +1367,6 @@ make_skip(bitstr_t *skip, struct xm_tensor *c, xm_dim_t cidxc, xm_dim_t aidxc)
 		}
 		xm_dim_inc_mask(&blk_idx, &c->dim, &cidxc);
 	}
-
-	return (skip);
 }
 
 static void
