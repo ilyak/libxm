@@ -55,7 +55,7 @@ main(void)
 	fflush(stdout);
 
 	xm_set_log_stream(stderr);
-	xm_set_memory_limit(20000);
+	xm_set_memory_limit(50000);
 
 	if ((allocator = xm_allocator_create(NULL)) == NULL)
 		fatal("xm_allocator_create");

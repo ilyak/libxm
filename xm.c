@@ -1904,7 +1904,7 @@ compute_chunk_size_k(size_t elts_per_block_k_dim)
 	size_t buf_bytes, elts_per_dim, chunk_size_k;
 
 	buf_bytes = get_buffer_size();
-	elts_per_dim = (size_t)(sqrt(buf_bytes / sizeof(xm_scalar_t) / 4));
+	elts_per_dim = (size_t)(sqrt(buf_bytes / sizeof(xm_scalar_t)));
 	chunk_size_k = elts_per_dim / elts_per_block_k_dim;
 
 	return (chunk_size_k > 0 ? chunk_size_k : 1);
