@@ -36,30 +36,49 @@
 
 #include "xm.h"
 
+/** defines a tensor block */
 struct xm_block {
+	/** pointer to data allocated with an allocator */
 	uintptr_t               data_ptr;
-	xm_dim_t                idx;
+	/** block dimensions in scalar elements */
 	xm_dim_t                dim;
+	/** permutation that is applied to raw data */
 	xm_dim_t                permutation;
+	/** index of the canonical block if this block is not a source block */
 	xm_dim_t                source_idx;
+	/** scalar multiplier for the raw data */
 	xm_scalar_t             scalar;
+	/** specifies whether the block is a source block (boolean) */
 	int                     is_source;
+	/** specifies whether the block is a zero-block (boolean) */
 	int                     is_nonzero;
+	/** specifies whether the block is initialized (boolean) */
 	int                     is_initialized;
 };
 
+/** defines a tensor */
 struct xm_tensor {
+	/** tensor label string */
 	char                   *label;
+	/** tensor dimensions in blocks */
 	xm_dim_t                dim;
+	/** tensor partition dimensions */
 	xm_dim_t                pdim;
+	/** tensor partition dimensions (auxiliary variable) */
 	xm_dim_t                pdim0;
+	/** current partition index */
 	xm_dim_t                pidx;
+	/** allocator used to allocate tensor data */
 	struct xm_allocator    *allocator;
+	/** array of all tensor blocks */
 	struct xm_block        *blocks;
+	/** buffer that is large enough to store any single block data */
 	xm_scalar_t            *block_buf;
+	/** size of the above buffer */
 	size_t                  block_buf_bytes;
 };
 
+/** helper structure for passing data to worker threads */
 struct async {
 	struct xm_tensor       *tensor;
 	xm_dim_t                blk_idx;
@@ -784,7 +803,6 @@ xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 	block = xm_tensor_get_block(tensor, idx);
 	assert(!block->is_initialized);
 
-	block->idx = *idx;
 	block->source_idx = *idx;
 	block->dim = *blkdim;
 	block->data_ptr = XM_NULL_PTR;
@@ -811,7 +829,6 @@ xm_tensor_set_source_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 	block = xm_tensor_get_block(tensor, idx);
 	assert(!block->is_initialized);
 
-	block->idx = *idx;
 	block->source_idx = *idx;
 	block->dim = *blkdim;
 	block->data_ptr = data_ptr;
@@ -846,7 +863,6 @@ xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 	assert(!block->is_initialized);
 
 	blkdim = xm_dim_permute_rev(&source_block->dim, permutation);
-	block->idx = *idx;
 	block->source_idx = *source_idx;
 	block->dim = blkdim;
 	block->data_ptr = source_block->data_ptr;
