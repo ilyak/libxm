@@ -39,8 +39,9 @@ and compile the code:
 
    cc myprog.c xm.c alloc.c -lblas -lpthread -lm
 
-To compile benchmarks and tests use the provided Makefile. Detailed API
-documentation can be found in xm.h file.
+Replace "-lblas" with appropriate accelerated libraries (e.g. "-lnvblas") to
+get all benefits of corresponding hardware. To compile benchmarks and tests use
+provided Makefile. Detailed API documentation can be found in xm.h file.
 
 
 Source code overview
