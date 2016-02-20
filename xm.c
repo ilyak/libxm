@@ -1744,17 +1744,17 @@ xm_do_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 		return (XM_RESULT_BUFFER_TOO_SMALL);
 	}
 
-	blk_a1 = buf;
-	blk_a2 = split_a ? blk_a1 + size_a : blk_a1;
-	blk_a3 = split_a ? blk_a2 + size_a : blk_a2;
-	blk_a4 = split_a ? blk_a3 + size_a : blk_a2;
-	blk_b1 = blk_a4 + size_a;
-	blk_b2 = split_b ? blk_b1 + size_b : blk_b1;
-	blk_b3 = split_b ? blk_b2 + size_b : blk_b2;
-	blk_b4 = split_b ? blk_b3 + size_b : blk_b2;
-	blk_c1 = blk_b4 + size_b;
-	blk_c2 = split_a || split_b ? blk_c1 + size_c : blk_c1;
-	blk_c3 = split_a || split_b ? blk_c2 + size_c : blk_c1;
+	blk_a1 = buf;                                /* for dgemm A */
+	blk_a2 = split_a ? blk_a1 + size_a : blk_a1; /* permute to */
+	blk_a3 = split_a ? blk_a2 + size_a : blk_a2; /* permute from */
+	blk_a4 = split_a ? blk_a3 + size_a : blk_a2; /* prefetch */
+	blk_b1 = blk_a4 + size_a;                    /* for dgemm B */
+	blk_b2 = split_b ? blk_b1 + size_b : blk_b1; /* permute to */
+	blk_b3 = split_b ? blk_b2 + size_b : blk_b2; /* permute from */
+	blk_b4 = split_b ? blk_b3 + size_b : blk_b2; /* prefetch */
+	blk_c1 = blk_b4 + size_b;                    /* for dgemm C */
+	blk_c2 = split_a || split_b ? blk_c1 + size_c : blk_c1; /* prefetch */
+	blk_c3 = split_a || split_b ? blk_c2 + size_c : blk_c1; /* write back */
 
 	blk_cs_m = get_chunk_blocks(c, blk_ic, cidxc, skip_m, max_cs_m);
 	blk_cs_n = get_chunk_blocks(c, blk_ic, aidxc, skip_n, max_cs_n);
@@ -1932,6 +1932,7 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     xm_dim_t cidxb, xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc,
     xm_scalar_t *buf)
 {
+	/* bit vectors of blocks that can be skipped along m, n, k */
 	bitstr_t *skip_m, *skip_n, *skip_k, *skip_x;
 	size_t i, m, n, k, pos_k, chunk_size_k, elts_per_block_k_dim;
 	int res;
