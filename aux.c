@@ -50,24 +50,19 @@ xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
 		return (XM_NULL_PTR);
 	if (type == XM_INIT_NONE)
 		return (ptr);
-
-	if ((data = malloc(size_bytes)) == NULL) {
-		perror("malloc");
-		abort();
+	if (type == XM_INIT_RAND) {
+		if ((data = malloc(size_bytes)) == NULL) {
+			perror("malloc");
+			abort();
+		}
+		for (i = 0; i < size; i++) {
+			data[i] = xm_random_scalar();
+		}
+		xm_allocator_write(allocator, ptr, data, size_bytes);
+		free(data);
+		return (ptr);
 	}
-
-	switch (type) {
-	case XM_INIT_ZERO:
-		memset(data, 0, size_bytes);
-		break;
-	case XM_INIT_RAND:
-		for (i = 0; i < size; i++) data[i] = xm_random_scalar();
-		break;
-	}
-
-	xm_allocator_write(allocator, ptr, data, size_bytes);
-	free(data);
-
+	xm_allocator_memset(allocator, ptr, 0, size_bytes);
 	return (ptr);
 }
 
