@@ -1699,7 +1699,7 @@ xm_do_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	xm_scalar_t *blk_a1, *blk_a2, *blk_a3, *blk_a4;
 	xm_scalar_t *blk_b1, *blk_b2, *blk_b3, *blk_b4;
 	xm_scalar_t *blk_c1, *blk_c2, *blk_c3;
-	int done_a, done_b, get_c, split_a, split_b;
+	int done_a, done_b, get_ab, get_c, split_a, split_b;
 	pthread_t thr_a1, thr_a2, thr_b1, thr_b2, thr_c1, thr_c2;
 	size_t m, n, k, max_cs_m, max_cs_n;
 	size_t nblk_k, blk_cs_m, blk_cs_n;
@@ -1707,7 +1707,10 @@ xm_do_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct timer gemm_timer;
 	xm_dim_t blk_ia, blk_ib, blk_ic, blk_ic2;
 
+	get_ab = alpha != 0.0;
 	get_c = beta != 0.0;
+	if (!get_ab && !get_c)
+		return (XM_RESULT_SUCCESS);
 
 	blk_ia = xm_dim_zero(a->dim.n);
 	blk_ib = xm_dim_zero(b->dim.n);
