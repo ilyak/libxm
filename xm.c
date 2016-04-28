@@ -1707,10 +1707,10 @@ xm_do_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct timer gemm_timer;
 	xm_dim_t blk_ia, blk_ib, blk_ic, blk_ic2;
 
-	get_c = beta != 0.0;
-
 	if (alpha == 0.0 && beta == 1.0)
 		return (XM_RESULT_SUCCESS);
+
+	get_c = beta != 0.0;
 
 	blk_ia = xm_dim_zero(a->dim.n);
 	blk_ib = xm_dim_zero(b->dim.n);
