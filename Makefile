@@ -48,7 +48,7 @@ AUX_O= aux.o
 XM_A= xm.a
 XM_O= alloc.o xm.o
 
-AR= ar rcu
+AR= ar rc
 RANLIB= ranlib
 RM= rm -f
 
