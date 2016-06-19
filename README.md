@@ -44,12 +44,12 @@ provided Makefile. Detailed API documentation can be found in `xm.h` file.
 Source code overview
 --------------------
 
-    xm.h - public API header with documentation
-    xm.c - main libxm implementation file
-    alloc.c/alloc.h - disk-backed allocator for large tensors
-    aux.c/aux.h - optional auxiliary functions for tensor creation
-    benchmark.c - sample benchmarks
-    test.c/test3.c - facilities for randomized testing
+- xm.h - public API header with documentation
+- xm.c - libxm implementation code
+- alloc.c/alloc.h - disk-backed allocator for large tensors
+- aux.c/aux.h - optional auxiliary functions for tensor creation
+- benchmark.c - sample benchmarks
+- test.c/test3.c - facilities for randomized testing
 
 Who uses libxm
 --------------
