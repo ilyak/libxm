@@ -13,9 +13,8 @@ computational requirements. Computations can be efficiently accelerated using
 multiple GPUs or other accelerators like Intel Xeon Phi. Libxm reaches close to
 peak floating-point performance even in cases when data size is much larger
 than the available amount of fast random access memory. For very large problems
-libxm shows considerable speedups (10x or more) compared to similar tensor
-contraction codes. Libxm supports single and double precision scalar and
-complex numbers.
+libxm shows considerable speedups compared to similar tensor contraction codes.
+Libxm supports single and double precision scalar and complex numbers.
 
 Usage
 -----
@@ -38,8 +37,14 @@ and compile the code:
     cc myprog.c xm.c alloc.c -lblas -lpthread -lm
 
 Replace `-lblas` with appropriate accelerated libraries (e.g. `-lnvblas`) to
-get all benefits of corresponding hardware. To compile benchmarks and tests use
-provided Makefile. Detailed API documentation can be found in `xm.h` file.
+get the benefits of corresponding hardware. Detailed documentation can be
+found in `xm.h` file. The code can be tested by running
+
+    make
+    make check
+
+in the directory with the source code. Compiler and flags can be adjusted by
+modifying the Makefile.
 
 Source code overview
 --------------------
