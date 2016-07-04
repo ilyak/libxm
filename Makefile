@@ -8,10 +8,10 @@ SCALAR_TYPE= XM_SCALAR_DOUBLE
 #SCALAR_TYPE= XM_SCALAR_FLOAT_COMPLEX
 
 # Clang with Netlib BLAS on FreeBSD (debug build)
-CC= clang
-CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-gnu-imaginary-constant -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
-LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
-LIBS= -lblas -lgfortran -lpthread -lm
+#CC= clang
+#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-gnu-imaginary-constant -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+#LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
+#LIBS= -lblas -lgfortran -lpthread -lm
 
 # Intel Compiler with MKL on Linux (release build)
 #CC= icc
@@ -32,10 +32,10 @@ LIBS= -lblas -lgfortran -lpthread -lm
 #LIBS= -lblas -lpthread -lm
 
 # Clang with Netlib BLAS on OpenBSD (debug build)
-#CC= clang
-#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
-#LDFLAGS= -L/usr/local/lib
-#LIBS= -lblas -lg2c -lpthread -lm
+CC= clang
+CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+LDFLAGS= -L/usr/local/lib
+LIBS= -lblas -lg2c -lpthread -lm
 
 BENCHMARK= benchmark
 BENCHMARK_O= benchmark.o
