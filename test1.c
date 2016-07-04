@@ -1117,10 +1117,10 @@ run_test(int test_num, int skip)
 		switch (res) {
 		case XM_RESULT_SUCCESS:
 			t.ref_compare(a, b, c, d, t.alpha, t.beta);
-			printf("   success\n");
+			printf("  success\n");
 			break;
 		case XM_RESULT_BUFFER_TOO_SMALL:
-			printf("   buffer too small\n");
+			printf("  buffer too small\n");
 			break;
 		case XM_RESULT_NO_MEMORY:
 			fatal("xm_contract: out of memory");
@@ -1128,7 +1128,7 @@ run_test(int test_num, int skip)
 			fatal("xm_contract: unknown error");
 		}
 	} else
-		printf("   skipping\n");
+		printf("  skipping\n");
 
 	xm_tensor_free(a);
 	xm_tensor_free(b);
