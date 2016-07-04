@@ -51,7 +51,7 @@ main(void)
 	const size_t block_size = 3, o = 5, v = 9, x = 4;
 	size_t i, j, k, l, size;
 
-	printf("test3                                       ");
+	printf("contraction of 3 tensors done in batches");
 	fflush(stdout);
 
 	xm_set_log_stream(stderr);
@@ -144,6 +144,6 @@ main(void)
 	xm_tensor_free(res);
 	xm_allocator_destroy(allocator);
 
-	printf("success\n");
+	printf("   success\n");
 	return (0);
 }
