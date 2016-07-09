@@ -38,13 +38,13 @@ and compile the code:
 
 Replace `-lblas` with appropriate accelerated libraries (e.g. `-lnvblas`) to
 get the benefits of corresponding hardware. Detailed documentation can be
-found in `xm.h` file. The code can be tested by running
+found in `xm.h` file. The tests can be run by issuing the following commands
+in the directory with the source code.
 
     make
     make check
 
-in the directory with the source code. Compiler and flags can be adjusted by
-modifying the Makefile.
+Compiler and flags can be adjusted by modifying the Makefile.
 
 Source code overview
 --------------------
