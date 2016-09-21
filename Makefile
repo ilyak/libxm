@@ -42,7 +42,7 @@ BENCHMARK_O= benchmark.o
 TESTS= test1 test2
 TESTS_O= test1.o test2.o
 
-AUX_O= aux.o
+AUX_O= auxil.o
 XM_A= xm.a
 XM_O= alloc.o xm.o
 

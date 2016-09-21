@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef XM_AUX_H
-#define XM_AUX_H
+#ifndef XM_AUXIL_H
+#define XM_AUXIL_H
 
 #include "xm.h"
 
@@ -41,4 +41,4 @@ int xm_tensor_init_14(struct xm_tensor *, struct xm_allocator *, size_t, int);
 int xm_tensor_init_14b(struct xm_tensor *, struct xm_allocator *, size_t, int);
 xm_scalar_t xm_random_scalar(void);
 
-#endif /* XM_AUX_H */
+#endif /* XM_AUXIL_H */

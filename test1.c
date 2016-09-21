@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "aux.h"
+#include "auxil.h"
 
 #if defined(XM_SCALAR_FLOAT)
 #define EPSILON 1.0e-4

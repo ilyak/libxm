@@ -20,7 +20,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "aux.h"
+#include "auxil.h"
 
 xm_scalar_t
 xm_random_scalar(void)

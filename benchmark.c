@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "aux.h"
+#include "auxil.h"
 
 typedef struct setup (*make_benchmark_fn)(size_t, size_t);
 
