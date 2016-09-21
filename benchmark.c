@@ -234,7 +234,7 @@ main(int argc, char **argv)
 
 	s = make_benchmark[args.id-1](args.size_o, args.size_v);
 
-	path = args.is_inmem ? NULL : "mapping";
+	path = args.is_inmem ? NULL : "xmpagefile";
 	if ((allocator = xm_allocator_create(path)) == NULL)
 		fatal("xm_allocator_create");
 

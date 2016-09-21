@@ -1080,7 +1080,7 @@ run_test(int test_num, int skip)
 	t = tests[id-1]();
 	print_test_info(&t);
 
-	path = rnd(0,1) ? NULL : "mapping";
+	path = rnd(0,1) ? NULL : "xmpagefile";
 	if ((allocator = xm_allocator_create(path)) == NULL)
 		fatal("xm_allocator_create");
 

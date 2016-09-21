@@ -74,6 +74,6 @@ clean:
 	$(RM) $(XM_A) $(XM_O) $(AUX_O)
 	$(RM) $(BENCHMARK) $(BENCHMARK_O)
 	$(RM) $(TESTS) $(TESTS_O)
-	$(RM) *.core mapping libxm.tgz
+	$(RM) *.core xmpagefile libxm.tgz
 
 .PHONY: all check clean dist
