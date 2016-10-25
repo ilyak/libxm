@@ -62,12 +62,6 @@ struct xm_tensor {
 	char                   *label;
 	/** tensor dimensions in blocks */
 	xm_dim_t                dim;
-	/** tensor partition dimensions */
-	xm_dim_t                pdim;
-	/** tensor partition dimensions (auxiliary variable) */
-	xm_dim_t                pdim0;
-	/** current partition index */
-	xm_dim_t                pidx;
 	/** allocator used to allocate tensor data */
 	struct xm_allocator    *allocator;
 	/** array of all tensor blocks */
@@ -309,53 +303,6 @@ xm_dim_zero(size_t n)
 	return (xm_dim_same(n, 0));
 }
 
-static xm_dim_t
-xm_dim_add(const xm_dim_t *a, const xm_dim_t *b)
-{
-	xm_dim_t c;
-	size_t i;
-
-	assert(a->n == b->n);
-
-	c.n = a->n;
-	for (i = 0; i < c.n; i++)
-		c.i[i] = a->i[i] + b->i[i];
-
-	return (c);
-}
-
-static xm_dim_t
-xm_dim_mul(const xm_dim_t *a, const xm_dim_t *b)
-{
-	xm_dim_t c;
-	size_t i;
-
-	assert(a->n == b->n);
-
-	c.n = a->n;
-	for (i = 0; i < c.n; i++)
-		c.i[i] = a->i[i] * b->i[i];
-
-	return (c);
-}
-
-static xm_dim_t
-xm_dim_div(const xm_dim_t *a, const xm_dim_t *b)
-{
-	xm_dim_t c;
-	size_t i;
-
-	assert(a->n == b->n);
-
-	c.n = a->n;
-	for (i = 0; i < c.n; i++) {
-		assert(a->i[i] % b->i[i] == 0);
-		c.i[i] = a->i[i] / b->i[i];
-	}
-
-	return (c);
-}
-
 static int
 xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 {
@@ -455,19 +402,6 @@ xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim)
 	case 1: ret += idx->i[0];
 	}
 	return (ret);
-}
-
-static size_t
-xm_dim_offset_pdim(const xm_dim_t *aidx, const xm_dim_t *adim,
-    const xm_dim_t *pidx, const xm_dim_t *pdim)
-{
-	xm_dim_t idx, dim;
-
-	dim = xm_dim_mul(adim, pdim);
-	idx = xm_dim_mul(pidx, adim);
-	idx = xm_dim_add(&idx, aidx);
-
-	return (xm_dim_offset(&idx, &dim));
 }
 
 static size_t
@@ -582,9 +516,6 @@ xm_tensor_create(struct xm_allocator *allocator, const xm_dim_t *dim,
 	for (i = 0; i < size; i++)
 		tensor->blocks[i].data_ptr = XM_NULL_PTR;
 
-	tensor->pidx = xm_dim_zero(dim->n);
-	tensor->pdim = xm_dim_same(dim->n, 1);
-	tensor->pdim0 = xm_dim_same(dim->n, 1);
 	tensor->label = strdup(label ? label : "");
 	tensor->dim = *dim;
 	tensor->allocator = allocator;
@@ -608,8 +539,7 @@ xm_tensor_get_block(const struct xm_tensor *tensor, const xm_dim_t *idx)
 	assert(tensor);
 	assert(idx);
 
-	offset = xm_dim_offset_pdim(idx, &tensor->dim, &tensor->pidx,
-	    &tensor->pdim);
+	offset = xm_dim_offset(idx, &tensor->dim);
 	return (tensor->blocks + offset);
 }
 
@@ -622,7 +552,6 @@ xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 	assert(xm_tensor_is_initialized(dst));
 	assert(xm_tensor_is_initialized(src));
 	assert(xm_dim_eq(&dst->dim, &src->dim));
-	assert(xm_dim_eq(&dst->pdim, &src->pdim));
 
 	nblk = xm_dim_dot(&dst->dim);
 
@@ -896,22 +825,6 @@ xm_tensor_get_dim(const struct xm_tensor *tensor)
 	assert(tensor);
 
 	return (tensor->dim);
-}
-
-void
-xm_tensor_set_part_dim(struct xm_tensor *tensor, const xm_dim_t *pdim)
-{
-	assert(tensor);
-
-	tensor->pdim0 = *pdim;
-}
-
-xm_dim_t
-xm_tensor_get_part_dim(const struct xm_tensor *tensor)
-{
-	assert(tensor);
-
-	return (tensor->pdim0);
 }
 
 xm_dim_t
@@ -1995,11 +1908,11 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
     const char *idxc)
 {
-	struct timer timer, timer2;
+	struct timer timer;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
-	xm_dim_t dim_a, dim_b, dim_c;
+	xm_dim_t dim_a, dim_b;
 	xm_scalar_t *buf;
-	size_t i, j, si1, si2, npart_m, npart_n, buf_bytes;
+	size_t i, j, si1, si2, buf_bytes;
 	int res, sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -2065,68 +1978,15 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 1);
 	}
 
-	dim_a = a->dim;
-	dim_b = b->dim;
-	dim_c = c->dim;
-
-	a->pdim = a->pdim0;
-	b->pdim = b->pdim0;
-	c->pdim = c->pdim0;
-
-	npart_m = xm_dim_dot_mask(&c->pdim, &cidxc);
-	npart_n = xm_dim_dot_mask(&c->pdim, &aidxc);
-	assert(xm_dim_dot_mask(&a->dim, &aidxa) % npart_m == 0);
-	assert(xm_dim_dot_mask(&b->dim, &aidxb) % npart_n == 0);
-
-	for (i = 0; i < cidxa.n; i++)
-		a->pdim.i[cidxa.i[i]] = 1;
-	for (i = 0; i < cidxb.n; i++)
-		b->pdim.i[cidxb.i[i]] = 1;
-	for (i = 0; i < aidxa.n; i++)
-		a->pdim.i[aidxa.i[i]] = c->pdim.i[cidxc.i[i]];
-	for (i = 0; i < aidxb.n; i++)
-		b->pdim.i[aidxb.i[i]] = c->pdim.i[aidxc.i[i]];
-
-	a->dim = xm_dim_div(&a->dim, &a->pdim);
-	b->dim = xm_dim_div(&b->dim, &b->pdim);
-	c->dim = xm_dim_div(&c->dim, &c->pdim);
-
-	a->pidx = xm_dim_zero(a->pdim.n);
-	b->pidx = xm_dim_zero(b->pdim.n);
-	c->pidx = xm_dim_zero(c->pdim.n);
-
 	timer = timer_start("xm_contract");
-	for (i = 0; i < npart_m; i++) {
-		xm_dim_zero_mask(&b->pidx, &aidxb);
-		xm_dim_zero_mask(&c->pidx, &aidxc);
-		for (j = 0; j < npart_n; j++) {
-			timer2 = timer_start("xm_contract_part");
-			if ((res = xm_contract_part(alpha, a, b, beta, c,
-			    cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, buf)))
-				goto error;
-			timer_stop(&timer2);
-
-			xm_dim_inc_mask(&b->pidx, &b->pdim, &aidxb);
-			xm_dim_inc_mask(&c->pidx, &c->pdim, &aidxc);
-		}
-		xm_dim_inc_mask(&a->pidx, &a->pdim, &aidxa);
-		xm_dim_inc_mask(&c->pidx, &c->pdim, &cidxc);
-	}
+	res = xm_contract_part(alpha, a, b, beta, c, cidxa, aidxa,
+	    cidxb, aidxb, cidxc, aidxc, buf);
 	timer_stop(&timer);
-error:
+
 	if (sym_k) {
 		xm_log("disabling k symmetry");
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 0);
 	}
-	a->dim = dim_a;
-	b->dim = dim_b;
-	c->dim = dim_c;
-	a->pdim = xm_dim_same(a->dim.n, 1);
-	b->pdim = xm_dim_same(b->dim.n, 1);
-	c->pdim = xm_dim_same(c->dim.n, 1);
-	a->pidx = xm_dim_zero(a->dim.n);
-	b->pidx = xm_dim_zero(b->dim.n);
-	c->pidx = xm_dim_zero(c->dim.n);
 	free(buf);
 	return (res);
 }

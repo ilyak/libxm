@@ -43,9 +43,6 @@ struct test {
 	xm_dim_t dima;
 	xm_dim_t dimb;
 	xm_dim_t dimc;
-	xm_dim_t pdima;
-	xm_dim_t pdimb;
-	xm_dim_t pdimc;
 	const char *idxa;
 	const char *idxb;
 	const char *idxc;
@@ -540,16 +537,12 @@ make_test_1(void)
 {
 	const size_t max_block_size = 9;
 	const size_t max_dim = 30;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_2(rnd(1, max_dim), rnd(1, max_dim));
 	t.dimb = xm_dim_2(rnd(1, max_dim), t.dima.i[1]);
 	t.dimc = xm_dim_2(t.dimb.i[0], t.dima.i[0]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "ab";
 	t.idxb = "cb";
 	t.idxc = "ca";
@@ -568,17 +561,12 @@ make_test_2(void)
 {
 	const size_t max_block_size = 9;
 	const size_t max_dim = 20;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_2(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
+	t.dima = xm_dim_2(rnd(1, max_dim), rnd(1, max_dim));
 	t.dimb = xm_dim_2(t.dima.i[1], t.dima.i[1]);
 	t.dimc = xm_dim_2(t.dimb.i[0], t.dima.i[0]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "ab";
 	t.idxb = "cb";
 	t.idxc = "ca";
@@ -597,23 +585,19 @@ make_test_3(void)
 {
 	const size_t max_block_size = 5;
 	const size_t max_dim = 4;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_3(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_3(pdim * rnd(1, max_dim),
+	t.dima = xm_dim_3(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_3(rnd(1, max_dim),
 			  t.dima.i[1],
-			  pdim * rnd(1, max_dim));
+			  rnd(1, max_dim));
 	t.dimc = xm_dim_4(t.dimb.i[2],
 			  t.dima.i[0],
 			  t.dimb.i[0],
 			  t.dima.i[2]);
-	t.pdima = xm_dim_same(3, pdim);
-	t.pdimb = xm_dim_same(3, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abc";
 	t.idxb = "dbe";
 	t.idxc = "eadc";
@@ -632,21 +616,17 @@ make_test_4(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 6;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_3(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_3(pdim * rnd(1, max_dim),
+	t.dima = xm_dim_3(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_3(rnd(1, max_dim),
 			  t.dima.i[1],
 			  t.dima.i[2]);
 	t.dimc = xm_dim_2(t.dima.i[0],
 			  t.dimb.i[0]);
-	t.pdima = xm_dim_same(3, pdim);
-	t.pdimb = xm_dim_same(3, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "abc";
 	t.idxb = "dbc";
 	t.idxc = "ad";
@@ -665,25 +645,21 @@ make_test_5(void)
 {
 	const size_t max_block_size = 4;
 	const size_t max_dim = 4;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_4(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_4(pdim * rnd(1, max_dim),
+	t.dima = xm_dim_4(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_4(rnd(1, max_dim),
 			  t.dima.i[1],
-			  pdim * rnd(1, max_dim),
+			  rnd(1, max_dim),
 			  t.dima.i[3]);
 	t.dimc = xm_dim_4(t.dimb.i[0],
 			  t.dimb.i[2],
 			  t.dima.i[0],
 			  t.dima.i[2]);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abcd";
 	t.idxb = "ibjd";
 	t.idxc = "ijac";
@@ -702,7 +678,6 @@ make_test_6(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 5;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -718,9 +693,6 @@ make_test_6(void)
 			  t.dimb.i[2],
 			  t.dima.i[0],
 			  t.dima.i[2]);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abcd";
 	t.idxb = "ibjd";
 	t.idxc = "ijac";
@@ -739,19 +711,15 @@ make_test_7(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 5;
-	const size_t pdim = rnd(1, 2);
-	const size_t o = pdim * rnd(1, max_dim);
-	const size_t x = pdim * rnd(1, max_dim);
-	const size_t v = pdim * rnd(1, max_dim);
+	const size_t o = rnd(1, max_dim);
+	const size_t x = rnd(1, max_dim);
+	const size_t v = rnd(1, max_dim);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(o, o, v, v);
 	t.dimb = xm_dim_4(x, x, v, v);
 	t.dimc = xm_dim_4(x, x, o, o);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "ijab";
 	t.idxb = "klab";
 	t.idxc = "klij";
@@ -770,18 +738,14 @@ make_test_8(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 4;
-	const size_t pdim = rnd(1, 2);
-	const size_t o = pdim * rnd(1, max_dim);
-	const size_t v = pdim * rnd(1, max_dim);
+	const size_t o = rnd(1, max_dim);
+	const size_t v = rnd(1, max_dim);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(v, v, v, v);
 	t.dimb = xm_dim_4(o, o, v, v);
 	t.dimc = xm_dim_4(o, o, v, v);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abcd";
 	t.idxb = "ijcd";
 	t.idxc = "ijab";
@@ -800,16 +764,12 @@ make_test_9(void)
 {
 	const size_t max_block_size = 7;
 	const size_t max_dim = 10;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_3(rnd(1, max_dim), rnd(1, max_dim), rnd(1, max_dim));
 	t.dimb = xm_dim_2(rnd(1, max_dim), t.dima.i[1]);
 	t.dimc = xm_dim_3(t.dima.i[2], t.dima.i[0], t.dimb.i[0]);
-	t.pdima = xm_dim_same(3, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(3, pdim);
 	t.idxa = "abc";
 	t.idxb = "ib";
 	t.idxc = "cai";
@@ -828,7 +788,6 @@ make_test_10(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 9;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -841,9 +800,6 @@ make_test_10(void)
 			  t.dima.i[1],
 			  t.dimb.i[1],
 			  t.dimb.i[3]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "ab";
 	t.idxb = "ijak";
 	t.idxc = "ibjk";
@@ -862,27 +818,23 @@ make_test_11(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 4;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_4(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_4(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
+	t.dima = xm_dim_4(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_4(rnd(1, max_dim),
+			  rnd(1, max_dim),
 			  t.dima.i[1],
-			  pdim * rnd(1, max_dim));
+			  rnd(1, max_dim));
 	t.dimc = xm_dim_6(t.dima.i[0],
 			  t.dima.i[2],
 			  t.dima.i[3],
 			  t.dimb.i[0],
 			  t.dimb.i[1],
 			  t.dimb.i[3]);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(6, pdim);
 	t.idxa = "idjk";
 	t.idxb = "abdc";
 	t.idxc = "ijkabc";
@@ -903,16 +855,12 @@ make_test_12(void)
 	const size_t max_dim = 4;
 	const size_t o = rnd(1, max_dim);
 	const size_t v = rnd(1, max_dim);
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(o, o, v, v);
 	t.dimb = xm_dim_4(o, v, v, v);
 	t.dimc = xm_dim_6(o, o, o, v, v, v);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(6, pdim);
 	t.idxa = "ijda";
 	t.idxb = "kdbc";
 	t.idxc = "ijkabc";
@@ -935,9 +883,6 @@ make_test_13(void)
 	t.dima = xm_dim_2(2, 2);
 	t.dimb = xm_dim_2(2, 2);
 	t.dimc = xm_dim_2(2, 2);
-	t.pdima = xm_dim_same(2, 1);
-	t.pdimb = xm_dim_same(2, 1);
-	t.pdimc = xm_dim_same(2, 1);
 	t.idxa = "ba";
 	t.idxb = "bc";
 	t.idxc = "ca";
@@ -960,9 +905,6 @@ make_test_14(void)
 	t.dima = xm_dim_4(2, 2, 2, 2);
 	t.dimb = xm_dim_4(1, 1, 2, 2);
 	t.dimc = xm_dim_4(1, 1, 2, 2);
-	t.pdima = xm_dim_same(4, 1);
-	t.pdimb = xm_dim_same(4, 1);
-	t.pdimc = xm_dim_same(4, 1);
 	t.idxa = "abcd";
 	t.idxb = "ijcd";
 	t.idxc = "ijab";
@@ -981,7 +923,6 @@ make_test_15(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 9;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -991,9 +932,6 @@ make_test_15(void)
 			  t.dima.i[0],
 			  t.dima.i[1]);
 	t.dimc = xm_dim_2(t.dimb.i[0], t.dimb.i[1]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "ab";
 	t.idxb = "ijab";
 	t.idxc = "ij";
@@ -1012,7 +950,6 @@ make_test_16(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 9;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -1020,9 +957,6 @@ make_test_16(void)
 	t.dimb = xm_dim_2(rnd(1, max_dim), rnd(1, max_dim));
 	t.dimc = xm_dim_4(t.dima.i[0], t.dima.i[1],
 			  t.dimb.i[0], t.dimb.i[1]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "ab";
 	t.idxb = "ij";
 	t.idxc = "abij";
@@ -1092,11 +1026,6 @@ run_test(int test_num, int skip)
 		fatal("xm_tensor_create(c)");
 	if ((d = xm_tensor_create(allocator, &t.dimc, "d")) == NULL)
 		fatal("xm_tensor_create(d)");
-
-	xm_tensor_set_part_dim(a, &t.pdima);
-	xm_tensor_set_part_dim(b, &t.pdimb);
-	xm_tensor_set_part_dim(c, &t.pdimc);
-	xm_tensor_set_part_dim(d, &t.pdimc);
 
 	if (t.init_a(a, allocator, t.block_size, XM_INIT_RAND))
 		fatal("tensor_init(a)");

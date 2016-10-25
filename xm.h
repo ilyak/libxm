@@ -110,12 +110,6 @@ const char *xm_tensor_get_label(const struct xm_tensor *tensor);
 /* Returns tensor dimensions in blocks. */
 xm_dim_t xm_tensor_get_dim(const struct xm_tensor *tensor);
 
-/* Set tensor partition dimensions. */
-void xm_tensor_set_part_dim(struct xm_tensor *tensor, const xm_dim_t *pdim);
-
-/* Returns tensor partition dimensions. */
-xm_dim_t xm_tensor_get_part_dim(const struct xm_tensor *tensor);
-
 /* Returns tensor dimensions in number of elements. */
 xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
 
