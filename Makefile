@@ -39,8 +39,8 @@ LIBS= -lblas -lg2c -lpthread -lm
 
 BENCHMARK= benchmark
 BENCHMARK_O= benchmark.o
-TESTS= test1 test2
-TESTS_O= test1.o test2.o
+TEST= test
+TEST_O= test.o
 
 AUX_O= auxil.o
 XM_A= xm.a
@@ -50,22 +50,20 @@ AR= ar rc
 RANLIB= ranlib
 RM= rm -f
 
-all: $(BENCHMARK) $(TESTS)
+all: $(BENCHMARK) $(TEST)
 
 $(BENCHMARK): $(AUX_O) $(XM_A) $(BENCHMARK_O)
 	$(CC) -o $@ $(CFLAGS) $(BENCHMARK_O) $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
 
-$(TESTS): $(AUX_O) $(XM_A) $(TESTS_O)
-	$(CC) -o test1 $(CFLAGS) test1.o $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
-	$(CC) -o test2 $(CFLAGS) test2.o $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
+$(TEST): $(AUX_O) $(XM_A) $(TEST_O)
+	$(CC) -o test $(CFLAGS) test.o $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
 
 $(XM_A): $(XM_O)
 	$(AR) $@ $(XM_O)
 	$(RANLIB) $@
 
-check: $(TESTS)
-	@./test2 2>/dev/null
-	@./test1 30 2>/dev/null
+check: $(TEST)
+	@./test 30 2>/dev/null
 
 dist:
 	git archive --format=tar.gz --prefix=libxm/ -o libxm.tgz HEAD
@@ -73,7 +71,7 @@ dist:
 clean:
 	$(RM) $(XM_A) $(XM_O) $(AUX_O)
 	$(RM) $(BENCHMARK) $(BENCHMARK_O)
-	$(RM) $(TESTS) $(TESTS_O)
+	$(RM) $(TEST) $(TEST_O)
 	$(RM) *.core xmpagefile libxm.tgz
 
 .PHONY: all check clean dist
