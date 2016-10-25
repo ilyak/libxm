@@ -1844,14 +1844,14 @@ compute_chunk_size_k(size_t elts_per_block_k_dim)
 
 static int
 xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
-    xm_scalar_t beta, struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa,
-    xm_dim_t cidxb, xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc,
-    xm_scalar_t *buf)
+    struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa, xm_dim_t cidxb,
+    xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc, xm_scalar_t *buf)
 {
 	/* bit vectors of blocks that can be skipped along m, n, k */
 	bitstr_t *skip_m, *skip_n, *skip_k, *skip_x;
 	size_t i, m, n, k, pos_k, chunk_size_k, elts_per_block_k_dim;
 	int res;
+	double beta = 0.0;
 
 	res = XM_RESULT_SUCCESS;
 
@@ -1866,13 +1866,11 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 
 	bit_nset(skip_m, 0, m - 1);
 	make_skip(skip_m, c, cidxc, aidxc);
-	if (beta == 0.0 || beta == 1.0)
-		set_skip_zero(skip_m, a, aidxa, cidxa);
+	set_skip_zero(skip_m, a, aidxa, cidxa);
 
 	bit_nset(skip_n, 0, n - 1);
 	make_skip(skip_n, c, aidxc, cidxc);
-	if (beta == 0.0 || beta == 1.0)
-		set_skip_zero(skip_n, b, aidxb, cidxb);
+	set_skip_zero(skip_n, b, aidxb, cidxb);
 
 	bit_nclear(skip_x, 0, k - 1);
 	set_skip_zero(skip_x, a, cidxa, aidxa);
@@ -1905,8 +1903,7 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 
 int
 xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
-    xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
-    const char *idxc)
+    struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc)
 {
 	struct timer timer;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
@@ -1979,7 +1976,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	}
 
 	timer = timer_start("xm_contract");
-	res = xm_contract_part(alpha, a, b, beta, c, cidxa, aidxa,
+	res = xm_contract_part(alpha, a, b, c, cidxa, aidxa,
 	    cidxb, aidxb, cidxc, aidxc, buf);
 	timer_stop(&timer);
 

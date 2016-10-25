@@ -175,16 +175,15 @@ int xm_tensor_is_initialized(const struct xm_tensor *tensor);
 /* Release all resources associated with this tensor. */
 void xm_tensor_free(struct xm_tensor *tensor);
 
-/* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
+/* Contract two tensors (c = alpha * a * b) over contraction indices
  * specified by strings idxa and idxb. Permutation of tensor c is specified by
  * idxc. It is the user's responsibility to setup all tensors so that they have
  * correct symmetries and block-structures.
  *
- * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
+ * Example: xm_contract(1.0, vvvv, oovv, t2, "abcd", "ijcd", "ijab");
  */
 int xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
-    xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
-    const char *idxc);
+    struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc);
 
 #ifdef __cplusplus
 } /* extern "C" */

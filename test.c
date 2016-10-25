@@ -50,7 +50,6 @@ struct test {
 	init_fn_t init_b;
 	init_fn_t init_c;
 	xm_scalar_t alpha;
-	xm_scalar_t beta;
 	void (*ref_compare)(struct xm_tensor *,
 			    struct xm_tensor *,
 			    struct xm_tensor *,
@@ -551,7 +550,6 @@ make_test_1(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_1;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -575,7 +573,6 @@ make_test_2(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_1;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -606,7 +603,6 @@ make_test_3(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_3;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -635,7 +631,6 @@ make_test_4(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_4;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -668,7 +663,6 @@ make_test_5(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_5;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -701,7 +695,6 @@ make_test_6(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_5;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -728,7 +721,6 @@ make_test_7(void)
 	t.init_c = xm_tensor_init_oovv;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -754,7 +746,6 @@ make_test_8(void)
 	t.init_c = xm_tensor_init_oovv;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -778,7 +769,6 @@ make_test_9(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_9;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -808,7 +798,6 @@ make_test_10(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_10;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -843,7 +832,6 @@ make_test_11(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_11;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -869,7 +857,6 @@ make_test_12(void)
 	t.init_c = xm_tensor_init_ooovvv;
 	t.ref_compare = ref_compare_12;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -891,7 +878,6 @@ make_test_13(void)
 	t.init_c = xm_tensor_init_13c;
 	t.ref_compare = ref_compare_13;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -913,7 +899,6 @@ make_test_14(void)
 	t.init_c = xm_tensor_init_14b;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -940,7 +925,6 @@ make_test_15(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_15;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -965,7 +949,6 @@ make_test_16(void)
 	t.init_c = xm_tensor_init;
 	t.ref_compare = ref_compare_16;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -1041,11 +1024,10 @@ run_test(int test_num, int skip)
 	xm_set_memory_limit(buf_bytes);
 
 	if (!skip) {
-		res = xm_contract(t.alpha, a, b, t.beta, d,
-		    t.idxa, t.idxb, t.idxc);
+		res = xm_contract(t.alpha, a, b, d, t.idxa, t.idxb, t.idxc);
 		switch (res) {
 		case XM_RESULT_SUCCESS:
-			t.ref_compare(a, b, c, d, t.alpha, t.beta);
+			t.ref_compare(a, b, c, d, t.alpha, 0.0);
 			printf("  success\n");
 			break;
 		case XM_RESULT_BUFFER_TOO_SMALL:

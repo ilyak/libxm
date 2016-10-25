@@ -38,7 +38,6 @@ struct setup {
 	const char *idxb;
 	const char *idxc;
 	xm_scalar_t alpha;
-	xm_scalar_t beta;
 	int (*init_a)(struct xm_tensor *, struct xm_allocator *, size_t, int);
 	int (*init_b)(struct xm_tensor *, struct xm_allocator *, size_t, int);
 	int (*init_c)(struct xm_tensor *, struct xm_allocator *, size_t, int);
@@ -59,7 +58,6 @@ make_benchmark_1(size_t o, size_t v)
 	setup.init_b = xm_tensor_init_oovv;
 	setup.init_c = xm_tensor_init_ovov;
 	setup.alpha = 1.0;
-	setup.beta = 1.0;
 
 	return (setup);
 }
@@ -79,7 +77,6 @@ make_benchmark_2(size_t o, size_t v)
 	setup.init_b = xm_tensor_init_oovv;
 	setup.init_c = xm_tensor_init_oovv;
 	setup.alpha = 1.0;
-	setup.beta = 1.0;
 
 	return (setup);
 }
@@ -99,7 +96,6 @@ make_benchmark_3(size_t o, size_t v)
 	setup.init_b = xm_tensor_init_ov;
 	setup.init_c = xm_tensor_init_ovov;
 	setup.alpha = 1.0;
-	setup.beta = 1.0;
 
 	return (setup);
 }
@@ -119,7 +115,6 @@ make_benchmark_4(size_t o, size_t v)
 	setup.init_b = xm_tensor_init_ovvv;
 	setup.init_c = xm_tensor_init_ooovvv;
 	setup.alpha = 1.0;
-	setup.beta = 0.0;
 
 	return (setup);
 }
@@ -252,7 +247,7 @@ main(int argc, char **argv)
 	if (s.init_c(c, allocator, args.block_size, XM_INIT_ZERO))
 		fatal("init(c)");
 
-	if (xm_contract(s.alpha, a, b, s.beta, c, s.idxa, s.idxb, s.idxc))
+	if (xm_contract(s.alpha, a, b, c, s.idxa, s.idxb, s.idxc))
 		fatal("xm_contract");
 
 	xm_tensor_free(a);
