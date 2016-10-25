@@ -54,7 +54,7 @@ Source code overview
 - alloc.c/alloc.h - disk-backed allocator for large tensors
 - auxil.c/auxil.h - optional auxiliary functions for tensor creation
 - benchmark.c - sample benchmarks
-- test1.c/test2.c - facilities for randomized testing
+- test.c - facilities for randomized testing
 
 Who uses libxm
 --------------
