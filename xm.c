@@ -1858,7 +1858,7 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 }
 #endif
 
-static int
+static void
 compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc)
 {
 	size_t i, m, n, k = 0;
@@ -1928,7 +1928,6 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc)
 	free(buf_a);
 	free(buf_b);
 	free(buf_c);
-	return (XM_RESULT_SUCCESS);
 }
 
 static size_t
@@ -1976,7 +1975,7 @@ compute_stride(struct ctx *ctx)
 	return (stride);
 }
 
-int
+void
 xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc)
 {
@@ -1985,7 +1984,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct xm_block *blk;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, blkidxc;
 	size_t i, j, si1, si2, stride;
-	int res = 0, sym_k;
+	int sym_k;
 
 	assert(xm_tensor_is_initialized(a));
 	assert(xm_tensor_is_initialized(b));
@@ -2043,21 +2042,16 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	for (i = 0; i < ctx.nblk_m; i++) {
 		for (j = 0; j < ctx.nblk_n; j++) {
 			blk = xm_tensor_get_block(c, &blkidxc);
-			if (blk->is_source) {
-				res = compute_block(&ctx, stride, blkidxc);
-				if (res != XM_RESULT_SUCCESS)
-					goto done;
-			}
+			if (blk->is_source)
+				compute_block(&ctx, stride, blkidxc);
 			xm_dim_inc_mask(&blkidxc, &c->dim, &aidxc);
 		}
 		xm_dim_inc_mask(&blkidxc, &c->dim, &cidxc);
 	}
-done:
 	timer_stop(&timer);
 
 	if (sym_k) {
 		xm_log("disabling k symmetry");
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 0);
 	}
-	return (res);
 }

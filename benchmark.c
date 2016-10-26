@@ -139,8 +139,8 @@ fatal(const char *msg)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: benchmark [-hm] [-i id] [-o no] [-v nv] "
-	    "[-b block_size]\n");
+	fprintf(stderr, "%s\n",
+"usage: benchmark [-hm] [-i id] [-o no] [-v nv] [-b block_size]");
 	exit(1);
 }
 
@@ -247,8 +247,7 @@ main(int argc, char **argv)
 	if (s.init_c(c, allocator, args.block_size, XM_INIT_ZERO))
 		fatal("init(c)");
 
-	if (xm_contract(s.alpha, a, b, c, s.idxa, s.idxb, s.idxc))
-		fatal("xm_contract");
+	xm_contract(s.alpha, a, b, c, s.idxa, s.idxb, s.idxc);
 
 	xm_tensor_free(a);
 	xm_tensor_free(b);

@@ -182,7 +182,7 @@ void xm_tensor_free(struct xm_tensor *tensor);
  *
  * Example: xm_contract(1.0, vvvv, oovv, t2, "abcd", "ijcd", "ijab");
  */
-int xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+void xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc);
 
 #ifdef __cplusplus

@@ -989,7 +989,6 @@ run_test(int test_num, int skip)
 	struct test t;
 	const char *path;
 	size_t buf_bytes, id;
-	int res;
 
 	id = rnd(1, sizeof(tests) / sizeof(*tests));
 	printf("test=%-4did=%-3zu", test_num, id);
@@ -1024,20 +1023,9 @@ run_test(int test_num, int skip)
 	xm_set_memory_limit(buf_bytes);
 
 	if (!skip) {
-		res = xm_contract(t.alpha, a, b, d, t.idxa, t.idxb, t.idxc);
-		switch (res) {
-		case XM_RESULT_SUCCESS:
-			t.ref_compare(a, b, c, d, t.alpha, 0.0);
-			printf("  success\n");
-			break;
-		case XM_RESULT_BUFFER_TOO_SMALL:
-			printf("  buffer too small\n");
-			break;
-		case XM_RESULT_NO_MEMORY:
-			fatal("xm_contract: out of memory");
-		default:
-			fatal("xm_contract: unknown error");
-		}
+		xm_contract(t.alpha, a, b, d, t.idxa, t.idxb, t.idxc);
+		t.ref_compare(a, b, c, d, t.alpha, 0.0);
+		printf("  success\n");
 	} else
 		printf("  skipping\n");
 
