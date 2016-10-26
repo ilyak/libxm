@@ -1859,7 +1859,8 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 #endif
 
 static void
-compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc)
+compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
+    xm_scalar_t *buf)
 {
 	size_t i, m, n, k = 0;
 	xm_scalar_t *buf_a, *buf_b, *buf_c;
@@ -1868,12 +1869,9 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc)
 
 	m = xm_dim_dot_mask(&blk_c->dim, &ctx->cidxc);
 	n = xm_dim_dot_mask(&blk_c->dim, &ctx->aidxc);
-	if ((buf_a = malloc(stride * m * sizeof(xm_scalar_t))) == NULL)
-		abort();
-	if ((buf_b = malloc(stride * n * sizeof(xm_scalar_t))) == NULL)
-		abort();
-	if ((buf_c = malloc(ctx->c->block_buf_bytes)) == NULL)
-		abort();
+	buf_a = buf;
+	buf_b = buf_a + stride * m;
+	buf_c = buf_b + stride * n;
 
 	xm_scalar_t *buf_a_ptr = buf_a;
 	xm_scalar_t *buf_b_ptr = buf_b;
@@ -1925,9 +1923,6 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc)
 		block_set_matrix(blk_c, ctx->cidxc, ctx->aidxc, m, n,
 		   ctx->c->block_buf, m, buf_c, ctx->c->allocator);
 	}
-	free(buf_a);
-	free(buf_b);
-	free(buf_c);
 }
 
 static size_t
@@ -1975,6 +1970,28 @@ compute_stride(struct ctx *ctx)
 	return (stride);
 }
 
+static size_t
+compute_max_mn(struct ctx *ctx)
+{
+	struct xm_block *blk;
+	xm_dim_t idx = xm_dim_zero(ctx->c->dim.n);
+	size_t i, j, m, n, mn = 0;
+
+	for (i = 0; i < ctx->nblk_m; i++) {
+		for (j = 0; j < ctx->nblk_n; j++) {
+			blk = xm_tensor_get_block(ctx->c, &idx);
+			m = xm_dim_dot_mask(&blk->dim, &ctx->cidxc);
+			n = xm_dim_dot_mask(&blk->dim, &ctx->aidxc);
+			if (m + n > mn)
+				mn = m + n;
+			xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->aidxc);
+		}
+		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
+	}
+
+	return (mn);
+}
+
 void
 xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc)
@@ -1982,8 +1999,9 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct ctx ctx;
 	struct timer timer;
 	struct xm_block *blk;
+	xm_scalar_t *buf;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, blkidxc;
-	size_t i, j, si1, si2, stride;
+	size_t i, j, si1, si2, stride, max_mn, sz;
 	int sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -2036,14 +2054,18 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	}
 
 	stride = compute_stride(&ctx);
-	blkidxc = xm_dim_zero(c->dim.n);
+	max_mn = compute_max_mn(&ctx);
+	sz = stride * max_mn * sizeof(xm_scalar_t) + c->block_buf_bytes;
+	if ((buf = malloc(sz)) == NULL)
+		abort();
 
+	blkidxc = xm_dim_zero(c->dim.n);
 	timer = timer_start("xm_contract");
 	for (i = 0; i < ctx.nblk_m; i++) {
 		for (j = 0; j < ctx.nblk_n; j++) {
 			blk = xm_tensor_get_block(c, &blkidxc);
 			if (blk->is_source)
-				compute_block(&ctx, stride, blkidxc);
+				compute_block(&ctx, stride, blkidxc, buf);
 			xm_dim_inc_mask(&blkidxc, &c->dim, &aidxc);
 		}
 		xm_dim_inc_mask(&blkidxc, &c->dim, &cidxc);
