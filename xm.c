@@ -2029,8 +2029,10 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	stride = compute_stride(&ctx);
 	max_mn = compute_max_mn(&ctx);
 	sz = stride * max_mn * sizeof(xm_scalar_t) + c->block_buf_bytes;
-	if ((buf = malloc(sz)) == NULL)
+	if ((buf = malloc(sz)) == NULL) {
+		xm_log_line("out of memory");
 		abort();
+	}
 
 	blkidxc = xm_dim_zero(c->dim.n);
 	timer = timer_start("xm_contract");
