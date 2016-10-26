@@ -988,7 +988,7 @@ run_test(int test_num, int skip)
 	struct xm_tensor *a, *b, *c, *d;
 	struct test t;
 	const char *path;
-	size_t buf_bytes, id;
+	size_t id;
 
 	id = rnd(1, sizeof(tests) / sizeof(*tests));
 	printf("test=%-4did=%-3zu", test_num, id);
@@ -1018,9 +1018,6 @@ run_test(int test_num, int skip)
 	if (t.init_c(d, allocator, t.block_size, XM_INIT_NONE))
 		fatal("tensor_init(d)");
 	xm_tensor_copy_data(d, c);
-
-	buf_bytes = rnd(10000, 100000);
-	xm_set_memory_limit(buf_bytes);
 
 	if (!skip) {
 		xm_contract(t.alpha, a, b, d, t.idxa, t.idxb, t.idxc);

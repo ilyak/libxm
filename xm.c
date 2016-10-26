@@ -127,39 +127,11 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 /* stream to log to */
 static FILE *xm_log_stream = NULL;
 
-/* memory limit */
-static size_t xm_memory_limit = (size_t)(-1);
-
 void
 xm_set_log_stream(FILE *stream)
 {
 	xm_log_stream = stream;
 }
-
-void
-xm_set_memory_limit(size_t size)
-{
-	xm_memory_limit = size;
-}
-
-//static size_t
-//get_total_physmem(void)
-//{
-//	long pagesize, npages;
-//
-//	pagesize = sysconf(_SC_PAGESIZE);
-//	npages = sysconf(_SC_PHYS_PAGES);
-//
-//	return ((size_t)pagesize * (size_t)npages);
-//}
-//
-//static size_t
-//get_buffer_size(void)
-//{
-//	if (xm_memory_limit == (size_t)(-1))
-//		return (get_total_physmem() / 4);
-//	return (xm_memory_limit);
-//}
 
 static void
 xm_log(const char *fmt, ...)

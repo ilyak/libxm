@@ -93,10 +93,6 @@ size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 /* Set stream to log to. Setting stream to NULL disables logging. */
 void xm_set_log_stream(FILE *stream);
 
-/* Set physical memory limit in bytes. Memory limit will be determined
- * automatically if not set using this function. */
-void xm_set_memory_limit(size_t size);
-
 /* Create a labeled tensor specifying its dimensions in blocks. */
 struct xm_tensor *xm_tensor_create(struct xm_allocator *allocator,
     const xm_dim_t *dim, const char *label);
