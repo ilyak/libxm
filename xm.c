@@ -112,8 +112,8 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 
 #define xm_log_line(msg) \
     xm_log("%s (in %s on line %d)", msg, __func__, __LINE__)
-#define xm_log_perror(msg) \
-    xm_log("%s (%s)", msg, strerror(errno))
+//#define xm_log_perror(msg) \
+//    xm_log("%s (%s)", msg, strerror(errno))
 
 /* stream to log to */
 static FILE *xm_log_stream = NULL;
@@ -133,24 +133,24 @@ xm_set_memory_limit(size_t size)
 	xm_memory_limit = size;
 }
 
-static size_t
-get_total_physmem(void)
-{
-	long pagesize, npages;
-
-	pagesize = sysconf(_SC_PAGESIZE);
-	npages = sysconf(_SC_PHYS_PAGES);
-
-	return ((size_t)pagesize * (size_t)npages);
-}
-
-static size_t
-get_buffer_size(void)
-{
-	if (xm_memory_limit == (size_t)(-1))
-		return (get_total_physmem() / 4);
-	return (xm_memory_limit);
-}
+//static size_t
+//get_total_physmem(void)
+//{
+//	long pagesize, npages;
+//
+//	pagesize = sysconf(_SC_PAGESIZE);
+//	npages = sysconf(_SC_PHYS_PAGES);
+//
+//	return ((size_t)pagesize * (size_t)npages);
+//}
+//
+//static size_t
+//get_buffer_size(void)
+//{
+//	if (xm_memory_limit == (size_t)(-1))
+//		return (get_total_physmem() / 4);
+//	return (xm_memory_limit);
+//}
 
 static void
 xm_log(const char *fmt, ...)
@@ -195,6 +195,7 @@ timer_stop(struct timer *timer)
 	xm_log("%s done in %d sec", timer->label, (int)total);
 }
 
+/*
 static void
 swap_ptr(xm_scalar_t **a, xm_scalar_t **b)
 {
@@ -202,6 +203,7 @@ swap_ptr(xm_scalar_t **a, xm_scalar_t **b)
 	*a = *b;
 	*b = t;
 }
+*/
 
 const char *
 xm_banner(void)
@@ -316,15 +318,27 @@ xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 	return (1);
 }
 
+//static void
+//xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *b, const xm_dim_t *mask)
+//{
+//	size_t i;
+//
+//	assert(a->n == b->n);
+//
+//	for (i = 0; i < mask->n; i++)
+//		a->i[mask->i[i]] = b->i[mask->i[i]];
+//}
+
 static void
-xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *b, const xm_dim_t *mask)
+xm_dim_set_mask2(xm_dim_t *a, const xm_dim_t *ma,
+    const xm_dim_t *b, const xm_dim_t *mb)
 {
 	size_t i;
 
-	assert(a->n == b->n);
+	assert(ma->n == mb->n);
 
-	for (i = 0; i < mask->n; i++)
-		a->i[mask->i[i]] = b->i[mask->i[i]];
+	for (i = 0; i < ma->n; i++)
+		a->i[ma->i[i]] = b->i[mb->i[i]];
 }
 
 static void
@@ -404,22 +418,22 @@ xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim)
 	return (ret);
 }
 
-static size_t
-xm_dim_offset_mask(const xm_dim_t *idx, const xm_dim_t *dim,
-    const xm_dim_t *mask)
-{
-	size_t i, offset, power;
-
-	assert(xm_dim_less(idx, dim));
-
-	offset = 0;
-	power = 1;
-	for (i = 0; i < mask->n; i++) {
-		offset += idx->i[mask->i[i]] * power;
-		power *= dim->i[mask->i[i]];
-	}
-	return (offset);
-}
+//static size_t
+//xm_dim_offset_mask(const xm_dim_t *idx, const xm_dim_t *dim,
+//    const xm_dim_t *mask)
+//{
+//	size_t i, offset, power;
+//
+//	assert(xm_dim_less(idx, dim));
+//
+//	offset = 0;
+//	power = 1;
+//	for (i = 0; i < mask->n; i++) {
+//		offset += idx->i[mask->i[i]] * power;
+//		power *= dim->i[mask->i[i]];
+//	}
+//	return (offset);
+//}
 
 size_t
 xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
@@ -860,18 +874,18 @@ xm_tensor_free(struct xm_tensor *tensor)
 	}
 }
 
-static int
-skip_idx(xm_dim_t *idx, struct xm_tensor *a, const xm_dim_t *mask,
-    const bitstr_t *skip)
-{
-	size_t i = xm_dim_offset_mask(idx, &a->dim, mask);
-
-	for (; bit_test(skip, i); i++)
-		if (xm_dim_inc_mask(idx, &a->dim, mask))
-			return (1);
-
-	return (0);
-}
+//static int
+//skip_idx(xm_dim_t *idx, struct xm_tensor *a, const xm_dim_t *mask,
+//    const bitstr_t *skip)
+//{
+//	size_t i = xm_dim_offset_mask(idx, &a->dim, mask);
+//
+//	for (; bit_test(skip, i); i++)
+//		if (xm_dim_inc_mask(idx, &a->dim, mask))
+//			return (1);
+//
+//	return (0);
+//}
 
 static void
 block_get_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
@@ -940,6 +954,7 @@ block_get_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 			to[jj * stride + ii] *= scalar;
 }
 
+#if 0
 static void
 tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
@@ -1055,6 +1070,7 @@ async_tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 
 	return (thread);
 }
+#endif
 
 static void
 block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
@@ -1093,6 +1109,7 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 	    block_size_i * block_size_j * sizeof(xm_scalar_t));
 }
 
+#if 0
 static void
 tensor_set_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
     xm_dim_t mask_i, xm_dim_t mask_j, size_t nblk_i, size_t nblk_j,
@@ -1491,6 +1508,7 @@ async_tensor_prefetch_next(struct xm_tensor *tensor, xm_dim_t blk_idx,
 	}
 	return (pthread_self());
 }
+#endif
 
 static void
 check_block_consistency(struct xm_tensor *t1, struct xm_tensor *t2,
@@ -1602,6 +1620,7 @@ set_k_symmetry(struct xm_tensor *a, xm_dim_t cidxa, xm_dim_t aidxa,
 	}
 }
 
+#if 0
 static int
 xm_do_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa,
@@ -1828,6 +1847,162 @@ xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	free(skip_k);
 	return (res);
 }
+#endif
+
+static int
+compute_block(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+    struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa, xm_dim_t cidxb,
+    xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc, size_t stride,
+    xm_dim_t blk_idx_c)
+{
+	size_t i, m, n, k = 0;
+	size_t nblk_k = xm_dim_dot_mask(&a->dim, &cidxa);
+	xm_scalar_t *buf_a, *buf_b, *buf_c;
+	struct xm_block *blk_c = xm_tensor_get_block(c, &blk_idx_c);
+	xm_dim_t blk_idx_a, blk_idx_b;
+
+	m = xm_dim_dot_mask(&blk_c->dim, &cidxc);
+	n = xm_dim_dot_mask(&blk_c->dim, &aidxc);
+	if ((buf_a = malloc(stride * m * sizeof(xm_scalar_t))) == NULL)
+		abort();
+	if ((buf_b = malloc(stride * n * sizeof(xm_scalar_t))) == NULL)
+		abort();
+	if ((buf_c = malloc(c->block_buf_bytes)) == NULL)
+		abort();
+
+	xm_scalar_t *buf_a_ptr = buf_a;
+	xm_scalar_t *buf_b_ptr = buf_b;
+	blk_idx_a = xm_dim_zero(a->dim.n);
+	blk_idx_b = xm_dim_zero(b->dim.n);
+	xm_dim_set_mask2(&blk_idx_a, &aidxa, &blk_idx_c, &cidxc);
+	xm_dim_set_mask2(&blk_idx_b, &aidxb, &blk_idx_c, &aidxc);
+	for (i = 0; i < nblk_k; i++) {
+		struct xm_block *blk_a = xm_tensor_get_block(a, &blk_idx_a);
+		struct xm_block *blk_b = xm_tensor_get_block(b, &blk_idx_b);
+
+		if (blk_a->is_nonzero && blk_b->is_nonzero) {
+			size_t blk_a_size = xm_dim_dot(&blk_a->dim);
+			xm_allocator_read(a->allocator, blk_a->data_ptr,
+			    a->block_buf, blk_a_size * sizeof(xm_scalar_t));
+			block_get_matrix(blk_a, cidxa, aidxa,
+			    xm_dim_dot_mask(&blk_a->dim, &cidxa),
+			    xm_dim_dot_mask(&blk_a->dim, &aidxa), a->block_buf,
+			    buf_a_ptr, stride);
+			buf_a_ptr += xm_dim_dot_mask(&blk_a->dim, &cidxa);
+
+			size_t blk_b_size = xm_dim_dot(&blk_b->dim);
+			xm_allocator_read(b->allocator, blk_b->data_ptr,
+			    b->block_buf, blk_b_size * sizeof(xm_scalar_t));
+			block_get_matrix(blk_b, cidxb, aidxb,
+			    xm_dim_dot_mask(&blk_b->dim, &cidxb),
+			    xm_dim_dot_mask(&blk_b->dim, &aidxb), b->block_buf,
+			    buf_b_ptr, stride);
+			buf_b_ptr += xm_dim_dot_mask(&blk_b->dim, &cidxb);
+
+			k += xm_dim_dot_mask(&blk_a->dim, &cidxa);
+		}
+		xm_dim_inc_mask(&blk_idx_a, &a->dim, &cidxa);
+		xm_dim_inc_mask(&blk_idx_b, &b->dim, &cidxb);
+	}
+
+	if (aidxc.n > 0 && aidxc.i[0] == 0) {
+		gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
+		    alpha, buf_b, (int)stride, buf_a, (int)stride,
+		    0.0, c->block_buf, (int)n);
+		block_set_matrix(blk_c, aidxc, cidxc, n, m, c->block_buf,
+		    n, buf_c, c->allocator);
+	} else {
+		gemm_wrapper('T', 'N', (int)m, (int)n, (int)k,
+		    alpha, buf_a, (int)stride, buf_b, (int)stride,
+		    0.0, c->block_buf, (int)m);
+		block_set_matrix(blk_c, cidxc, aidxc, m, n, c->block_buf,
+		    m, buf_c, c->allocator);
+	}
+	free(buf_a);
+	free(buf_b);
+	free(buf_c);
+	return (XM_RESULT_SUCCESS);
+}
+
+static size_t
+compute_stride(struct xm_tensor *a, struct xm_tensor *b, struct xm_tensor *c,
+    xm_dim_t cidxa, xm_dim_t aidxa, xm_dim_t cidxb, xm_dim_t aidxb,
+    xm_dim_t cidxc, xm_dim_t aidxc)
+{
+	size_t i, j, l;
+	size_t nblk_m = xm_dim_dot_mask(&c->dim, &cidxc);
+	size_t nblk_n = xm_dim_dot_mask(&c->dim, &aidxc);
+	size_t nblk_k = xm_dim_dot_mask(&a->dim, &cidxa);
+	size_t stride = 0;
+	xm_dim_t blk_idx_c = xm_dim_zero(c->dim.n);
+
+	xm_log("nblk_m=%zu nblk_n=%zu nblk_k=%zu", nblk_m, nblk_n, nblk_k);
+
+	for (i = 0; i < nblk_m; i++) {
+		for (j = 0; j < nblk_n; j++) {
+			struct xm_block *blk_c = xm_tensor_get_block(c,
+			    &blk_idx_c);
+			if (blk_c->is_source) {
+				xm_dim_t blk_idx_a = xm_dim_zero(a->dim.n);
+				xm_dim_t blk_idx_b = xm_dim_zero(b->dim.n);
+				xm_dim_set_mask2(&blk_idx_a, &aidxa,
+				    &blk_idx_c, &cidxc);
+				xm_dim_set_mask2(&blk_idx_b, &aidxb,
+				    &blk_idx_c, &aidxc);
+				size_t stride2 = 0;
+				for (l = 0; l < nblk_k; l++) {
+					struct xm_block *blk_a =
+					    xm_tensor_get_block(a, &blk_idx_a);
+					struct xm_block *blk_b =
+					    xm_tensor_get_block(b, &blk_idx_b);
+					if (blk_a->is_nonzero &&
+					    blk_b->is_nonzero) {
+						stride2 += xm_dim_dot_mask(
+						    &blk_a->dim, &cidxa);
+					}
+					xm_dim_inc_mask(&blk_idx_a, &a->dim,
+					    &cidxa);
+					xm_dim_inc_mask(&blk_idx_b, &b->dim,
+					    &cidxb);
+				}
+				if (stride2 > stride)
+					stride = stride2;
+			}
+			xm_dim_inc_mask(&blk_idx_c, &c->dim, &aidxc); //wraps
+		}
+		xm_dim_inc_mask(&blk_idx_c, &c->dim, &cidxc);
+	}
+	return (stride);
+}
+
+static int
+xm_contract_part(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+    struct xm_tensor *c, xm_dim_t cidxa, xm_dim_t aidxa, xm_dim_t cidxb,
+    xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc)
+{
+	size_t i, j;
+	size_t nblk_m = xm_dim_dot_mask(&c->dim, &cidxc);
+	size_t nblk_n = xm_dim_dot_mask(&c->dim, &aidxc);
+	size_t stride = compute_stride(a, b, c, cidxa, aidxa,
+	    cidxb, aidxb, cidxc, aidxc);
+	xm_dim_t blk_idx_c = xm_dim_zero(c->dim.n);
+
+	for (i = 0; i < nblk_m; i++) {
+		for (j = 0; j < nblk_n; j++) {
+			struct xm_block *blk = xm_tensor_get_block(c,
+			    &blk_idx_c);
+			if (blk->is_source) {
+				compute_block(alpha, a, b, c, cidxa, aidxa,
+				    cidxb, aidxb, cidxc, aidxc, stride,
+				    blk_idx_c);
+			}
+			xm_dim_inc_mask(&blk_idx_c, &c->dim, &aidxc); //wraps
+		}
+		xm_dim_inc_mask(&blk_idx_c, &c->dim, &cidxc);
+	}
+
+	return (XM_RESULT_SUCCESS);
+}
 
 int
 xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
@@ -1836,8 +2011,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct timer timer;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
 	xm_dim_t dim_a, dim_b;
-	xm_scalar_t *buf;
-	size_t i, j, si1, si2, buf_bytes;
+	size_t nblk_m, nblk_n, si1, si2;
 	int res, sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -1847,13 +2021,13 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	assert(strlen(idxb) == b->dim.n);
 	assert(strlen(idxc) == c->dim.n);
 
-	buf_bytes = get_buffer_size();
-	xm_log("xm_contract is allocating %zu mb buffer",
-	    buf_bytes / 1024 / 1024);
-	if ((buf = malloc(buf_bytes)) == NULL) {
-		xm_log_line("cannot allocate temporary buffer");
-		return (XM_RESULT_NO_MEMORY);
-	}
+//	buf_bytes = get_buffer_size();
+//	xm_log("xm_contract is allocating %zu mb buffer",
+//	    buf_bytes / 1024 / 1024);
+//	if ((buf = malloc(buf_bytes)) == NULL) {
+//		xm_log_line("cannot allocate temporary buffer");
+//		return (XM_RESULT_NO_MEMORY);
+//	}
 
 	res = XM_RESULT_SUCCESS;
 
@@ -1863,9 +2037,9 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 
 	dim_a = xm_tensor_get_abs_dim(a);
 	dim_b = xm_tensor_get_abs_dim(b);
-	i = xm_dim_dot_mask(&dim_a, &aidxa);
-	j = xm_dim_dot_mask(&dim_b, &aidxb);
-	if (i < j) {
+	nblk_m = xm_dim_dot_mask(&dim_a, &aidxa);
+	nblk_n = xm_dim_dot_mask(&dim_b, &aidxb);
+	if (nblk_m < nblk_n) {
 		/* make B the smaller tensor */
 		struct xm_tensor *t;
 		parse_idx(idxb, idxa, &cidxa, &cidxb);
@@ -1905,13 +2079,13 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 
 	timer = timer_start("xm_contract");
 	res = xm_contract_part(alpha, a, b, c, cidxa, aidxa,
-	    cidxb, aidxb, cidxc, aidxc, buf);
+	    cidxb, aidxb, cidxc, aidxc);
 	timer_stop(&timer);
 
 	if (sym_k) {
 		xm_log("disabling k symmetry");
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 0);
 	}
-	free(buf);
+//	free(buf);
 	return (res);
 }
