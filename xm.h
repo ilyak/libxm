@@ -24,12 +24,12 @@ extern "C" {
 #endif
 
 /* Maximum number of tensor dimensions. This can be increased if necessary. */
-#define XM_MAX_DIM                6
+#define XM_MAX_DIM                  6
 
 /* Result return codes. */
-#define XM_RESULT_SUCCESS               0  /* No error. */
-#define XM_RESULT_BUFFER_TOO_SMALL      1  /* Memory limit is too small. */
-#define XM_RESULT_NO_MEMORY             2  /* Cannot allocate memory. */
+#define XM_RESULT_SUCCESS           0  /* No error. */
+#define XM_RESULT_BUFFER_TOO_SMALL  1  /* Memory limit is too small. */
+#define XM_RESULT_NO_MEMORY         2  /* Cannot allocate memory. */
 
 #if defined(XM_SCALAR_FLOAT)
 typedef float xm_scalar_t;
