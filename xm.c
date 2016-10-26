@@ -1851,32 +1851,34 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 	blkidxb = xm_dim_zero(ctx->b->dim.n);
 	xm_dim_set_mask2(&blkidxa, &ctx->aidxa, &blkidxc, &ctx->cidxc);
 	xm_dim_set_mask2(&blkidxb, &ctx->aidxb, &blkidxc, &ctx->aidxc);
+
 	for (i = 0; i < ctx->nblk_k; i++) {
 		struct xm_block *blk_a = xm_tensor_get_block(ctx->a, &blkidxa);
 		struct xm_block *blk_b = xm_tensor_get_block(ctx->b, &blkidxb);
 
 		if (blk_a->is_nonzero && blk_b->is_nonzero) {
+			size_t mblk, nblk, kblk;
+			mblk = xm_dim_dot_mask(&blk_a->dim, &ctx->aidxa);
+			nblk = xm_dim_dot_mask(&blk_b->dim, &ctx->aidxb);
+			kblk = xm_dim_dot_mask(&blk_a->dim, &ctx->cidxa);
+
 			size_t blk_a_size = xm_dim_dot(&blk_a->dim);
 			xm_allocator_read(ctx->a->allocator, blk_a->data_ptr,
 			    ctx->a->block_buf,
 			    blk_a_size * sizeof(xm_scalar_t));
 			block_get_matrix(blk_a, ctx->cidxa, ctx->aidxa,
-			    xm_dim_dot_mask(&blk_a->dim, &ctx->cidxa),
-			    xm_dim_dot_mask(&blk_a->dim, &ctx->aidxa),
-			    ctx->a->block_buf, buf_a_ptr, stride);
-			buf_a_ptr += xm_dim_dot_mask(&blk_a->dim, &ctx->cidxa);
+			    kblk, mblk, ctx->a->block_buf, buf_a_ptr, stride);
+			buf_a_ptr += kblk;
 
 			size_t blk_b_size = xm_dim_dot(&blk_b->dim);
 			xm_allocator_read(ctx->b->allocator, blk_b->data_ptr,
 			    ctx->b->block_buf,
 			    blk_b_size * sizeof(xm_scalar_t));
 			block_get_matrix(blk_b, ctx->cidxb, ctx->aidxb,
-			    xm_dim_dot_mask(&blk_b->dim, &ctx->cidxb),
-			    xm_dim_dot_mask(&blk_b->dim, &ctx->aidxb),
-			    ctx->b->block_buf, buf_b_ptr, stride);
-			buf_b_ptr += xm_dim_dot_mask(&blk_b->dim, &ctx->cidxb);
+			    kblk, nblk, ctx->b->block_buf, buf_b_ptr, stride);
+			buf_b_ptr += kblk;
 
-			k += xm_dim_dot_mask(&blk_a->dim, &ctx->cidxa);
+			k += kblk;
 		}
 		xm_dim_inc_mask(&blkidxa, &ctx->a->dim, &ctx->cidxa);
 		xm_dim_inc_mask(&blkidxb, &ctx->b->dim, &ctx->cidxb);
@@ -1893,7 +1895,7 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 		    ctx->alpha, buf_a, (int)stride, buf_b, (int)stride,
 		    0.0, ctx->c->block_buf, (int)m);
 		block_set_matrix(blk_c, ctx->cidxc, ctx->aidxc, m, n,
-		   ctx->c->block_buf, m, buf_c, ctx->c->allocator);
+		    ctx->c->block_buf, m, buf_c, ctx->c->allocator);
 	}
 }
 
