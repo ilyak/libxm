@@ -1961,7 +1961,6 @@ compute_max_mn(struct ctx *ctx)
 		}
 		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
 	}
-
 	return (mn);
 }
 
