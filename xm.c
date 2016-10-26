@@ -1061,8 +1061,8 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 	xm_dim_t el_dim, el_i;
 	size_t ii, jj, offset;
 
-	if (!block->is_source)
-		return;
+	assert(block->is_source);
+	assert(block->data_ptr != XM_NULL_PTR);
 
 	el_dim = block->dim;
 	el_i = xm_dim_zero(el_dim.n);
@@ -1085,7 +1085,6 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 		xm_dim_inc_mask(&el_i, &el_dim, &mask_j);
 	}
 
-	assert(block->data_ptr != XM_NULL_PTR);
 	xm_allocator_write(allocator, block->data_ptr, buf,
 	    block_size_i * block_size_j * sizeof(xm_scalar_t));
 }
