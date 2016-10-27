@@ -1942,24 +1942,24 @@ compute_stride(struct ctx *ctx)
 }
 
 static size_t
-compute_max_mn(struct ctx *ctx)
+compute_max_mplusn(struct ctx *ctx)
 {
 	struct xm_block *blk;
 	xm_dim_t idx = xm_dim_zero(ctx->c->dim.n);
-	size_t i, j, m, n, mn = 0;
+	size_t i, j, m, n, mplusn = 0;
 
 	for (i = 0; i < ctx->nblk_m; i++) {
 		for (j = 0; j < ctx->nblk_n; j++) {
 			blk = xm_tensor_get_block(ctx->c, &idx);
 			m = xm_dim_dot_mask(&blk->dim, &ctx->cidxc);
 			n = xm_dim_dot_mask(&blk->dim, &ctx->aidxc);
-			if (m + n > mn)
-				mn = m + n;
+			if (m + n > mplusn)
+				mplusn = m + n;
 			xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->aidxc);
 		}
 		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
 	}
-	return (mn);
+	return (mplusn);
 }
 
 void
@@ -1971,7 +1971,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct xm_block *blk;
 	xm_scalar_t *buf;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, blkidxc;
-	size_t i, j, si1, si2, stride, max_mn, sz;
+	size_t i, j, si1, si2, stride, max_mplusn, sz;
 	int sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -2024,8 +2024,8 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	}
 
 	stride = compute_stride(&ctx);
-	max_mn = compute_max_mn(&ctx);
-	sz = stride * max_mn * sizeof(xm_scalar_t) + c->block_buf_bytes;
+	max_mplusn = compute_max_mplusn(&ctx);
+	sz = stride * max_mplusn * sizeof(xm_scalar_t) + c->block_buf_bytes;
 	if ((buf = malloc(sz)) == NULL) {
 		xm_log_line("out of memory");
 		abort();
