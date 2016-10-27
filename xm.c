@@ -1874,8 +1874,10 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 	}
 
 	if (k == 0) {
-		size_t sz = xm_dim_dot(&blk_c->dim) * sizeof(xm_scalar_t);
-		xm_allocator_memset(ctx->c->allocator, blk_c->data_ptr, 0, sz);
+		size_t size = xm_dim_dot(&blk_c->dim) * sizeof(xm_scalar_t);
+		memset(ctx->c->block_buf, 0, size);
+		xm_allocator_write(ctx->c->allocator, blk_c->data_ptr,
+		    ctx->c->block_buf, size);
 		return;
 	}
 
