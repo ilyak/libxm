@@ -1873,6 +1873,12 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 		xm_dim_inc_mask(&blkidxb, &ctx->b->dim, &ctx->cidxb);
 	}
 
+	if (k == 0) {
+		size_t sz = xm_dim_dot(&blk_c->dim) * sizeof(xm_scalar_t);
+		xm_allocator_memset(ctx->c->allocator, blk_c->data_ptr, 0, sz);
+		return;
+	}
+
 	if (ctx->aidxc.n > 0 && ctx->aidxc.i[0] == 0) {
 		gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
 		    ctx->alpha, buf_b, (int)stride, buf_a, (int)stride,
