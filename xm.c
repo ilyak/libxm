@@ -69,7 +69,7 @@ struct xm_tensor {
 	/** buffer that is large enough to store any single block data */
 	xm_scalar_t            *block_buf;
 	/** size of the above buffer */
-	size_t                  max_block_bytes;
+	size_t                  max_block_size;
 };
 
 struct ctx {
@@ -680,14 +680,15 @@ xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
 static void
 xm_tensor_set_block_buf(struct xm_tensor *a, const xm_dim_t *blkdim)
 {
-	size_t size = xm_dim_dot(blkdim) * sizeof(xm_scalar_t);
+	size_t size = xm_dim_dot(blkdim);
 
-	if (size > a->max_block_bytes) {
-		if ((a->block_buf = realloc(a->block_buf, size)) == NULL) {
+	if (size > a->max_block_size) {
+		if ((a->block_buf = realloc(a->block_buf,
+		    size * sizeof(xm_scalar_t))) == NULL) {
 			xm_log_line("out of memory");
 			abort();
 		}
-		a->max_block_bytes = size;
+		a->max_block_size = size;
 	}
 }
 
@@ -939,7 +940,7 @@ tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 
 	if (from == NULL) {
 		/* accessed from multiple threads */
-		if ((buf = malloc(tensor->max_block_bytes)) == NULL) {
+		if ((buf = malloc(tensor->max_block_size * sizeof(xm_scalar_t))) == NULL) {
 			xm_log_line("out of memory");
 			abort();
 		}
@@ -1092,7 +1093,7 @@ tensor_set_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 	xm_scalar_t *ptr, *buf;
 
 	/* accessed from multiple threads */
-	if ((buf = malloc(tensor->max_block_bytes)) == NULL) {
+	if ((buf = malloc(tensor->max_block_size * sizeof(xm_scalar_t))) == NULL) {
 		xm_log_line("out of memory");
 		abort();
 	}
@@ -1824,7 +1825,8 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
     xm_scalar_t *buf)
 {
 	size_t i, m, n, k = 0;
-	xm_scalar_t *buf_a, *buf_b, *buf_c;
+	xm_scalar_t *buf_a, *buf_b, *blkbuf_a, *blkbuf_b;
+	xm_scalar_t *blkbuf_c1, *blkbuf_c2;
 	struct xm_block *blk_c = xm_tensor_get_block(ctx->c, &blkidxc);
 	xm_dim_t blkidxa, blkidxb;
 
@@ -1832,7 +1834,10 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 	n = xm_dim_dot_mask(&blk_c->dim, &ctx->aidxc);
 	buf_a = buf;
 	buf_b = buf_a + stride * m;
-	buf_c = buf_b + stride * n;
+	blkbuf_a = buf_b + stride * n;
+	blkbuf_b = blkbuf_a + ctx->a->max_block_size;
+	blkbuf_c1 = blkbuf_b + ctx->b->max_block_size;
+	blkbuf_c2 = blkbuf_c1 + ctx->c->max_block_size;
 
 	xm_scalar_t *buf_a_ptr = buf_a;
 	xm_scalar_t *buf_b_ptr = buf_b;
@@ -1853,18 +1858,16 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 
 			size_t blk_a_size = xm_dim_dot(&blk_a->dim);
 			xm_allocator_read(ctx->a->allocator, blk_a->data_ptr,
-			    ctx->a->block_buf,
-			    blk_a_size * sizeof(xm_scalar_t));
+			    blkbuf_a, blk_a_size * sizeof(xm_scalar_t));
 			block_get_matrix(blk_a, ctx->cidxa, ctx->aidxa,
-			    kblk, mblk, ctx->a->block_buf, buf_a_ptr, stride);
+			    kblk, mblk, blkbuf_a, buf_a_ptr, stride);
 			buf_a_ptr += kblk;
 
 			size_t blk_b_size = xm_dim_dot(&blk_b->dim);
 			xm_allocator_read(ctx->b->allocator, blk_b->data_ptr,
-			    ctx->b->block_buf,
-			    blk_b_size * sizeof(xm_scalar_t));
+			    blkbuf_b, blk_b_size * sizeof(xm_scalar_t));
 			block_get_matrix(blk_b, ctx->cidxb, ctx->aidxb,
-			    kblk, nblk, ctx->b->block_buf, buf_b_ptr, stride);
+			    kblk, nblk, blkbuf_b, buf_b_ptr, stride);
 			buf_b_ptr += kblk;
 
 			k += kblk;
@@ -1875,24 +1878,24 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 
 	if (k == 0) {
 		size_t size = xm_dim_dot(&blk_c->dim) * sizeof(xm_scalar_t);
-		memset(ctx->c->block_buf, 0, size);
+		memset(blkbuf_c1, 0, size);
 		xm_allocator_write(ctx->c->allocator, blk_c->data_ptr,
-		    ctx->c->block_buf, size);
+		    blkbuf_c1, size);
 		return;
 	}
 
 	if (ctx->aidxc.n > 0 && ctx->aidxc.i[0] == 0) {
 		gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
 		    ctx->alpha, buf_b, (int)stride, buf_a, (int)stride,
-		    0.0, ctx->c->block_buf, (int)n);
+		    0.0, blkbuf_c1, (int)n);
 		block_set_matrix(blk_c, ctx->aidxc, ctx->cidxc, n, m,
-		    ctx->c->block_buf, n, buf_c, ctx->c->allocator);
+		    blkbuf_c1, n, blkbuf_c2, ctx->c->allocator);
 	} else {
 		gemm_wrapper('T', 'N', (int)m, (int)n, (int)k,
 		    ctx->alpha, buf_a, (int)stride, buf_b, (int)stride,
-		    0.0, ctx->c->block_buf, (int)m);
+		    0.0, blkbuf_c1, (int)m);
 		block_set_matrix(blk_c, ctx->cidxc, ctx->aidxc, m, n,
-		    ctx->c->block_buf, m, buf_c, ctx->c->allocator);
+		    blkbuf_c1, m, blkbuf_c2, ctx->c->allocator);
 	}
 }
 
@@ -2025,8 +2028,9 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 
 	stride = compute_stride(&ctx);
 	max_mplusn = compute_max_mplusn(&ctx);
-	sz = stride * max_mplusn * sizeof(xm_scalar_t) + c->max_block_bytes;
-	if ((buf = malloc(sz)) == NULL) {
+	sz = stride * max_mplusn + a->max_block_size +
+	    b->max_block_size + 2 * c->max_block_size;
+	if ((buf = malloc(sz * sizeof(xm_scalar_t))) == NULL) {
 		xm_log_line("out of memory");
 		abort();
 	}
