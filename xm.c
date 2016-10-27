@@ -1965,16 +1965,54 @@ compute_max_mplusn(struct ctx *ctx)
 	return (mplusn);
 }
 
+static xm_dim_t *
+get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
+{
+	struct xm_block *blk;
+	xm_dim_t *nzblk, *nzblkptr, idx;
+	size_t i, j, nnzblk = 0;
+
+	idx = xm_dim_zero(ctx->c->dim.n);
+	for (i = 0; i < ctx->nblk_m; i++) {
+		for (j = 0; j < ctx->nblk_n; j++) {
+			blk = xm_tensor_get_block(ctx->c, &idx);
+			if (blk->is_source)
+				nnzblk++;
+			xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->aidxc);
+		}
+		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
+	}
+
+	if ((nzblk = malloc(nnzblk * sizeof(xm_dim_t))) == NULL) {
+		xm_log_line("out of memory");
+		abort();
+	}
+	nzblkptr = nzblk;
+
+	idx = xm_dim_zero(ctx->c->dim.n);
+	for (i = 0; i < ctx->nblk_m; i++) {
+		for (j = 0; j < ctx->nblk_n; j++) {
+			blk = xm_tensor_get_block(ctx->c, &idx);
+			if (blk->is_source)
+				*nzblkptr++ = idx;
+			xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->aidxc);
+		}
+		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
+	}
+
+	*nnzblkout = nnzblk;
+	return (nzblk);
+}
+
 void
 xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc)
 {
 	struct ctx ctx;
 	struct timer timer;
-	struct xm_block *blk;
 	xm_scalar_t *buf;
-	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, blkidxc;
-	size_t i, j, si1, si2, stride, max_mplusn, sz;
+	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;
+	size_t i, si1, si2, stride, max_mplusn, sz, nnzblk;
 	int sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -2026,30 +2064,26 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 1);
 	}
 
+	nzblk = get_nonzero_blocks(&ctx, &nnzblk);
 	stride = compute_stride(&ctx);
 	max_mplusn = compute_max_mplusn(&ctx);
 	sz = stride * max_mplusn + a->max_block_size +
 	    b->max_block_size + 2 * c->max_block_size;
+	timer = timer_start("xm_contract");
+
 	if ((buf = malloc(sz * sizeof(xm_scalar_t))) == NULL) {
 		xm_log_line("out of memory");
 		abort();
 	}
 
-	blkidxc = xm_dim_zero(c->dim.n);
-	timer = timer_start("xm_contract");
-	for (i = 0; i < ctx.nblk_m; i++) {
-		for (j = 0; j < ctx.nblk_n; j++) {
-			blk = xm_tensor_get_block(c, &blkidxc);
-			if (blk->is_source)
-				compute_block(&ctx, stride, blkidxc, buf);
-			xm_dim_inc_mask(&blkidxc, &c->dim, &aidxc);
-		}
-		xm_dim_inc_mask(&blkidxc, &c->dim, &cidxc);
-	}
+	for (i = 0; i < nnzblk; i++)
+		compute_block(&ctx, stride, nzblk[i], buf);
+
 	timer_stop(&timer);
 
 	if (sym_k) {
 		xm_log("disabling k symmetry");
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 0);
 	}
+	free(nzblk);
 }
