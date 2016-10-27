@@ -69,7 +69,7 @@ struct xm_tensor {
 	/** buffer that is large enough to store any single block data */
 	xm_scalar_t            *block_buf;
 	/** size of the above buffer */
-	size_t                  block_buf_bytes;
+	size_t                  max_block_bytes;
 };
 
 struct ctx {
@@ -682,12 +682,12 @@ xm_tensor_set_block_buf(struct xm_tensor *a, const xm_dim_t *blkdim)
 {
 	size_t size = xm_dim_dot(blkdim) * sizeof(xm_scalar_t);
 
-	if (size > a->block_buf_bytes) {
+	if (size > a->max_block_bytes) {
 		if ((a->block_buf = realloc(a->block_buf, size)) == NULL) {
 			xm_log_line("out of memory");
 			abort();
 		}
-		a->block_buf_bytes = size;
+		a->max_block_bytes = size;
 	}
 }
 
@@ -939,7 +939,7 @@ tensor_get_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 
 	if (from == NULL) {
 		/* accessed from multiple threads */
-		if ((buf = malloc(tensor->block_buf_bytes)) == NULL) {
+		if ((buf = malloc(tensor->max_block_bytes)) == NULL) {
 			xm_log_line("out of memory");
 			abort();
 		}
@@ -1092,7 +1092,7 @@ tensor_set_submatrix(struct xm_tensor *tensor, xm_dim_t blk_idx,
 	xm_scalar_t *ptr, *buf;
 
 	/* accessed from multiple threads */
-	if ((buf = malloc(tensor->block_buf_bytes)) == NULL) {
+	if ((buf = malloc(tensor->max_block_bytes)) == NULL) {
 		xm_log_line("out of memory");
 		abort();
 	}
@@ -2025,7 +2025,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 
 	stride = compute_stride(&ctx);
 	max_mplusn = compute_max_mplusn(&ctx);
-	sz = stride * max_mplusn * sizeof(xm_scalar_t) + c->block_buf_bytes;
+	sz = stride * max_mplusn * sizeof(xm_scalar_t) + c->max_block_bytes;
 	if ((buf = malloc(sz)) == NULL) {
 		xm_log_line("out of memory");
 		abort();
