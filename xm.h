@@ -51,9 +51,6 @@ typedef struct {
 	size_t n, i[XM_MAX_DIM];
 } xm_dim_t;
 
-/* Returns libxm info string. */
-const char *xm_banner(void);
-
 /* Initialize all indices of a dim to zero. */
 xm_dim_t xm_dim_zero(size_t n);
 

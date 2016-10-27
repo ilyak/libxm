@@ -186,16 +186,6 @@ swap_ptr(xm_scalar_t **a, xm_scalar_t **b)
 }
 */
 
-const char *
-xm_banner(void)
-{
-	const char *s =
-"This program uses libxm tensor contraction code.\n"
-"See https://github.com/ilyak/libxm for more info.\n"
-"libxm is (c) Ilya Kaliman 2014-2016.\n";
-	return (s);
-}
-
 xm_dim_t
 xm_dim_2(size_t dim1, size_t dim2)
 {
