@@ -148,6 +148,19 @@ xm_log(const char *fmt, ...)
 	fprintf(xm_log_stream, "xm_log: %s\n", buf);
 }
 
+static void *
+xmalloc(size_t size)
+{
+	void *mem;
+
+	if ((mem = malloc(size)) == NULL) {
+		xm_log("out of memory");
+		abort();
+	}
+
+	return (mem);
+}
+
 struct timer {
 	char label[128];
 	time_t start;
@@ -1983,11 +1996,7 @@ get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
 		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
 	}
 
-	if ((nzblk = malloc(nnzblk * sizeof(xm_dim_t))) == NULL) {
-		xm_log_line("out of memory");
-		abort();
-	}
-	nzblkptr = nzblk;
+	nzblkptr = nzblk = xmalloc(nnzblk * sizeof(xm_dim_t));
 
 	idx = xm_dim_zero(ctx->c->dim.n);
 	for (i = 0; i < ctx->nblk_m; i++) {
@@ -2071,10 +2080,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	    b->max_block_size + 2 * c->max_block_size;
 	timer = timer_start("xm_contract");
 
-	if ((buf = malloc(sz * sizeof(xm_scalar_t))) == NULL) {
-		xm_log_line("out of memory");
-		abort();
-	}
+	buf = xmalloc(sz * sizeof(xm_scalar_t));
 
 	for (i = 0; i < nnzblk; i++)
 		compute_block(&ctx, stride, nzblk[i], buf);
