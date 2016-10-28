@@ -2084,6 +2084,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 #pragma omp for schedule(dynamic)
 	for (i = 0; i < nnzblk; i++)
 		compute_block(&ctx, stride, nzblk[i], buf);
+	free(buf);
 }
 	timer_stop(&timer);
 
