@@ -2020,7 +2020,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	struct ctx ctx;
 	struct timer timer;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;
-	size_t si1, si2, stride, max_mplusn, sz, nnzblk;
+	size_t i, si1, si2, stride, max_mplusn, sz, nnzblk;
 	int sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -2078,11 +2078,11 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	sz = stride * max_mplusn + a->max_block_size +
 	    b->max_block_size + 2 * c->max_block_size;
 	timer = timer_start("xm_contract");
-#pragma omp parallel
+#pragma omp parallel private(i)
 {
 	xm_scalar_t *buf = xmalloc(sz * sizeof(xm_scalar_t));
 #pragma omp for schedule(dynamic)
-	for (size_t i = 0; i < nnzblk; i++)
+	for (i = 0; i < nnzblk; i++)
 		compute_block(&ctx, stride, nzblk[i], buf);
 }
 	timer_stop(&timer);
