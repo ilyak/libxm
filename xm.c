@@ -124,17 +124,55 @@ xm_log(const char *fmt, ...)
 	fprintf(xm_log_stream, "xm_log: %s\n", buf);
 }
 
+static void
+fatalx(const char *msg, ...)
+{
+	char	*fmt;
+	va_list	 ap;
+
+	va_start(ap, msg);
+	if (asprintf(&fmt, "fatal: %s\n", msg) == -1)
+		exit(1);
+	vfprintf(stderr, fmt, ap);
+	exit(1);
+}
+
 static void *
 xmalloc(size_t size)
 {
-	void *mem;
+	void *ptr;
 
-	if ((mem = malloc(size)) == NULL) {
-		xm_log("out of memory");
-		abort();
-	}
+	if (size == 0)
+		fatalx("xmalloc: zero size");
+	ptr = malloc(size);
+	if (ptr == NULL)
+		fatalx("xmalloc: allocating %zu bytes: %s",
+		    size, strerror(errno));
+	return ptr;
+}
 
-	return (mem);
+static void *
+xcalloc(size_t nmemb, size_t size)
+{
+	void *ptr;
+
+	if (size == 0 || nmemb == 0)
+		fatalx("xcalloc: zero size");
+	ptr = calloc(nmemb, size);
+	if (ptr == NULL)
+		fatalx("xcalloc: allocating %zu * %zu bytes: %s",
+		    nmemb, size, strerror(errno));
+	return ptr;
+}
+
+static char *
+xstrdup(const char *str)
+{
+	char *cp;
+
+	if ((cp = strdup(str)) == NULL)
+		fatalx("xstrdup: %s", strerror(errno));
+	return cp;
 }
 
 struct timer {
@@ -436,25 +474,15 @@ xm_tensor_create(struct xm_allocator *allocator, const xm_dim_t *dim,
 
 	assert(dim->n >= 1 && dim->n <= XM_MAX_DIM);
 
-	if ((tensor = calloc(1, sizeof(*tensor))) == NULL) {
-		xm_log_line("out of memory");
-		return (NULL);
-	}
-
+	tensor = xcalloc(1, sizeof(*tensor));
 	size = xm_dim_dot(dim);
-
-	if ((tensor->blocks = calloc(size, sizeof(*tensor->blocks))) == NULL) {
-		xm_log_line("out of memory");
-		free(tensor);
-		return (NULL);
-	}
+	tensor->blocks = xcalloc(size, sizeof(*tensor->blocks));
+	tensor->label = xstrdup(label ? label : "");
+	tensor->dim = *dim;
+	tensor->allocator = allocator;
 
 	for (i = 0; i < size; i++)
 		tensor->blocks[i].data_ptr = XM_NULL_PTR;
-
-	tensor->label = strdup(label ? label : "");
-	tensor->dim = *dim;
-	tensor->allocator = allocator;
 
 	return (tensor);
 }
