@@ -633,7 +633,7 @@ xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
 }
 
 static void
-xm_tensor_set_block_buf(struct xm_tensor *a, const xm_dim_t *blkdim)
+xm_tensor_set_max_block_size(struct xm_tensor *a, const xm_dim_t *blkdim)
 {
 	size_t size = xm_dim_dot(blkdim);
 
@@ -676,7 +676,7 @@ xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 	block->is_nonzero = 0;
 	block->is_initialized = 1;
 
-	xm_tensor_set_block_buf(tensor, blkdim);
+	xm_tensor_set_max_block_size(tensor, blkdim);
 }
 
 void
@@ -702,7 +702,7 @@ xm_tensor_set_source_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 	block->is_nonzero = 1;
 	block->is_initialized = 1;
 
-	xm_tensor_set_block_buf(tensor, blkdim);
+	xm_tensor_set_max_block_size(tensor, blkdim);
 }
 
 void
@@ -736,7 +736,7 @@ xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 	block->is_nonzero = 1;
 	block->is_initialized = 1;
 
-	xm_tensor_set_block_buf(tensor, &blkdim);
+	xm_tensor_set_max_block_size(tensor, &blkdim);
 }
 
 int
