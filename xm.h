@@ -87,9 +87,6 @@ int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 /* Increment an index by one wrapping on dimensions. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Set stream to log to. Setting stream to NULL disables logging. */
-void xm_set_log_stream(FILE *stream);
-
 /* Create a labeled tensor specifying its dimensions in blocks. */
 struct xm_tensor *xm_tensor_create(struct xm_allocator *allocator,
     const xm_dim_t *dim, const char *label);

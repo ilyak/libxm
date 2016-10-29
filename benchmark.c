@@ -222,8 +222,6 @@ main(int argc, char **argv)
 	struct xm_tensor *a, *b, *c;
 	const char *path;
 
-	xm_set_log_stream(stderr);
-
 	args = args_parse(argc, argv);
 	args_print(&args);
 

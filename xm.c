@@ -93,35 +93,6 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 	    b, &ldb, &beta, c, &ldc);
 }
 
-//#define xm_log_line(msg) \
-//    xm_log("%s (in %s on line %d)", msg, __func__, __LINE__)
-//#define xm_log_perror(msg) \
-//    xm_log("%s (%s)", msg, strerror(errno))
-
-/* stream to log to */
-static FILE *xm_log_stream = NULL;
-
-void
-xm_set_log_stream(FILE *stream)
-{
-	xm_log_stream = stream;
-}
-
-static void
-xm_log(const char *fmt, ...)
-{
-	char buf[1024];
-	va_list ap;
-
-	if (xm_log_stream == NULL)
-		return;
-
-	va_start(ap, fmt);
-	vsnprintf(buf, sizeof(buf), fmt, ap);
-	va_end(ap);
-	fprintf(xm_log_stream, "xm_log: %s\n", buf);
-}
-
 static void
 fatalx(const char *msg, ...)
 {
@@ -173,33 +144,33 @@ xstrdup(const char *str)
 	return cp;
 }
 
-struct timer {
-	char label[128];
-	time_t start;
-};
-
-static struct timer
-timer_start(const char *fmt, ...)
-{
-	struct timer timer;
-	va_list ap;
-
-	va_start(ap, fmt);
-	vsnprintf(timer.label, sizeof(timer.label), fmt, ap);
-	va_end(ap);
-
-	xm_log("%s...", timer.label);
-	timer.start = time(NULL);
-
-	return (timer);
-}
-
-static void
-timer_stop(struct timer *timer)
-{
-	time_t total = time(NULL) - timer->start;
-	xm_log("%s done in %d sec", timer->label, (int)total);
-}
+//struct timer {
+//	char label[128];
+//	time_t start;
+//};
+//
+//static struct timer
+//timer_start(const char *fmt, ...)
+//{
+//	struct timer timer;
+//	va_list ap;
+//
+//	va_start(ap, fmt);
+//	vsnprintf(timer.label, sizeof(timer.label), fmt, ap);
+//	va_end(ap);
+//
+//	xm_log("%s...", timer.label);
+//	timer.start = time(NULL);
+//
+//	return (timer);
+//}
+//
+//static void
+//timer_stop(struct timer *timer)
+//{
+//	time_t total = time(NULL) - timer->start;
+//	xm_log("%s done in %d sec", timer->label, (int)total);
+//}
 
 xm_dim_t
 xm_dim_2(size_t dim1, size_t dim2)
@@ -1221,7 +1192,6 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc)
 {
 	struct ctx ctx;
-	struct timer timer;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;
 	size_t i, si1, si2, stride, max_mplusn, size, nnzblk;
 	int sym_k;
@@ -1270,17 +1240,14 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 			break;
 	}
 
-	if (sym_k) {
-		xm_log("enabling k symmetry");
+	if (sym_k)
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 1);
-	}
 
 	nzblk = get_nonzero_blocks(&ctx, &nnzblk);
 	stride = compute_stride(&ctx);
 	max_mplusn = compute_max_mplusn(&ctx);
 	size = stride * max_mplusn + a->max_block_size +
 	    b->max_block_size + 2 * c->max_block_size;
-	timer = timer_start("xm_contract");
 #pragma omp parallel private(i)
 {
 	xm_scalar_t *buf = xmalloc(size * sizeof(xm_scalar_t));
@@ -1289,11 +1256,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 		compute_block(&ctx, stride, nzblk[i], buf);
 	free(buf);
 }
-	timer_stop(&timer);
-
-	if (sym_k) {
-		xm_log("disabling k symmetry");
+	if (sym_k)
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 0);
-	}
 	free(nzblk);
 }

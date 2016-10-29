@@ -1043,8 +1043,6 @@ main(int argc, char **argv)
 		return (1);
 	}
 
-	xm_set_log_stream(stderr);
-
 	if ((count = atoi(argv[1])) < 0) {
 		count = -count;
 		skip = 1;
