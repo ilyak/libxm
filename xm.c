@@ -269,7 +269,7 @@ xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 }
 
 static void
-xm_dim_set_mask2(xm_dim_t *a, const xm_dim_t *ma,
+xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *ma,
     const xm_dim_t *b, const xm_dim_t *mb)
 {
 	size_t i;
@@ -1033,8 +1033,8 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 	xm_scalar_t *buf_b_ptr = buf_b;
 	blkidxa = xm_dim_zero(ctx->a->dim.n);
 	blkidxb = xm_dim_zero(ctx->b->dim.n);
-	xm_dim_set_mask2(&blkidxa, &ctx->aidxa, &blkidxc, &ctx->cidxc);
-	xm_dim_set_mask2(&blkidxb, &ctx->aidxb, &blkidxc, &ctx->aidxc);
+	xm_dim_set_mask(&blkidxa, &ctx->aidxa, &blkidxc, &ctx->cidxc);
+	xm_dim_set_mask(&blkidxb, &ctx->aidxb, &blkidxc, &ctx->aidxc);
 
 	for (i = 0; i < ctx->nblk_k; i++) {
 		struct xm_block *blk_a = xm_tensor_get_block(ctx->a, &blkidxa);
@@ -1090,7 +1090,7 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 }
 
 static size_t
-compute_stride_idx(struct ctx *ctx, const xm_dim_t *blkidxc)
+compute_stride_for_block(struct ctx *ctx, const xm_dim_t *blkidxc)
 {
 	struct xm_block *blk_a, *blk_b;
 	xm_dim_t blkidxa, blkidxb;
@@ -1098,8 +1098,8 @@ compute_stride_idx(struct ctx *ctx, const xm_dim_t *blkidxc)
 
 	blkidxa = xm_dim_zero(ctx->a->dim.n);
 	blkidxb = xm_dim_zero(ctx->b->dim.n);
-	xm_dim_set_mask2(&blkidxa, &ctx->aidxa, blkidxc, &ctx->cidxc);
-	xm_dim_set_mask2(&blkidxb, &ctx->aidxb, blkidxc, &ctx->aidxc);
+	xm_dim_set_mask(&blkidxa, &ctx->aidxa, blkidxc, &ctx->cidxc);
+	xm_dim_set_mask(&blkidxb, &ctx->aidxb, blkidxc, &ctx->aidxc);
 
 	for (i = 0; i < ctx->nblk_k; i++) {
 		blk_a = xm_tensor_get_block(ctx->a, &blkidxa);
@@ -1123,7 +1123,7 @@ compute_stride(struct ctx *ctx)
 		for (j = 0; j < ctx->nblk_n; j++) {
 			blk = xm_tensor_get_block(ctx->c, &blkidxc);
 			if (blk->is_source) {
-				s = compute_stride_idx(ctx, &blkidxc);
+				s = compute_stride_for_block(ctx, &blkidxc);
 				if (s > stride)
 					stride = s;
 			}
