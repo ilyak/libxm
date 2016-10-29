@@ -165,16 +165,6 @@ timer_stop(struct timer *timer)
 	xm_log("%s done in %d sec", timer->label, (int)total);
 }
 
-/*
-static void
-swap_ptr(xm_scalar_t **a, xm_scalar_t **b)
-{
-	xm_scalar_t *t = *a;
-	*a = *b;
-	*b = t;
-}
-*/
-
 xm_dim_t
 xm_dim_2(size_t dim1, size_t dim2)
 {
@@ -278,17 +268,6 @@ xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 	return (1);
 }
 
-//static void
-//xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *b, const xm_dim_t *mask)
-//{
-//	size_t i;
-//
-//	assert(a->n == b->n);
-//
-//	for (i = 0; i < mask->n; i++)
-//		a->i[mask->i[i]] = b->i[mask->i[i]];
-//}
-
 static void
 xm_dim_set_mask2(xm_dim_t *a, const xm_dim_t *ma,
     const xm_dim_t *b, const xm_dim_t *mb)
@@ -377,23 +356,6 @@ xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim)
 	}
 	return (ret);
 }
-
-//static size_t
-//xm_dim_offset_mask(const xm_dim_t *idx, const xm_dim_t *dim,
-//    const xm_dim_t *mask)
-//{
-//	size_t i, offset, power;
-//
-//	assert(xm_dim_less(idx, dim));
-//
-//	offset = 0;
-//	power = 1;
-//	for (i = 0; i < mask->n; i++) {
-//		offset += idx->i[mask->i[i]] * power;
-//		power *= dim->i[mask->i[i]];
-//	}
-//	return (offset);
-//}
 
 size_t
 xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
@@ -834,19 +796,6 @@ xm_tensor_free(struct xm_tensor *tensor)
 		free(tensor);
 	}
 }
-
-//static int
-//skip_idx(xm_dim_t *idx, struct xm_tensor *a, const xm_dim_t *mask,
-//    const bitstr_t *skip)
-//{
-//	size_t i = xm_dim_offset_mask(idx, &a->dim, mask);
-//
-//	for (; bit_test(skip, i); i++)
-//		if (xm_dim_inc_mask(idx, &a->dim, mask))
-//			return (1);
-//
-//	return (0);
-//}
 
 static void
 block_get_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
