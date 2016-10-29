@@ -81,21 +81,6 @@ struct ctx {
 	size_t nblk_m, nblk_n, nblk_k;
 };
 
-/** helper structure for passing data to worker threads */
-struct async {
-	struct xm_tensor       *tensor;
-	xm_dim_t                blk_idx;
-	xm_dim_t                mask_i;
-	xm_dim_t                mask_j;
-	size_t                  nblk_i;
-	size_t                  nblk_j;
-	const bitstr_t         *skip_i;
-	const bitstr_t         *skip_j;
-	xm_scalar_t            *data;
-	size_t                  stride;
-	xm_scalar_t            *from;
-};
-
 #if defined(XM_SCALAR_FLOAT)
 #define xm_blas_gemm sgemm_
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
