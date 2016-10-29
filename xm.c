@@ -57,9 +57,7 @@ struct xm_tensor {
 	struct xm_allocator    *allocator;
 	/** array of all tensor blocks */
 	struct xm_block        *blocks;
-	/** buffer that is large enough to store any single block data */
-	xm_scalar_t            *block_buf;
-	/** size of the above buffer */
+	/** size of the largest tensor block */
 	size_t                  max_block_size;
 };
 
@@ -95,8 +93,8 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 	    b, &ldb, &beta, c, &ldc);
 }
 
-#define xm_log_line(msg) \
-    xm_log("%s (in %s on line %d)", msg, __func__, __LINE__)
+//#define xm_log_line(msg) \
+//    xm_log("%s (in %s on line %d)", msg, __func__, __LINE__)
 //#define xm_log_perror(msg) \
 //    xm_log("%s (%s)", msg, strerror(errno))
 
@@ -511,12 +509,14 @@ void
 xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 {
 	struct xm_block *dstblk, *srcblk;
+	xm_scalar_t *buf;
 	size_t i, nblk, size;
 
 	assert(xm_tensor_is_initialized(dst));
 	assert(xm_tensor_is_initialized(src));
 	assert(xm_dim_eq(&dst->dim, &src->dim));
 
+	buf = xmalloc(dst->max_block_size * sizeof(*buf));
 	nblk = xm_dim_dot(&dst->dim);
 
 	for (i = 0; i < nblk; i++) {
@@ -529,12 +529,13 @@ xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 			size = xm_dim_dot(&dstblk->dim) * sizeof(xm_scalar_t);
 			assert(srcblk->data_ptr != XM_NULL_PTR);
 			xm_allocator_read(src->allocator, srcblk->data_ptr,
-			    dst->block_buf, size);
+			    buf, size);
 			assert(dstblk->data_ptr != XM_NULL_PTR);
 			xm_allocator_write(dst->allocator, dstblk->data_ptr,
-			    dst->block_buf, size);
+			    buf, size);
 		}
 	}
+	free(buf);
 }
 
 xm_scalar_t
@@ -542,20 +543,24 @@ xm_tensor_get_element(struct xm_tensor *tensor, const xm_dim_t *blk_i,
     const xm_dim_t *el_i)
 {
 	struct xm_block *block;
+	xm_scalar_t *buf, ret;
 	xm_dim_t idx, dim_p;
 	size_t el_off, size_bytes;
 
 	block = xm_tensor_get_block(tensor, blk_i);
 	if (!block->is_nonzero)
 		return (0.0);
-	size_bytes = xm_dim_dot(&block->dim) * sizeof(xm_scalar_t);
 	assert(block->data_ptr != XM_NULL_PTR);
+	size_bytes = xm_dim_dot(&block->dim) * sizeof(xm_scalar_t);
+	buf = xmalloc(size_bytes);
 	xm_allocator_read(tensor->allocator, block->data_ptr,
-	    tensor->block_buf, size_bytes);
+	    buf, size_bytes);
 	idx = xm_dim_permute(el_i, &block->permutation);
 	dim_p = xm_dim_permute(&block->dim, &block->permutation);
 	el_off = xm_dim_offset(&idx, &dim_p);
-	return (block->scalar * tensor->block_buf[el_off]);
+	ret = block->scalar * buf[el_off];
+	free(buf);
+	return (ret);
 }
 
 static void
@@ -661,14 +666,8 @@ xm_tensor_set_block_buf(struct xm_tensor *a, const xm_dim_t *blkdim)
 {
 	size_t size = xm_dim_dot(blkdim);
 
-	if (size > a->max_block_size) {
-		if ((a->block_buf = realloc(a->block_buf,
-		    size * sizeof(xm_scalar_t))) == NULL) {
-			xm_log_line("out of memory");
-			abort();
-		}
+	if (size > a->max_block_size)
 		a->max_block_size = size;
-	}
 }
 
 void
@@ -820,7 +819,6 @@ xm_tensor_free(struct xm_tensor *tensor)
 	if (tensor) {
 		free(tensor->blocks);
 		free(tensor->label);
-		free(tensor->block_buf);
 		free(tensor);
 	}
 }
