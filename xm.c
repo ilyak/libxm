@@ -25,9 +25,6 @@
 #include <string.h>
 #include <time.h>
 
-#include <pthread.h>
-#include <unistd.h>
-
 #include "xm.h"
 
 /** defines a tensor block */
