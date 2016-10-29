@@ -28,12 +28,6 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#ifdef HAVE_BITSTRING_H
-#include <bitstring.h>
-#else
-#include "compat/bitstring.h"
-#endif
-
 #include "xm.h"
 
 /** defines a tensor block */
