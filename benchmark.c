@@ -54,9 +54,9 @@ make_benchmark_1(size_t o, size_t v)
 	setup.idxa = "jkbc";
 	setup.idxb = "ikac";
 	setup.idxc = "iajb";
-	setup.init_a = xm_tensor_init_oovv;
-	setup.init_b = xm_tensor_init_oovv;
-	setup.init_c = xm_tensor_init_ovov;
+	setup.init_a = xm_aux_init_oovv;
+	setup.init_b = xm_aux_init_oovv;
+	setup.init_c = xm_aux_init_ovov;
 	setup.alpha = 1.0;
 
 	return (setup);
@@ -73,9 +73,9 @@ make_benchmark_2(size_t o, size_t v)
 	setup.idxa = "abcd";
 	setup.idxb = "ijcd";
 	setup.idxc = "ijab";
-	setup.init_a = xm_tensor_init_vvvv;
-	setup.init_b = xm_tensor_init_oovv;
-	setup.init_c = xm_tensor_init_oovv;
+	setup.init_a = xm_aux_init_vvvv;
+	setup.init_b = xm_aux_init_oovv;
+	setup.init_c = xm_aux_init_oovv;
 	setup.alpha = 1.0;
 
 	return (setup);
@@ -92,9 +92,9 @@ make_benchmark_3(size_t o, size_t v)
 	setup.idxa = "iabc";
 	setup.idxb = "jc";
 	setup.idxc = "iajb";
-	setup.init_a = xm_tensor_init_ovvv;
-	setup.init_b = xm_tensor_init_ov;
-	setup.init_c = xm_tensor_init_ovov;
+	setup.init_a = xm_aux_init_ovvv;
+	setup.init_b = xm_aux_init_ov;
+	setup.init_c = xm_aux_init_ovov;
 	setup.alpha = 1.0;
 
 	return (setup);
@@ -111,9 +111,9 @@ make_benchmark_4(size_t o, size_t v)
 	setup.idxa = "ijda";
 	setup.idxb = "kdbc";
 	setup.idxc = "ijkabc";
-	setup.init_a = xm_tensor_init_oovv;
-	setup.init_b = xm_tensor_init_ovvv;
-	setup.init_c = xm_tensor_init_ooovvv;
+	setup.init_a = xm_aux_init_oovv;
+	setup.init_b = xm_aux_init_ovvv;
+	setup.init_c = xm_aux_init_ooovvv;
 	setup.alpha = 1.0;
 
 	return (setup);

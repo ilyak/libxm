@@ -545,9 +545,9 @@ make_test_1(void)
 	t.idxa = "ab";
 	t.idxb = "cb";
 	t.idxc = "ca";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_1;
 	t.alpha = xm_random_scalar();
 
@@ -568,9 +568,9 @@ make_test_2(void)
 	t.idxa = "ab";
 	t.idxb = "cb";
 	t.idxc = "ca";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init_oo;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init_oo;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_1;
 	t.alpha = xm_random_scalar();
 
@@ -598,9 +598,9 @@ make_test_3(void)
 	t.idxa = "abc";
 	t.idxb = "dbe";
 	t.idxc = "eadc";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_3;
 	t.alpha = xm_random_scalar();
 
@@ -626,9 +626,9 @@ make_test_4(void)
 	t.idxa = "abc";
 	t.idxb = "dbc";
 	t.idxc = "ad";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_4;
 	t.alpha = xm_random_scalar();
 
@@ -658,9 +658,9 @@ make_test_5(void)
 	t.idxa = "abcd";
 	t.idxb = "ibjd";
 	t.idxc = "ijac";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_5;
 	t.alpha = xm_random_scalar();
 
@@ -690,9 +690,9 @@ make_test_6(void)
 	t.idxa = "abcd";
 	t.idxb = "ibjd";
 	t.idxc = "ijac";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init_oovv;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init_oovv;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_5;
 	t.alpha = xm_random_scalar();
 
@@ -716,9 +716,9 @@ make_test_7(void)
 	t.idxa = "ijab";
 	t.idxb = "klab";
 	t.idxc = "klij";
-	t.init_a = xm_tensor_init_oovv;
-	t.init_b = xm_tensor_init_oovv;
-	t.init_c = xm_tensor_init_oovv;
+	t.init_a = xm_aux_init_oovv;
+	t.init_b = xm_aux_init_oovv;
+	t.init_c = xm_aux_init_oovv;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
 
@@ -741,9 +741,9 @@ make_test_8(void)
 	t.idxa = "abcd";
 	t.idxb = "ijcd";
 	t.idxc = "ijab";
-	t.init_a = xm_tensor_init_vvvv;
-	t.init_b = xm_tensor_init_oovv;
-	t.init_c = xm_tensor_init_oovv;
+	t.init_a = xm_aux_init_vvvv;
+	t.init_b = xm_aux_init_oovv;
+	t.init_c = xm_aux_init_oovv;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
 
@@ -764,9 +764,9 @@ make_test_9(void)
 	t.idxa = "abc";
 	t.idxb = "ib";
 	t.idxc = "cai";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_9;
 	t.alpha = xm_random_scalar();
 
@@ -793,9 +793,9 @@ make_test_10(void)
 	t.idxa = "ab";
 	t.idxb = "ijak";
 	t.idxc = "ibjk";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_10;
 	t.alpha = xm_random_scalar();
 
@@ -827,9 +827,9 @@ make_test_11(void)
 	t.idxa = "idjk";
 	t.idxb = "abdc";
 	t.idxc = "ijkabc";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_11;
 	t.alpha = xm_random_scalar();
 
@@ -852,9 +852,9 @@ make_test_12(void)
 	t.idxa = "ijda";
 	t.idxb = "kdbc";
 	t.idxc = "ijkabc";
-	t.init_a = xm_tensor_init_oovv;
-	t.init_b = xm_tensor_init_ovvv;
-	t.init_c = xm_tensor_init_ooovvv;
+	t.init_a = xm_aux_init_oovv;
+	t.init_b = xm_aux_init_ovvv;
+	t.init_c = xm_aux_init_ooovvv;
 	t.ref_compare = ref_compare_12;
 	t.alpha = xm_random_scalar();
 
@@ -873,9 +873,9 @@ make_test_13(void)
 	t.idxa = "ba";
 	t.idxb = "bc";
 	t.idxc = "ca";
-	t.init_a = xm_tensor_init_13;
-	t.init_b = xm_tensor_init_13;
-	t.init_c = xm_tensor_init_13c;
+	t.init_a = xm_aux_init_13;
+	t.init_b = xm_aux_init_13;
+	t.init_c = xm_aux_init_13c;
 	t.ref_compare = ref_compare_13;
 	t.alpha = xm_random_scalar();
 
@@ -894,9 +894,9 @@ make_test_14(void)
 	t.idxa = "abcd";
 	t.idxb = "ijcd";
 	t.idxc = "ijab";
-	t.init_a = xm_tensor_init_14;
-	t.init_b = xm_tensor_init_14b;
-	t.init_c = xm_tensor_init_14b;
+	t.init_a = xm_aux_init_14;
+	t.init_b = xm_aux_init_14b;
+	t.init_c = xm_aux_init_14b;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
 
@@ -920,9 +920,9 @@ make_test_15(void)
 	t.idxa = "ab";
 	t.idxb = "ijab";
 	t.idxc = "ij";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_15;
 	t.alpha = xm_random_scalar();
 
@@ -944,9 +944,9 @@ make_test_16(void)
 	t.idxa = "ab";
 	t.idxb = "ij";
 	t.idxc = "abij";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_16;
 	t.alpha = xm_random_scalar();
 
