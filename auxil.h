@@ -19,9 +19,12 @@
 
 #include "xm.h"
 
-#define XM_INIT_NONE 0
-#define XM_INIT_ZERO 1
-#define XM_INIT_RAND 2
+#define XM_INIT_NONE          0  /* Do not initialize memory. */
+#define XM_INIT_ZERO          1  /* Initialize with zeros. */
+#define XM_INIT_RAND          2  /* Initialize with random data. */
+
+#define XM_RESULT_SUCCESS     0  /* No error. */
+#define XM_RESULT_NO_MEMORY   1  /* Cannot allocate memory. */
 
 int xm_aux_init(struct xm_tensor *, struct xm_allocator *, size_t, int);
 int xm_aux_init_oo(struct xm_tensor *, struct xm_allocator *, size_t, int);
