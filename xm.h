@@ -23,8 +23,8 @@
 extern "C" {
 #endif
 
-/* Maximum number of tensor dimensions. This can be increased if necessary. */
-#define XM_MAX_DIM                  6
+/* Maximum number of tensor dimensions; change if necessary. */
+#define XM_MAX_DIM 6
 
 #if defined(XM_SCALAR_FLOAT)
 typedef float xm_scalar_t;
