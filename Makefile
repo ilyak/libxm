@@ -15,7 +15,7 @@ SCALAR_TYPE= XM_SCALAR_DOUBLE
 
 # Intel Compiler with MKL on Linux (release build)
 #CC= icc
-#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -I./compat -mkl=parallel
+#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -openmp -I./compat -mkl=sequential
 #LDFLAGS=
 #LIBS= -lpthread -lm
 
