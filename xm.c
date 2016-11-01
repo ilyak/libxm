@@ -1170,6 +1170,8 @@ get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
 		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
 	}
 
+	if ((*nnzblkout = nnzblk) == 0)
+		return (NULL);
 	nzblkptr = nzblk = xmalloc(nnzblk * sizeof(xm_dim_t));
 
 	idx = xm_dim_zero(ctx->c->dim.n);
@@ -1183,7 +1185,6 @@ get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
 		xm_dim_inc_mask(&idx, &ctx->c->dim, &ctx->cidxc);
 	}
 
-	*nnzblkout = nnzblk;
 	return (nzblk);
 }
 
