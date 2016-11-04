@@ -27,6 +27,8 @@
 
 #include "xm.h"
 
+#define BATCH_BLOCKS_K 128
+
 /** defines a tensor block */
 struct xm_block {
 	/** pointer to data allocated with an allocator */
@@ -1008,26 +1010,28 @@ set_k_symmetry(struct xm_tensor *a, xm_dim_t cidxa, xm_dim_t aidxa,
 }
 
 static void
-compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
-    xm_scalar_t *buf)
+compute_block(struct ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
 {
-	size_t i, m, n, k = 0;
+	size_t i, m, n, k = 0, nbatched = 0, stride_a, stride_b;
 	xm_scalar_t *buf_a, *buf_b, *blkbuf_a, *blkbuf_b;
-	xm_scalar_t *blkbuf_c1, *blkbuf_c2;
+	xm_scalar_t *blkbuf_c1, *blkbuf_c2, *buf_a_ptr, *buf_b_ptr;
 	struct xm_block *blk_c = xm_tensor_get_block(ctx->c, &blkidxc);
 	xm_dim_t blkidxa, blkidxb;
+	int isfirstbatch = 1;
 
 	m = xm_dim_dot_mask(&blk_c->dim, &ctx->cidxc);
 	n = xm_dim_dot_mask(&blk_c->dim, &ctx->aidxc);
+	stride_a = BATCH_BLOCKS_K * ctx->a->max_block_size / m;
+	stride_b = BATCH_BLOCKS_K * ctx->b->max_block_size / n;
 	buf_a = buf;
-	buf_b = buf_a + stride * m;
-	blkbuf_a = buf_b + stride * n;
+	buf_b = buf_a + BATCH_BLOCKS_K * ctx->a->max_block_size;
+	blkbuf_a = buf_b + BATCH_BLOCKS_K * ctx->b->max_block_size;
 	blkbuf_b = blkbuf_a + ctx->a->max_block_size;
 	blkbuf_c1 = blkbuf_b + ctx->b->max_block_size;
 	blkbuf_c2 = blkbuf_c1 + ctx->c->max_block_size;
 
-	xm_scalar_t *buf_a_ptr = buf_a;
-	xm_scalar_t *buf_b_ptr = buf_b;
+	buf_a_ptr = buf_a;
+	buf_b_ptr = buf_b;
 	blkidxa = xm_dim_zero(ctx->a->dim.n);
 	blkidxb = xm_dim_zero(ctx->b->dim.n);
 	xm_dim_set_mask(&blkidxa, &ctx->aidxa, &blkidxc, &ctx->cidxc);
@@ -1047,45 +1051,62 @@ compute_block(struct ctx *ctx, size_t stride, xm_dim_t blkidxc,
 			xm_allocator_read(ctx->a->allocator, blk_a->data_ptr,
 			    blkbuf_a, blk_a_size * sizeof(xm_scalar_t));
 			block_get_matrix(blk_a, ctx->cidxa, ctx->aidxa,
-			    kblk, mblk, blkbuf_a, buf_a_ptr, stride);
+			    kblk, mblk, blkbuf_a, buf_a_ptr, stride_a);
 			buf_a_ptr += kblk;
 
 			size_t blk_b_size = xm_dim_dot(&blk_b->dim);
 			xm_allocator_read(ctx->b->allocator, blk_b->data_ptr,
 			    blkbuf_b, blk_b_size * sizeof(xm_scalar_t));
 			block_get_matrix(blk_b, ctx->cidxb, ctx->aidxb,
-			    kblk, nblk, blkbuf_b, buf_b_ptr, stride);
+			    kblk, nblk, blkbuf_b, buf_b_ptr, stride_b);
 			buf_b_ptr += kblk;
 
 			k += kblk;
+			nbatched++;
 		}
+
+		if (nbatched >= BATCH_BLOCKS_K ||
+		   (i == ctx->nblk_k-1 && nbatched > 0)) {
+			xm_scalar_t beta = isfirstbatch ? 0.0 : 1.0;
+
+			if (ctx->aidxc.n > 0 && ctx->aidxc.i[0] == 0) {
+				gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
+				    ctx->alpha, buf_b, (int)stride_b, buf_a,
+				    (int)stride_a, beta, blkbuf_c1, (int)n);
+			} else {
+				gemm_wrapper('T', 'N', (int)m, (int)n, (int)k,
+				    ctx->alpha, buf_a, (int)stride_a, buf_b,
+				    (int)stride_b, beta, blkbuf_c1, (int)m);
+			}
+
+			k = 0;
+			buf_a_ptr = buf_a;
+			buf_b_ptr = buf_b;
+			isfirstbatch = 0;
+			nbatched = 0;
+		}
+
 		xm_dim_inc_mask(&blkidxa, &ctx->a->dim, &ctx->cidxa);
 		xm_dim_inc_mask(&blkidxb, &ctx->b->dim, &ctx->cidxb);
 	}
 
-	if (k == 0) {
+	if (isfirstbatch) {
 		size_t size = xm_dim_dot(&blk_c->dim) * sizeof(xm_scalar_t);
 		memset(blkbuf_c1, 0, size);
 		xm_allocator_write(ctx->c->allocator, blk_c->data_ptr,
 		    blkbuf_c1, size);
 		return;
 	}
-
 	if (ctx->aidxc.n > 0 && ctx->aidxc.i[0] == 0) {
-		gemm_wrapper('T', 'N', (int)n, (int)m, (int)k,
-		    ctx->alpha, buf_b, (int)stride, buf_a, (int)stride,
-		    0.0, blkbuf_c1, (int)n);
 		block_set_matrix(blk_c, ctx->aidxc, ctx->cidxc, n, m,
 		    blkbuf_c1, n, blkbuf_c2, ctx->c->allocator);
 	} else {
-		gemm_wrapper('T', 'N', (int)m, (int)n, (int)k,
-		    ctx->alpha, buf_a, (int)stride, buf_b, (int)stride,
-		    0.0, blkbuf_c1, (int)m);
 		block_set_matrix(blk_c, ctx->cidxc, ctx->aidxc, m, n,
 		    blkbuf_c1, m, blkbuf_c2, ctx->c->allocator);
 	}
 }
 
+#if 0
 static size_t
 compute_stride_for_block(struct ctx *ctx, const xm_dim_t *blkidxc)
 {
@@ -1151,6 +1172,7 @@ compute_max_mplusn(struct ctx *ctx)
 	}
 	return (mplusn);
 }
+#endif
 
 static xm_dim_t *
 get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
@@ -1194,7 +1216,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 {
 	struct ctx ctx;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;
-	size_t i, si1, si2, stride, max_mplusn, size, nnzblk;
+	size_t i, si1, si2, size, nnzblk;
 	int sym_k;
 
 	assert(xm_tensor_is_initialized(a));
@@ -1245,16 +1267,14 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 1);
 
 	nzblk = get_nonzero_blocks(&ctx, &nnzblk);
-	stride = compute_stride(&ctx);
-	max_mplusn = compute_max_mplusn(&ctx);
-	size = stride * max_mplusn + a->max_block_size +
-	    b->max_block_size + 2 * c->max_block_size;
+	size = a->max_block_size * (BATCH_BLOCKS_K+1) +
+	    b->max_block_size * (BATCH_BLOCKS_K+1) + 2 * c->max_block_size;
 #pragma omp parallel private(i)
 {
 	xm_scalar_t *buf = xmalloc(size * sizeof(xm_scalar_t));
 #pragma omp for schedule(dynamic)
 	for (i = 0; i < nnzblk; i++)
-		compute_block(&ctx, stride, nzblk[i], buf);
+		compute_block(&ctx, nzblk[i], buf);
 	free(buf);
 }
 	if (sym_k)
