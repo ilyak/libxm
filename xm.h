@@ -120,6 +120,10 @@ int xm_tensor_block_is_initialized(const struct xm_tensor *tensor,
 xm_dim_t xm_tensor_get_block_dim(const struct xm_tensor *tensor,
     const xm_dim_t *blk_idx);
 
+/* Allocate data for block with dimensions specified by blk_dim. */
+uintptr_t xm_allocate_block_data(struct xm_allocator *allocator,
+    const xm_dim_t *blk_dim);
+
 /* Get block data pointer. */
 uintptr_t xm_tensor_get_block_data_ptr(const struct xm_tensor *tensor,
     const xm_dim_t *blk_idx);

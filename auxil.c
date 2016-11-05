@@ -44,8 +44,8 @@ xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
 
 	size = xm_dim_dot(dim);
 	size_bytes = size * sizeof(xm_scalar_t);
+	ptr = xm_allocate_block_data(allocator, dim);
 
-	ptr = xm_allocator_allocate(allocator, size_bytes);
 	if (ptr == XM_NULL_PTR)
 		return (XM_NULL_PTR);
 	if (type == XM_INIT_NONE)

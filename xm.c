@@ -605,6 +605,19 @@ xm_tensor_get_block_dim(const struct xm_tensor *tensor, const xm_dim_t *idx)
 }
 
 uintptr_t
+xm_allocate_block_data(struct xm_allocator *allocator, const xm_dim_t *blk_dim)
+{
+	size_t size;
+
+	assert(allocator);
+	assert(blk_dim);
+
+	size = xm_dim_dot(blk_dim) * sizeof(xm_scalar_t);
+
+	return (xm_allocator_allocate(allocator, size));
+}
+
+uintptr_t
 xm_tensor_get_block_data_ptr(const struct xm_tensor *tensor,
     const xm_dim_t *idx)
 {
