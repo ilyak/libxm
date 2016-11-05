@@ -757,13 +757,13 @@ xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *idx,
 int
 xm_tensor_is_initialized(const struct xm_tensor *tensor)
 {
-	size_t i, dim;
+	size_t i, nblk;
 
 	assert(tensor);
 
-	dim = xm_dim_dot(&tensor->dim);
+	nblk = xm_dim_dot(&tensor->dim);
 
-	for (i = 0; i < dim; i++)
+	for (i = 0; i < nblk; i++)
 		if (!tensor->blocks[i].is_initialized)
 			return (0);
 	return (1);
