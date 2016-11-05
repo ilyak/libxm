@@ -1065,8 +1065,8 @@ compute_block(struct ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
 			nbatched++;
 		}
 
-		if (nbatched >= BATCH_BLOCKS_K ||
-		   (i == ctx->nblk_k-1 && nbatched > 0)) {
+		if (nbatched >= BATCH_BLOCKS_K || (i == ctx->nblk_k-1 &&
+		    nbatched > 0)) {
 			xm_scalar_t beta = isfirstbatch ? 0.0 : 1.0;
 
 			if (ctx->aidxc.n > 0 && ctx->aidxc.i[0] == 0) {
