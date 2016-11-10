@@ -16,6 +16,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <err.h>
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
@@ -94,29 +95,16 @@ gemm_wrapper(char transa, char transb, int m, int n, int k, xm_scalar_t alpha,
 	    b, &ldb, &beta, c, &ldc);
 }
 
-static void
-fatalx(const char *msg, ...)
-{
-	char	*fmt;
-	va_list	 ap;
-
-	va_start(ap, msg);
-	if (asprintf(&fmt, "fatal: %s\n", msg) == -1)
-		exit(1);
-	vfprintf(stderr, fmt, ap);
-	exit(1);
-}
-
 static void *
 xmalloc(size_t size)
 {
 	void *ptr;
 
 	if (size == 0)
-		fatalx("xmalloc: zero size");
+		errx(1, "xmalloc: zero size");
 	ptr = malloc(size);
 	if (ptr == NULL)
-		fatalx("xmalloc: allocating %zu bytes: %s",
+		errx(1, "xmalloc: allocating %zu bytes: %s",
 		    size, strerror(errno));
 	return ptr;
 }
@@ -127,10 +115,10 @@ xcalloc(size_t nmemb, size_t size)
 	void *ptr;
 
 	if (size == 0 || nmemb == 0)
-		fatalx("xcalloc: zero size");
+		errx(1, "xcalloc: zero size");
 	ptr = calloc(nmemb, size);
 	if (ptr == NULL)
-		fatalx("xcalloc: allocating %zu * %zu bytes: %s",
+		errx(1, "xcalloc: allocating %zu * %zu bytes: %s",
 		    nmemb, size, strerror(errno));
 	return ptr;
 }
@@ -141,7 +129,7 @@ xstrdup(const char *str)
 	char *cp;
 
 	if ((cp = strdup(str)) == NULL)
-		fatalx("xstrdup: %s", strerror(errno));
+		errx(1, "xstrdup: %s", strerror(errno));
 	return cp;
 }
 
