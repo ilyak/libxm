@@ -1163,10 +1163,15 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	parse_idx(idxc, idxb, &aidxc, &aidxb);
 
 	ctx.alpha = alpha;
-	ctx.a = a, ctx.b = b, ctx.c = c;
-	ctx.cidxa = cidxa, ctx.aidxa = aidxa;
-	ctx.cidxb = cidxb, ctx.aidxb = aidxb;
-	ctx.cidxc = cidxc, ctx.aidxc = aidxc;
+	ctx.a = a;
+	ctx.b = b;
+	ctx.c = c;
+	ctx.cidxa = cidxa;
+	ctx.aidxa = aidxa;
+	ctx.cidxb = cidxb;
+	ctx.aidxb = aidxb;
+	ctx.cidxc = cidxc;
+	ctx.aidxc = aidxc;
 	ctx.nblk_m = xm_dim_dot_mask(&a->dim, &aidxa);
 	ctx.nblk_n = xm_dim_dot_mask(&b->dim, &aidxb);
 	ctx.nblk_k = xm_dim_dot_mask(&a->dim, &cidxa);
