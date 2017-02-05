@@ -161,7 +161,10 @@ void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
 /* Returns non-zero if all blocks of a tensor are initialized. */
 int xm_tensor_is_initialized(const struct xm_tensor *tensor);
 
-/* Release all resources associated with this tensor. */
+/* Release all blocks associated with this tensor. */
+void xm_tensor_free_blocks(struct xm_tensor *tensor);
+
+/* Release resources associated with this tensor, except the data blocks. */
 void xm_tensor_free(struct xm_tensor *tensor);
 
 /* Contract two tensors (c = alpha * a * b) over contraction indices

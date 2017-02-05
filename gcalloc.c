@@ -134,12 +134,12 @@ xm_allocator_create(const char *path)
 	char buf[BUFSIZ];
 
 	allocator = xcalloc(1, sizeof *allocator);
+	if (path == NULL)
+		return (allocator);
 	allocator->blksize = xcalloc(XM_MAX_BLKID,
 	    sizeof *allocator->blksize);
 	allocator->blkoffset = xcalloc(XM_MAX_BLKID,
 	    sizeof *allocator->blkoffset);
-	if (path == NULL)
-		return (allocator);
 	snprintf(buf, sizeof buf, "%s.%d", path, allocator->gen);
 	if ((allocator->fd = open(buf, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR)) == -1)
 		err(1, "open");
@@ -162,13 +162,15 @@ xm_allocator_allocate(struct xm_allocator *allocator, size_t size_bytes)
 {
 	size_t blkid;
 
+	if (size_bytes == 0)
+		errx(1, "xm_allocator: zero size allocation");
 	if (allocator->path == NULL)
 		return ((uintptr_t)(malloc(size_bytes)));
 #pragma omp critical
 {
 	blkid = allocator->blkid;
 	if (blkid == XM_MAX_BLKID)
-		errx(1, "maximum number of blocks reached");
+		errx(1, "xm_allocator: maximum number of blocks reached");
 	if ((size_t)allocator->offset + size_bytes > allocator->totalbytes) {
 		size_t allocbytes = allocator_allocbytes(allocator);
 		if (allocbytes > allocator->totalbytes / 2)
@@ -275,19 +277,27 @@ void
 xm_allocator_destroy(struct xm_allocator *allocator)
 {
 	char buf[BUFSIZ];
+	size_t i;
 
 	if (allocator) {
-		if (allocator->path) {
-			snprintf(buf, sizeof buf, "%s.%d", allocator->path,
-			    allocator->gen);
-			if (close(allocator->fd))
-				err(1, "close");
-			if (unlink(buf))
-				err(1, "unlink");
-			free(allocator->path);
+		if (allocator->path == NULL) {
+			free(allocator);
+			return;
 		}
+		for (i = 0; i < allocator->blkid; i++) {
+			if (allocator->blksize[i] != 0 ||
+			    allocator->blkoffset[i] != (off_t)-1)
+				errx(1, "xm_allocator: allocated blocks found");
+		}
+		snprintf(buf, sizeof buf, "%s.%d", allocator->path,
+		    allocator->gen);
+		if (close(allocator->fd))
+			err(1, "close");
+		if (unlink(buf))
+			err(1, "unlink");
 		free(allocator->blksize);
 		free(allocator->blkoffset);
+		free(allocator->path);
 		free(allocator);
 	}
 }

@@ -1026,6 +1026,10 @@ run_test(int test_num, int skip)
 	} else
 		printf("  skipping\n");
 
+	xm_tensor_free_blocks(a);
+	xm_tensor_free_blocks(b);
+	xm_tensor_free_blocks(c);
+	xm_tensor_free_blocks(d);
 	xm_tensor_free(a);
 	xm_tensor_free(b);
 	xm_tensor_free(c);

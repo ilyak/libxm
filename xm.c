@@ -787,6 +787,20 @@ xm_tensor_get_abs_dim(const struct xm_tensor *tensor)
 }
 
 void
+xm_tensor_free_blocks(struct xm_tensor *tensor)
+{
+	size_t i, nblk;
+
+	assert(tensor);
+	nblk = xm_dim_dot(&tensor->dim);
+	for (i = 0; i < nblk; i++) {
+		if (tensor->blocks[i].is_source)
+			xm_allocator_deallocate(tensor->allocator,
+			    tensor->blocks[i].data_ptr);
+	}
+}
+
+void
 xm_tensor_free(struct xm_tensor *tensor)
 {
 	if (tensor) {
