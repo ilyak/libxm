@@ -286,6 +286,8 @@ xm_allocator_destroy(struct xm_allocator *allocator)
 				err(1, "unlink");
 			free(allocator->path);
 		}
+		free(allocator->blksize);
+		free(allocator->blkoffset);
 		free(allocator);
 	}
 }
