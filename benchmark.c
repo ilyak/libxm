@@ -38,7 +38,6 @@ struct setup {
 	const char *idxb;
 	const char *idxc;
 	xm_scalar_t alpha;
-	xm_scalar_t beta;
 	int (*init_a)(struct xm_tensor *, struct xm_allocator *, size_t, int);
 	int (*init_b)(struct xm_tensor *, struct xm_allocator *, size_t, int);
 	int (*init_c)(struct xm_tensor *, struct xm_allocator *, size_t, int);
@@ -55,11 +54,10 @@ make_benchmark_1(size_t o, size_t v)
 	setup.idxa = "jkbc";
 	setup.idxb = "ikac";
 	setup.idxc = "iajb";
-	setup.init_a = xm_tensor_init_oovv;
-	setup.init_b = xm_tensor_init_oovv;
-	setup.init_c = xm_tensor_init_ovov;
+	setup.init_a = xm_aux_init_oovv;
+	setup.init_b = xm_aux_init_oovv;
+	setup.init_c = xm_aux_init_ovov;
 	setup.alpha = 1.0;
-	setup.beta = 1.0;
 
 	return (setup);
 }
@@ -75,11 +73,10 @@ make_benchmark_2(size_t o, size_t v)
 	setup.idxa = "abcd";
 	setup.idxb = "ijcd";
 	setup.idxc = "ijab";
-	setup.init_a = xm_tensor_init_vvvv;
-	setup.init_b = xm_tensor_init_oovv;
-	setup.init_c = xm_tensor_init_oovv;
+	setup.init_a = xm_aux_init_vvvv;
+	setup.init_b = xm_aux_init_oovv;
+	setup.init_c = xm_aux_init_oovv;
 	setup.alpha = 1.0;
-	setup.beta = 1.0;
 
 	return (setup);
 }
@@ -95,11 +92,10 @@ make_benchmark_3(size_t o, size_t v)
 	setup.idxa = "iabc";
 	setup.idxb = "jc";
 	setup.idxc = "iajb";
-	setup.init_a = xm_tensor_init_ovvv;
-	setup.init_b = xm_tensor_init_ov;
-	setup.init_c = xm_tensor_init_ovov;
+	setup.init_a = xm_aux_init_ovvv;
+	setup.init_b = xm_aux_init_ov;
+	setup.init_c = xm_aux_init_ovov;
 	setup.alpha = 1.0;
-	setup.beta = 1.0;
 
 	return (setup);
 }
@@ -115,11 +111,10 @@ make_benchmark_4(size_t o, size_t v)
 	setup.idxa = "ijda";
 	setup.idxb = "kdbc";
 	setup.idxc = "ijkabc";
-	setup.init_a = xm_tensor_init_oovv;
-	setup.init_b = xm_tensor_init_ovvv;
-	setup.init_c = xm_tensor_init_ooovvv;
+	setup.init_a = xm_aux_init_oovv;
+	setup.init_b = xm_aux_init_ovvv;
+	setup.init_c = xm_aux_init_ooovvv;
 	setup.alpha = 1.0;
-	setup.beta = 0.0;
 
 	return (setup);
 }
@@ -144,8 +139,8 @@ fatal(const char *msg)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: benchmark [-hm] [-i id] [-o no] [-v nv] "
-	    "[-b block_size]\n");
+	fprintf(stderr, "%s\n",
+"usage: benchmark [-hm] [-i id] [-o no] [-v nv] [-b block_size]");
 	exit(1);
 }
 
@@ -227,8 +222,6 @@ main(int argc, char **argv)
 	struct xm_tensor *a, *b, *c;
 	const char *path;
 
-	xm_set_log_stream(stderr);
-
 	args = args_parse(argc, argv);
 	args_print(&args);
 
@@ -252,8 +245,7 @@ main(int argc, char **argv)
 	if (s.init_c(c, allocator, args.block_size, XM_INIT_ZERO))
 		fatal("init(c)");
 
-	if (xm_contract(s.alpha, a, b, s.beta, c, s.idxa, s.idxb, s.idxc))
-		fatal("xm_contract");
+	xm_contract(s.alpha, a, b, c, s.idxa, s.idxb, s.idxc);
 
 	xm_tensor_free(a);
 	xm_tensor_free(b);

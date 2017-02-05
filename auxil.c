@@ -44,8 +44,8 @@ xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
 
 	size = xm_dim_dot(dim);
 	size_bytes = size * sizeof(xm_scalar_t);
+	ptr = xm_allocate_block_data(allocator, dim);
 
-	ptr = xm_allocator_allocate(allocator, size_bytes);
 	if (ptr == XM_NULL_PTR)
 		return (XM_NULL_PTR);
 	if (type == XM_INIT_NONE)
@@ -67,7 +67,7 @@ xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
 }
 
 int
-xm_tensor_init(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -98,7 +98,7 @@ xm_tensor_init(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_oo(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_oo(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -141,7 +141,7 @@ xm_tensor_init_oo(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_ov(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_ov(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -174,7 +174,7 @@ xm_tensor_init_ov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_vv(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_vv(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -217,7 +217,7 @@ xm_tensor_init_vv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_vvx(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_vvx(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -261,7 +261,7 @@ xm_tensor_init_vvx(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_oooo(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_oooo(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -380,7 +380,7 @@ xm_tensor_init_oooo(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_ooov(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_ooov(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -425,7 +425,7 @@ xm_tensor_init_ooov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_oovv(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_oovv(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -492,7 +492,7 @@ xm_tensor_init_oovv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_ovov(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_ovov(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -541,7 +541,7 @@ xm_tensor_init_ovov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_ovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_ovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -586,7 +586,7 @@ xm_tensor_init_ovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_vvvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_vvvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -705,7 +705,7 @@ xm_tensor_init_vvvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_ooovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_ooovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -774,7 +774,7 @@ xm_tensor_init_ooovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_13(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_13(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -822,7 +822,7 @@ xm_tensor_init_13(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_13c(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_13c(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -872,7 +872,7 @@ xm_tensor_init_13c(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;
@@ -986,7 +986,7 @@ xm_tensor_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 }
 
 int
-xm_tensor_init_14b(struct xm_tensor *tensor, struct xm_allocator *allocator,
+xm_aux_init_14b(struct xm_tensor *tensor, struct xm_allocator *allocator,
     size_t block_size, int type)
 {
 	uintptr_t block;

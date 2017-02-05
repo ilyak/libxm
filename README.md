@@ -21,11 +21,11 @@ Usage
 
 Once tensors are setup the contraction routine is similar to BLAS dgemm call:
 
-    xm_contract(alpha, A, B, beta, C, "abcd", "ijcd", "ijab");
+    xm_contract(alpha, A, B, C, "abcd", "ijcd", "ijab");
 
 This will preform the following contraction of two 4-index tensors A and B:
 
-    C_ijab := alpha * A_abcd * B_ijcd + beta * C_ijab
+    C_ijab := alpha * A_abcd * B_ijcd
 
 Compilation
 -----------
@@ -54,7 +54,7 @@ Source code overview
 - alloc.c/alloc.h - disk-backed allocator for large tensors
 - auxil.c/auxil.h - optional auxiliary functions for tensor creation
 - benchmark.c - sample benchmarks
-- test1.c/test2.c - facilities for randomized testing
+- test.c - facilities for randomized testing
 
 Who uses libxm
 --------------

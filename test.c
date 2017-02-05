@@ -43,9 +43,6 @@ struct test {
 	xm_dim_t dima;
 	xm_dim_t dimb;
 	xm_dim_t dimc;
-	xm_dim_t pdima;
-	xm_dim_t pdimb;
-	xm_dim_t pdimc;
 	const char *idxa;
 	const char *idxb;
 	const char *idxc;
@@ -53,7 +50,6 @@ struct test {
 	init_fn_t init_b;
 	init_fn_t init_c;
 	xm_scalar_t alpha;
-	xm_scalar_t beta;
 	void (*ref_compare)(struct xm_tensor *,
 			    struct xm_tensor *,
 			    struct xm_tensor *,
@@ -540,25 +536,20 @@ make_test_1(void)
 {
 	const size_t max_block_size = 9;
 	const size_t max_dim = 30;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_2(rnd(1, max_dim), rnd(1, max_dim));
 	t.dimb = xm_dim_2(rnd(1, max_dim), t.dima.i[1]);
 	t.dimc = xm_dim_2(t.dimb.i[0], t.dima.i[0]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "ab";
 	t.idxb = "cb";
 	t.idxc = "ca";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_1;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -568,26 +559,20 @@ make_test_2(void)
 {
 	const size_t max_block_size = 9;
 	const size_t max_dim = 20;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_2(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
+	t.dima = xm_dim_2(rnd(1, max_dim), rnd(1, max_dim));
 	t.dimb = xm_dim_2(t.dima.i[1], t.dima.i[1]);
 	t.dimc = xm_dim_2(t.dimb.i[0], t.dima.i[0]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "ab";
 	t.idxb = "cb";
 	t.idxc = "ca";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init_oo;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init_oo;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_1;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -597,32 +582,27 @@ make_test_3(void)
 {
 	const size_t max_block_size = 5;
 	const size_t max_dim = 4;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_3(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_3(pdim * rnd(1, max_dim),
+	t.dima = xm_dim_3(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_3(rnd(1, max_dim),
 			  t.dima.i[1],
-			  pdim * rnd(1, max_dim));
+			  rnd(1, max_dim));
 	t.dimc = xm_dim_4(t.dimb.i[2],
 			  t.dima.i[0],
 			  t.dimb.i[0],
 			  t.dima.i[2]);
-	t.pdima = xm_dim_same(3, pdim);
-	t.pdimb = xm_dim_same(3, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abc";
 	t.idxb = "dbe";
 	t.idxc = "eadc";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_3;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -632,30 +612,25 @@ make_test_4(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 6;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_3(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_3(pdim * rnd(1, max_dim),
+	t.dima = xm_dim_3(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_3(rnd(1, max_dim),
 			  t.dima.i[1],
 			  t.dima.i[2]);
 	t.dimc = xm_dim_2(t.dima.i[0],
 			  t.dimb.i[0]);
-	t.pdima = xm_dim_same(3, pdim);
-	t.pdimb = xm_dim_same(3, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "abc";
 	t.idxb = "dbc";
 	t.idxc = "ad";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_4;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -665,34 +640,29 @@ make_test_5(void)
 {
 	const size_t max_block_size = 4;
 	const size_t max_dim = 4;
-	const size_t pdim = rnd(1, 2);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_4(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_4(pdim * rnd(1, max_dim),
+	t.dima = xm_dim_4(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_4(rnd(1, max_dim),
 			  t.dima.i[1],
-			  pdim * rnd(1, max_dim),
+			  rnd(1, max_dim),
 			  t.dima.i[3]);
 	t.dimc = xm_dim_4(t.dimb.i[0],
 			  t.dimb.i[2],
 			  t.dima.i[0],
 			  t.dima.i[2]);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abcd";
 	t.idxb = "ibjd";
 	t.idxc = "ijac";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_5;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -702,7 +672,6 @@ make_test_6(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 5;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -718,18 +687,14 @@ make_test_6(void)
 			  t.dimb.i[2],
 			  t.dima.i[0],
 			  t.dima.i[2]);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abcd";
 	t.idxb = "ibjd";
 	t.idxc = "ijac";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init_oovv;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init_oovv;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_5;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -739,28 +704,23 @@ make_test_7(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 5;
-	const size_t pdim = rnd(1, 2);
-	const size_t o = pdim * rnd(1, max_dim);
-	const size_t x = pdim * rnd(1, max_dim);
-	const size_t v = pdim * rnd(1, max_dim);
+	const size_t o = rnd(1, max_dim);
+	const size_t x = rnd(1, max_dim);
+	const size_t v = rnd(1, max_dim);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(o, o, v, v);
 	t.dimb = xm_dim_4(x, x, v, v);
 	t.dimc = xm_dim_4(x, x, o, o);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "ijab";
 	t.idxb = "klab";
 	t.idxc = "klij";
-	t.init_a = xm_tensor_init_oovv;
-	t.init_b = xm_tensor_init_oovv;
-	t.init_c = xm_tensor_init_oovv;
+	t.init_a = xm_aux_init_oovv;
+	t.init_b = xm_aux_init_oovv;
+	t.init_c = xm_aux_init_oovv;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -770,27 +730,22 @@ make_test_8(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 4;
-	const size_t pdim = rnd(1, 2);
-	const size_t o = pdim * rnd(1, max_dim);
-	const size_t v = pdim * rnd(1, max_dim);
+	const size_t o = rnd(1, max_dim);
+	const size_t v = rnd(1, max_dim);
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(v, v, v, v);
 	t.dimb = xm_dim_4(o, o, v, v);
 	t.dimc = xm_dim_4(o, o, v, v);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "abcd";
 	t.idxb = "ijcd";
 	t.idxc = "ijab";
-	t.init_a = xm_tensor_init_vvvv;
-	t.init_b = xm_tensor_init_oovv;
-	t.init_c = xm_tensor_init_oovv;
+	t.init_a = xm_aux_init_vvvv;
+	t.init_b = xm_aux_init_oovv;
+	t.init_c = xm_aux_init_oovv;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -800,25 +755,20 @@ make_test_9(void)
 {
 	const size_t max_block_size = 7;
 	const size_t max_dim = 10;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_3(rnd(1, max_dim), rnd(1, max_dim), rnd(1, max_dim));
 	t.dimb = xm_dim_2(rnd(1, max_dim), t.dima.i[1]);
 	t.dimc = xm_dim_3(t.dima.i[2], t.dima.i[0], t.dimb.i[0]);
-	t.pdima = xm_dim_same(3, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(3, pdim);
 	t.idxa = "abc";
 	t.idxb = "ib";
 	t.idxc = "cai";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_9;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -828,7 +778,6 @@ make_test_10(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 9;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -841,18 +790,14 @@ make_test_10(void)
 			  t.dima.i[1],
 			  t.dimb.i[1],
 			  t.dimb.i[3]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "ab";
 	t.idxb = "ijak";
 	t.idxc = "ibjk";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_10;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -862,36 +807,31 @@ make_test_11(void)
 {
 	const size_t max_block_size = 3;
 	const size_t max_dim = 4;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
-	t.dima = xm_dim_4(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim));
-	t.dimb = xm_dim_4(pdim * rnd(1, max_dim),
-			  pdim * rnd(1, max_dim),
+	t.dima = xm_dim_4(rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim),
+			  rnd(1, max_dim));
+	t.dimb = xm_dim_4(rnd(1, max_dim),
+			  rnd(1, max_dim),
 			  t.dima.i[1],
-			  pdim * rnd(1, max_dim));
+			  rnd(1, max_dim));
 	t.dimc = xm_dim_6(t.dima.i[0],
 			  t.dima.i[2],
 			  t.dima.i[3],
 			  t.dimb.i[0],
 			  t.dimb.i[1],
 			  t.dimb.i[3]);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(6, pdim);
 	t.idxa = "idjk";
 	t.idxb = "abdc";
 	t.idxc = "ijkabc";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_11;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -903,25 +843,20 @@ make_test_12(void)
 	const size_t max_dim = 4;
 	const size_t o = rnd(1, max_dim);
 	const size_t v = rnd(1, max_dim);
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(o, o, v, v);
 	t.dimb = xm_dim_4(o, v, v, v);
 	t.dimc = xm_dim_6(o, o, o, v, v, v);
-	t.pdima = xm_dim_same(4, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(6, pdim);
 	t.idxa = "ijda";
 	t.idxb = "kdbc";
 	t.idxc = "ijkabc";
-	t.init_a = xm_tensor_init_oovv;
-	t.init_b = xm_tensor_init_ovvv;
-	t.init_c = xm_tensor_init_ooovvv;
+	t.init_a = xm_aux_init_oovv;
+	t.init_b = xm_aux_init_ovvv;
+	t.init_c = xm_aux_init_ooovvv;
 	t.ref_compare = ref_compare_12;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -935,18 +870,14 @@ make_test_13(void)
 	t.dima = xm_dim_2(2, 2);
 	t.dimb = xm_dim_2(2, 2);
 	t.dimc = xm_dim_2(2, 2);
-	t.pdima = xm_dim_same(2, 1);
-	t.pdimb = xm_dim_same(2, 1);
-	t.pdimc = xm_dim_same(2, 1);
 	t.idxa = "ba";
 	t.idxb = "bc";
 	t.idxc = "ca";
-	t.init_a = xm_tensor_init_13;
-	t.init_b = xm_tensor_init_13;
-	t.init_c = xm_tensor_init_13c;
+	t.init_a = xm_aux_init_13;
+	t.init_b = xm_aux_init_13;
+	t.init_c = xm_aux_init_13c;
 	t.ref_compare = ref_compare_13;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -960,18 +891,14 @@ make_test_14(void)
 	t.dima = xm_dim_4(2, 2, 2, 2);
 	t.dimb = xm_dim_4(1, 1, 2, 2);
 	t.dimc = xm_dim_4(1, 1, 2, 2);
-	t.pdima = xm_dim_same(4, 1);
-	t.pdimb = xm_dim_same(4, 1);
-	t.pdimc = xm_dim_same(4, 1);
 	t.idxa = "abcd";
 	t.idxb = "ijcd";
 	t.idxc = "ijab";
-	t.init_a = xm_tensor_init_14;
-	t.init_b = xm_tensor_init_14b;
-	t.init_c = xm_tensor_init_14b;
+	t.init_a = xm_aux_init_14;
+	t.init_b = xm_aux_init_14b;
+	t.init_c = xm_aux_init_14b;
 	t.ref_compare = ref_compare_7;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -981,7 +908,6 @@ make_test_15(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 9;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -991,18 +917,14 @@ make_test_15(void)
 			  t.dima.i[0],
 			  t.dima.i[1]);
 	t.dimc = xm_dim_2(t.dimb.i[0], t.dimb.i[1]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(4, pdim);
-	t.pdimc = xm_dim_same(2, pdim);
 	t.idxa = "ab";
 	t.idxb = "ijab";
 	t.idxc = "ij";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_15;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -1012,7 +934,6 @@ make_test_16(void)
 {
 	const size_t max_block_size = 6;
 	const size_t max_dim = 9;
-	const size_t pdim = 1;
 	struct test t;
 
 	t.block_size = rnd(1, max_block_size);
@@ -1020,18 +941,14 @@ make_test_16(void)
 	t.dimb = xm_dim_2(rnd(1, max_dim), rnd(1, max_dim));
 	t.dimc = xm_dim_4(t.dima.i[0], t.dima.i[1],
 			  t.dimb.i[0], t.dimb.i[1]);
-	t.pdima = xm_dim_same(2, pdim);
-	t.pdimb = xm_dim_same(2, pdim);
-	t.pdimc = xm_dim_same(4, pdim);
 	t.idxa = "ab";
 	t.idxb = "ij";
 	t.idxc = "abij";
-	t.init_a = xm_tensor_init;
-	t.init_b = xm_tensor_init;
-	t.init_c = xm_tensor_init;
+	t.init_a = xm_aux_init;
+	t.init_b = xm_aux_init;
+	t.init_c = xm_aux_init;
 	t.ref_compare = ref_compare_16;
 	t.alpha = xm_random_scalar();
-	t.beta = rnd(0, 5) ? xm_random_scalar() : 0.0;
 
 	return (t);
 }
@@ -1071,8 +988,7 @@ run_test(int test_num, int skip)
 	struct xm_tensor *a, *b, *c, *d;
 	struct test t;
 	const char *path;
-	size_t buf_bytes, id;
-	int res;
+	size_t id;
 
 	id = rnd(1, sizeof(tests) / sizeof(*tests));
 	printf("test=%-4did=%-3zu", test_num, id);
@@ -1093,11 +1009,6 @@ run_test(int test_num, int skip)
 	if ((d = xm_tensor_create(allocator, &t.dimc, "d")) == NULL)
 		fatal("xm_tensor_create(d)");
 
-	xm_tensor_set_part_dim(a, &t.pdima);
-	xm_tensor_set_part_dim(b, &t.pdimb);
-	xm_tensor_set_part_dim(c, &t.pdimc);
-	xm_tensor_set_part_dim(d, &t.pdimc);
-
 	if (t.init_a(a, allocator, t.block_size, XM_INIT_RAND))
 		fatal("tensor_init(a)");
 	if (t.init_b(b, allocator, t.block_size, XM_INIT_RAND))
@@ -1108,28 +1019,17 @@ run_test(int test_num, int skip)
 		fatal("tensor_init(d)");
 	xm_tensor_copy_data(d, c);
 
-	buf_bytes = rnd(10000, 100000);
-	xm_set_memory_limit(buf_bytes);
-
 	if (!skip) {
-		res = xm_contract(t.alpha, a, b, t.beta, d,
-		    t.idxa, t.idxb, t.idxc);
-		switch (res) {
-		case XM_RESULT_SUCCESS:
-			t.ref_compare(a, b, c, d, t.alpha, t.beta);
-			printf("  success\n");
-			break;
-		case XM_RESULT_BUFFER_TOO_SMALL:
-			printf("  buffer too small\n");
-			break;
-		case XM_RESULT_NO_MEMORY:
-			fatal("xm_contract: out of memory");
-		default:
-			fatal("xm_contract: unknown error");
-		}
+		xm_contract(t.alpha, a, b, d, t.idxa, t.idxb, t.idxc);
+		t.ref_compare(a, b, c, d, t.alpha, 0.0);
+		printf("  success\n");
 	} else
 		printf("  skipping\n");
 
+	xm_tensor_free_blocks(a);
+	xm_tensor_free_blocks(b);
+	xm_tensor_free_blocks(c);
+	xm_tensor_free_blocks(d);
 	xm_tensor_free(a);
 	xm_tensor_free(b);
 	xm_tensor_free(c);
@@ -1146,8 +1046,6 @@ main(int argc, char **argv)
 		fprintf(stderr, "usage: test count\n");
 		return (1);
 	}
-
-	xm_set_log_stream(stderr);
 
 	if ((count = atoi(argv[1])) < 0) {
 		count = -count;

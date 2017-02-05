@@ -23,13 +23,8 @@
 extern "C" {
 #endif
 
-/* Maximum number of tensor dimensions. This can be increased if necessary. */
-#define XM_MAX_DIM                6
-
-/* Result return codes. */
-#define XM_RESULT_SUCCESS               0  /* No error. */
-#define XM_RESULT_BUFFER_TOO_SMALL      1  /* Memory limit is too small. */
-#define XM_RESULT_NO_MEMORY             2  /* Cannot allocate memory. */
+/* Maximum number of tensor dimensions; change if necessary. */
+#define XM_MAX_DIM 6
 
 #if defined(XM_SCALAR_FLOAT)
 typedef float xm_scalar_t;
@@ -50,9 +45,6 @@ struct xm_tensor;
 typedef struct {
 	size_t n, i[XM_MAX_DIM];
 } xm_dim_t;
-
-/* Returns libxm info string. */
-const char *xm_banner(void);
 
 /* Initialize all indices of a dim to zero. */
 xm_dim_t xm_dim_zero(size_t n);
@@ -90,13 +82,6 @@ int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 /* Increment an index by one wrapping on dimensions. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Set stream to log to. Setting stream to NULL disables logging. */
-void xm_set_log_stream(FILE *stream);
-
-/* Set physical memory limit in bytes. Memory limit will be determined
- * automatically if not set using this function. */
-void xm_set_memory_limit(size_t size);
-
 /* Create a labeled tensor specifying its dimensions in blocks. */
 struct xm_tensor *xm_tensor_create(struct xm_allocator *allocator,
     const xm_dim_t *dim, const char *label);
@@ -109,12 +94,6 @@ const char *xm_tensor_get_label(const struct xm_tensor *tensor);
 
 /* Returns tensor dimensions in blocks. */
 xm_dim_t xm_tensor_get_dim(const struct xm_tensor *tensor);
-
-/* Set tensor partition dimensions. */
-void xm_tensor_set_part_dim(struct xm_tensor *tensor, const xm_dim_t *pdim);
-
-/* Returns tensor partition dimensions. */
-xm_dim_t xm_tensor_get_part_dim(const struct xm_tensor *tensor);
 
 /* Returns tensor dimensions in number of elements. */
 xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
@@ -140,6 +119,10 @@ int xm_tensor_block_is_initialized(const struct xm_tensor *tensor,
 /* Get block dimensions. */
 xm_dim_t xm_tensor_get_block_dim(const struct xm_tensor *tensor,
     const xm_dim_t *blk_idx);
+
+/* Allocate data for block with dimensions specified by blk_dim. */
+uintptr_t xm_allocate_block_data(struct xm_allocator *allocator,
+    const xm_dim_t *blk_dim);
 
 /* Get block data pointer. */
 uintptr_t xm_tensor_get_block_data_ptr(const struct xm_tensor *tensor,
@@ -178,19 +161,21 @@ void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
 /* Returns non-zero if all blocks of a tensor are initialized. */
 int xm_tensor_is_initialized(const struct xm_tensor *tensor);
 
-/* Release all resources associated with this tensor. */
+/* Release all blocks associated with this tensor. */
+void xm_tensor_free_blocks(struct xm_tensor *tensor);
+
+/* Release resources associated with this tensor, except the data blocks. */
 void xm_tensor_free(struct xm_tensor *tensor);
 
-/* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
+/* Contract two tensors (c = alpha * a * b) over contraction indices
  * specified by strings idxa and idxb. Permutation of tensor c is specified by
  * idxc. It is the user's responsibility to setup all tensors so that they have
  * correct symmetries and block-structures.
  *
- * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
+ * Example: xm_contract(1.0, vvvv, oovv, t2, "abcd", "ijcd", "ijab");
  */
-int xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
-    xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
-    const char *idxc);
+void xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
+    struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc);
 
 #ifdef __cplusplus
 } /* extern "C" */

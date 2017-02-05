@@ -15,6 +15,7 @@
  */
 
 #include <assert.h>
+#include <err.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -267,17 +268,13 @@ xm_allocator_memset(struct xm_allocator *allocator, uintptr_t data_ptr,
 	     write_bytes + sizeof buf < size_bytes;
 	     offset += sizeof buf) {
 		written = pwrite(allocator->fd, buf, sizeof buf, offset);
-		if (written != (ssize_t)(sizeof buf)) {
-			perror("pwrite");
-			abort();
-		}
+		if (written != (ssize_t)(sizeof buf))
+			err(1, "pwrite");
 		write_bytes += sizeof buf;
 	}
 	written = pwrite(allocator->fd, buf, size_bytes - write_bytes, offset);
-	if (written != (ssize_t)(size_bytes - write_bytes)) {
-		perror("pwrite");
-		abort();
-	}
+	if (written != (ssize_t)(size_bytes - write_bytes))
+		err(1, "pwrite");
 }
 
 void
@@ -297,10 +294,8 @@ xm_allocator_read(struct xm_allocator *allocator, uintptr_t data_ptr,
 	offset = (off_t)data_ptr;
 	read_bytes = pread(allocator->fd, mem, size_bytes, offset);
 
-	if (read_bytes != (ssize_t)size_bytes) {
-		perror("pread");
-		abort();
-	}
+	if (read_bytes != (ssize_t)size_bytes)
+		err(1, "pread");
 }
 
 void
@@ -320,10 +315,8 @@ xm_allocator_write(struct xm_allocator *allocator, uintptr_t data_ptr,
 	offset = (off_t)data_ptr;
 	write_bytes = pwrite(allocator->fd, mem, size_bytes, offset);
 
-	if (write_bytes != (ssize_t)size_bytes) {
-		perror("pwrite");
-		abort();
-	}
+	if (write_bytes != (ssize_t)size_bytes)
+		err(1, "pwrite");
 }
 
 void
