@@ -27,7 +27,7 @@
 
 #include "alloc.h"
 
-#define XM_MAX_BLKID (10ULL * 1024 * 1024)
+#define XM_MAX_BLKID (32ULL * 1024 * 1024)
 #define XM_GROW_SIZE (256ULL * 1024 * 1024 * 1024)
 
 struct xm_allocator {
