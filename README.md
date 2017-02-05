@@ -52,6 +52,7 @@ Source code overview
 - xm.h - public API header with documentation
 - xm.c - libxm implementation code
 - alloc.c/alloc.h - disk-backed allocator for large tensors
+- gcalloc.c/alloc.h - garbage-collecting allocator for large tensors
 - auxil.c/auxil.h - optional auxiliary functions for tensor creation
 - benchmark.c - sample benchmarks
 - test.c - facilities for randomized testing
