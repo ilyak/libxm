@@ -277,18 +277,17 @@ void
 xm_allocator_destroy(struct xm_allocator *allocator)
 {
 	char buf[BUFSIZ];
-	size_t i;
 
 	if (allocator) {
 		if (allocator->path == NULL) {
 			free(allocator);
 			return;
 		}
-		for (i = 0; i < allocator->blkid; i++) {
-			if (allocator->blksize[i] != 0 ||
-			    allocator->blkoffset[i] != (off_t)-1)
-				errx(1, "xm_allocator: allocated blocks found");
-		}
+//		for (i = 0; i < allocator->blkid; i++) {
+//			if (allocator->blksize[i] != 0 ||
+//			    allocator->blkoffset[i] != (off_t)-1)
+//				errx(1, "xm_allocator: allocated blocks found");
+//		}
 		snprintf(buf, sizeof buf, "%s.%d", allocator->path,
 		    allocator->gen);
 		if (close(allocator->fd))
