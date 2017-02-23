@@ -15,6 +15,11 @@ than the available amount of fast random access memory. For very large problems
 libxm shows considerable speedups compared to similar tensor contraction codes.
 Libxm supports single and double precision scalar and complex numbers.
 
+### Reference
+
+The libxm paper is available [here](https://dx.doi.org/10.1002/jcc.24713).
+The code described in the paper can be found in the **xm1** branch.
+
 ### Usage
 
 Once tensors are setup the contraction routine is similar to BLAS dgemm call:
