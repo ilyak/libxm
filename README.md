@@ -1,5 +1,4 @@
-libxm
-=====
+# libxm
 
 Libxm is a library that provides routines for efficient contractions of very
 large (up to many terabytes) disk-based block-tensors on multi-core CPUs, GPUs,
@@ -16,8 +15,7 @@ than the available amount of fast random access memory. For very large problems
 libxm shows considerable speedups compared to similar tensor contraction codes.
 Libxm supports single and double precision scalar and complex numbers.
 
-Usage
------
+### Usage
 
 Once tensors are setup the contraction routine is similar to BLAS dgemm call:
 
@@ -27,8 +25,7 @@ This will preform the following contraction of two 4-index tensors A and B:
 
     C_ijab := alpha * A_abcd * B_ijcd
 
-Compilation
------------
+### Compilation
 
 To compile libxm you need a POSIX environment, an efficient BLAS library, and
 an ANSI C complaint compiler. To use libxm in your project, include `xm.h` file
@@ -46,8 +43,7 @@ in the directory with the source code.
 
 Compiler and flags can be adjusted by modifying the Makefile.
 
-Source code overview
---------------------
+### Source code overview
 
 - xm.h - public API header with documentation
 - xm.c - libxm implementation code
@@ -57,8 +53,7 @@ Source code overview
 - benchmark.c - sample benchmarks
 - test.c - facilities for randomized testing
 
-Who uses libxm
---------------
+### Users of libxm
 
 - libxm is integrated with Q-Chem package to accelerate high-level quantum
   chemistry calculations
