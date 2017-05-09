@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Ilya Kaliman <ilya.kaliman@gmail.com>
+ * Copyright (c) 2014-2017 Ilya Kaliman <ilya.kaliman@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -45,6 +45,9 @@ struct xm_tensor;
 typedef struct {
 	size_t n, i[XM_MAX_DIM];
 } xm_dim_t;
+
+/* Print libxm banner to standard output. */
+void xm_print_banner(void);
 
 /* Initialize all indices of a dim to zero. */
 xm_dim_t xm_dim_zero(size_t n);

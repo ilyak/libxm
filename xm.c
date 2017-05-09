@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Ilya Kaliman <ilya.kaliman@gmail.com>
+ * Copyright (c) 2014-2017 Ilya Kaliman <ilya.kaliman@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1231,4 +1231,12 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	if (sym_k)
 		set_k_symmetry(a, cidxa, aidxa, si1, si2, 0);
 	free(nzblk);
+}
+
+void
+xm_print_banner(void)
+{
+	printf("libxm (c) 2014-2017 Ilya Kaliman\n");
+	printf("Code for efficient block-tensor contractions\n");
+	printf("https://github.com/ilyak/libxm\n");
 }
