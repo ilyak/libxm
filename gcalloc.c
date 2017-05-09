@@ -166,7 +166,9 @@ xm_allocator_allocate(struct xm_allocator *allocator, size_t size_bytes)
 		errx(1, "xm_allocator: zero size allocation");
 	if (allocator->path == NULL)
 		return ((uintptr_t)(malloc(size_bytes)));
+#ifdef _OPENMP
 #pragma omp critical
+#endif
 {
 	blkid = allocator->blkid;
 	if (blkid == XM_MAX_BLKID)

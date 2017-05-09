@@ -1220,10 +1220,14 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
 	nzblk = get_nonzero_blocks(&ctx, &nnzblk);
 	size = a->max_block_size * (BATCH_BLOCKS_K+1) +
 	    b->max_block_size * (BATCH_BLOCKS_K+1) + 2 * c->max_block_size;
+#ifdef _OPENMP
 #pragma omp parallel private(i)
+#endif
 {
 	xm_scalar_t *buf = xmalloc(size * sizeof(xm_scalar_t));
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic)
+#endif
 	for (i = 0; i < nnzblk; i++)
 		compute_block(&ctx, nzblk[i], buf);
 	free(buf);
