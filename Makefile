@@ -7,11 +7,11 @@ SCALAR_TYPE= XM_SCALAR_DOUBLE
 # Scalar type is float complex
 #SCALAR_TYPE= XM_SCALAR_FLOAT_COMPLEX
 
-# Clang with Netlib BLAS on FreeBSD (debug build)
-#CC= clang
-#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-gnu-imaginary-constant -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
-#LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
-#LIBS= -lblas -lgfortran -lpthread -lm
+# cc with Netlib BLAS
+CC= cc
+CFLAGS= -D$(SCALAR_TYPE) -Wall -Wextra -g
+LDFLAGS= -L/usr/local/lib
+LIBS= -lblas -lpthread -lm
 
 # Intel Compiler with MKL on Linux (release build)
 #CC= icc
@@ -19,11 +19,11 @@ SCALAR_TYPE= XM_SCALAR_DOUBLE
 #LDFLAGS=
 #LIBS= -lpthread -lm
 
-# Intel Compiler with CUDA on Linux (release build)
-#CC= icc
-#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -I./compat
-#LDFLAGS= -L/usr/usc/cuda/default/lib64
-#LIBS= -lnvblas -lpthread -lm
+# Clang with Netlib BLAS on FreeBSD (debug build)
+#CC= clang
+#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-gnu-imaginary-constant -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+#LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
+#LIBS= -lblas -lgfortran -lpthread -lm
 
 # GNU gcc with Netlib BLAS on Linux (debug build)
 #CC= gcc
@@ -32,10 +32,10 @@ SCALAR_TYPE= XM_SCALAR_DOUBLE
 #LIBS= -lblas -lpthread -lm
 
 # Clang with Netlib BLAS on OpenBSD (debug build)
-CC= clang
-CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-source-uses-openmp -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
-LDFLAGS= -L/usr/local/lib
-LIBS= -lblas -lg2c -lpthread -lm
+#CC= clang
+#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-source-uses-openmp -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+#LDFLAGS= -L/usr/local/lib
+#LIBS= -lblas -lg2c -lpthread -lm
 
 BENCHMARK= benchmark
 BENCHMARK_O= benchmark.o
