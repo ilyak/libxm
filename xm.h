@@ -72,7 +72,7 @@ xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
 xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5, size_t dim6);
 
-/* Returns an identity permutation. */
+/* Returns an identity permutation of dimension n. */
 xm_dim_t xm_dim_identity_permutation(size_t n);
 
 /* Returns dot product of all indices of a dim. */
@@ -94,10 +94,10 @@ void xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src);
 /* Returns tensor label. */
 const char *xm_tensor_get_label(const struct xm_tensor *tensor);
 
-/* Returns tensor dimensions in blocks. */
+/* Returns tensor dimensions in number of blocks. */
 xm_dim_t xm_tensor_get_dim(const struct xm_tensor *tensor);
 
-/* Returns tensor dimensions in number of elements. */
+/* Returns absolute tensor dimensions in total number of elements. */
 xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
 
 /* Get tensor element given block index and element index within a block.
