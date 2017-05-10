@@ -133,34 +133,6 @@ xstrdup(const char *str)
 	return cp;
 }
 
-//struct timer {
-//	char label[128];
-//	time_t start;
-//};
-//
-//static struct timer
-//timer_start(const char *fmt, ...)
-//{
-//	struct timer timer;
-//	va_list ap;
-//
-//	va_start(ap, fmt);
-//	vsnprintf(timer.label, sizeof(timer.label), fmt, ap);
-//	va_end(ap);
-//
-//	xm_log("%s...", timer.label);
-//	timer.start = time(NULL);
-//
-//	return (timer);
-//}
-//
-//static void
-//timer_stop(struct timer *timer)
-//{
-//	time_t total = time(NULL) - timer->start;
-//	xm_log("%s done in %d sec", timer->label, (int)total);
-//}
-
 xm_dim_t
 xm_dim_2(size_t dim1, size_t dim2)
 {
