@@ -62,16 +62,15 @@ xm_dim_t xm_dim_2(size_t dim1, size_t dim2);
 xm_dim_t xm_dim_3(size_t dim1, size_t dim2, size_t dim3);
 
 /* Initialize 4D dim. */
-xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3,
-    size_t dim4);
+xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
 
 /* Initialize 5D dim. */
-xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3,
-    size_t dim4, size_t dim5);
+xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5);
 
 /* Initialize 6D dim. */
-xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3,
-    size_t dim4, size_t dim5, size_t dim6);
+xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6);
 
 /* Returns an identity permutation. */
 xm_dim_t xm_dim_identity_permutation(size_t n);
