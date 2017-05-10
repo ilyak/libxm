@@ -245,7 +245,7 @@ main(int argc, char **argv)
 	if (s.init_c(c, allocator, args.block_size, XM_INIT_ZERO))
 		fatal("init(c)");
 
-	xm_contract(s.alpha, a, b, c, s.idxa, s.idxb, s.idxc);
+	xm_contract(s.alpha, a, b, 0.0, c, s.idxa, s.idxb, s.idxc);
 
 	xm_tensor_free(a);
 	xm_tensor_free(b);

@@ -24,11 +24,11 @@ The code described in the paper can be found in the **xm1** branch.
 
 Once tensors are setup the contraction routine is similar to BLAS dgemm call:
 
-    xm_contract(alpha, A, B, C, "abcd", "ijcd", "ijab");
+    xm_contract(alpha, A, B, beta, C, "abcd", "ijcd", "ijab");
 
 This will preform the following contraction of two 4-index tensors A and B:
 
-    C_ijab := alpha * A_abcd * B_ijcd
+    C_ijab := alpha * A_abcd * B_ijcd + beta * C_ijab
 
 ### Compilation
 

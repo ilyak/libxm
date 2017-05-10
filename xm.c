@@ -1158,7 +1158,8 @@ get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
 
 void
 xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
-    struct xm_tensor *c, const char *idxa, const char *idxb, const char *idxc)
+    xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
+    const char *idxc)
 {
 	struct ctx ctx;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;

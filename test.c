@@ -1020,7 +1020,7 @@ run_test(int test_num, int skip)
 	xm_tensor_copy_data(d, c);
 
 	if (!skip) {
-		xm_contract(t.alpha, a, b, d, t.idxa, t.idxb, t.idxc);
+		xm_contract(t.alpha, a, b, 0.0, d, t.idxa, t.idxb, t.idxc);
 		t.ref_compare(a, b, c, d, t.alpha, 0.0);
 		printf("  success\n");
 	} else
