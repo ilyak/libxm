@@ -19,6 +19,7 @@ Libxm supports single and double precision scalar and complex numbers.
 
 The libxm paper is available [here](https://dx.doi.org/10.1002/jcc.24713).
 The code described in the paper can be found in the **xm1** branch.
+The master branch is work-in-progress.
 
 ### Usage
 
