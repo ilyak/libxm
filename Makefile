@@ -56,7 +56,7 @@ $(BENCHMARK): $(AUX_O) $(XM_A) $(BENCHMARK_O)
 	$(CC) -o $@ $(CFLAGS) $(BENCHMARK_O) $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
 
 $(TEST): $(AUX_O) $(XM_A) $(TEST_O)
-	$(CC) -o test $(CFLAGS) test.o $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(CFLAGS) $(TEST_O) $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
 
 $(XM_A): $(XM_O)
 	$(AR) $@ $(XM_O)
