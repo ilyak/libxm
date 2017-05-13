@@ -55,20 +55,20 @@ xm_dim_t xm_dim_zero(size_t n);
 /* Initialize all indices of a dim to the same value. */
 xm_dim_t xm_dim_same(size_t n, size_t dim);
 
-/* Initialize 2D dim. */
+/* Initialize a 2-D dim. */
 xm_dim_t xm_dim_2(size_t dim1, size_t dim2);
 
-/* Initialize 3D dim. */
+/* Initialize a 3-D dim. */
 xm_dim_t xm_dim_3(size_t dim1, size_t dim2, size_t dim3);
 
-/* Initialize 4D dim. */
+/* Initialize a 4-D dim. */
 xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
 
-/* Initialize 5D dim. */
+/* Initialize a 5-D dim. */
 xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5);
 
-/* Initialize 6D dim. */
+/* Initialize a 6-D dim. */
 xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5, size_t dim6);
 
@@ -82,7 +82,7 @@ size_t xm_dim_dot(const xm_dim_t *dim);
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
 /* Increment an index by one wrapping on dimensions.
- * Returns nonzero if the operation has wrapped. */
+ * Returns nonzero if the operation has wrapped to an all-zero index. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
 /* Create a labeled tensor specifying its dimensions in blocks. */
@@ -102,12 +102,12 @@ xm_dim_t xm_tensor_get_dim(const struct xm_tensor *tensor);
 xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
 
 /* Returns an individual tensor element given block index and element index
- * within a block. Note: this function is very slow. */
+ * within a block. Note: this function is slow. */
 xm_scalar_t xm_tensor_get_element(struct xm_tensor *tensor,
     const xm_dim_t *blk_idx, const xm_dim_t *el_idx);
 
 /* Returns an individual element of a tensor given its absolute index.
- * Note: this function is very slow. */
+ * Note: this function is slow. */
 xm_scalar_t xm_tensor_get_abs_element(struct xm_tensor *tensor,
     const xm_dim_t *idx);
 
@@ -143,21 +143,22 @@ xm_scalar_t xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
  * allocated for the specified block. */
 void xm_tensor_reset_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx);
 
-/* Set block as zero-block. */
+/* Set block as zero-block. No actual data is stored. */
 void xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *blk_dim);
 
-/* Set the source block. Each unique source block must be used once and must be
- * set using this function before being used in xm_tensor_set_block.
- * Note: if blocks are allocated using a disk-backed allocator they must
- * be at least several megabytes in size for best performance. */
+/* Set source block with dimensions blk_dim. Each unique source block must
+ * be setup using this function before being used in xm_tensor_set_block.
+ * Note: if blocks are allocated using a disk-backed allocator they should be
+ * at least several megabytes in size for best performance (e.g., 32^4 elements
+ * for 4-index tensors). The data parameter is a handle allocated using
+ * an xm_allocator. */
 void xm_tensor_set_source_block(struct xm_tensor *tensor,
     const xm_dim_t *blk_idx, const xm_dim_t *blk_dim, uintptr_t data);
 
-/* Set a copy of a source block applying permutation and multiplying
- * by a scalar factor.
- * Note: if blocks are allocated using a disk-backed allocator they should
- * be at least several megabytes in size for best performance. */
+/* Set a non-canonical block. This block is a copy of some source block with
+ * applied permutation and multiplication by a scalar factor. No actual data is
+ * stored. */
 void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
 
@@ -167,13 +168,16 @@ int xm_tensor_is_initialized(const struct xm_tensor *tensor);
 /* Deallocate all blocks associated with this tensor. */
 void xm_tensor_free_blocks(struct xm_tensor *tensor);
 
-/* Release resources associated with this tensor, except the data blocks. */
+/* Release a tensor. The actual block-data is not freed by this function.
+ * xm_tensor_free_blocks can be used to deallocate those data. */
 void xm_tensor_free(struct xm_tensor *tensor);
 
 /* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
  * specified by strings idxa and idxb. Permutation of tensor c is specified by
- * idxc. It is the user's responsibility to setup all tensors so that they have
- * correct symmetries and block-structures.
+ * idxc. The routine will perform optimal contraction using symmetry and
+ * sparsity information obtained from tensors' block-structures. It is user's
+ * responsibility to setup all tensors so that they have correct symmetries and
+ * block-structures.
  *
  * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
  */
