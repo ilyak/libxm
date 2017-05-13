@@ -81,7 +81,8 @@ size_t xm_dim_dot(const xm_dim_t *dim);
 /* Returns non-zero if index is within zero and dim. */
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Increment an index by one wrapping on dimensions. */
+/* Increment an index by one wrapping on dimensions.
+ * Returns nonzero if the operation has wrapped. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
 /* Create a labeled tensor specifying its dimensions in blocks. */
@@ -100,12 +101,12 @@ xm_dim_t xm_tensor_get_dim(const struct xm_tensor *tensor);
 /* Returns absolute tensor dimensions in total number of elements. */
 xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
 
-/* Get tensor element given block index and element index within a block.
- * Note: this function is very slow. */
+/* Returns an individual tensor element given block index and element index
+ * within a block. Note: this function is very slow. */
 xm_scalar_t xm_tensor_get_element(struct xm_tensor *tensor,
     const xm_dim_t *blk_idx, const xm_dim_t *el_idx);
 
-/* Get an element of a tensor given its absolute index.
+/* Returns an individual element of a tensor given its absolute index.
  * Note: this function is very slow. */
 xm_scalar_t xm_tensor_get_abs_element(struct xm_tensor *tensor,
     const xm_dim_t *idx);
@@ -139,10 +140,10 @@ xm_scalar_t xm_tensor_get_block_scalar(const struct xm_tensor *tensor,
     const xm_dim_t *blk_idx);
 
 /* Reset block to the uninitialized state. This does not deallocate memory
- * pointed to by data ptr. */
+ * allocated for the specified block. */
 void xm_tensor_reset_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx);
 
-/* Set block to zero. */
+/* Set block as zero-block. */
 void xm_tensor_set_zero_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *blk_dim);
 
@@ -163,7 +164,7 @@ void xm_tensor_set_block(struct xm_tensor *tensor, const xm_dim_t *blk_idx,
 /* Returns non-zero if all blocks of a tensor are initialized. */
 int xm_tensor_is_initialized(const struct xm_tensor *tensor);
 
-/* Release all blocks associated with this tensor. */
+/* Deallocate all blocks associated with this tensor. */
 void xm_tensor_free_blocks(struct xm_tensor *tensor);
 
 /* Release resources associated with this tensor, except the data blocks. */
