@@ -1037,6 +1037,8 @@ compute_block(struct ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
 	}
 	blk_c->scalar = scalar_save;
 
+	if (ctx->alpha == 0.0)
+		goto done;
 	for (i = 0; i < ctx->nblk_k; i++) {
 		struct xm_block *blk_a = xm_tensor_get_block(ctx->a, &blkidxa);
 		struct xm_block *blk_b = xm_tensor_get_block(ctx->b, &blkidxb);
@@ -1083,6 +1085,7 @@ compute_block(struct ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
 		xm_dim_inc_mask(&blkidxa, &ctx->a->dim, &ctx->cidxa);
 		xm_dim_inc_mask(&blkidxb, &ctx->b->dim, &ctx->cidxb);
 	}
+done:
 	if (ctx->aidxc.n > 0 && ctx->aidxc.i[0] == 0) {
 		block_set_matrix(blk_c, ctx->aidxc, ctx->cidxc, n, m,
 		    blkbuf_c1, n, blkbuf_c2, ctx->c->allocator);
