@@ -72,7 +72,7 @@ xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
 xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5, size_t dim6);
 
-/* Returns an identity permutation of dimension n. */
+/* Returns an n-dimensional identity permutation. */
 xm_dim_t xm_dim_identity_permutation(size_t n);
 
 /* Returns dot product of all indices of a dim. */
