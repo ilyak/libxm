@@ -63,7 +63,7 @@ struct xm_tensor {
 	size_t                  max_block_size;
 };
 
-struct ctx {
+struct xm_ctx {
 	xm_scalar_t alpha, beta;
 	struct xm_tensor *a, *b, *c;
 	xm_dim_t cidxa, aidxa;
@@ -993,7 +993,7 @@ set_k_symmetry(struct xm_tensor *a, xm_dim_t cidxa, xm_dim_t aidxa,
 }
 
 static void
-compute_block(struct ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
+compute_block(struct xm_ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
 {
 	size_t i, m, n, k = 0, nbatched = 0, stride_a, stride_b;
 	xm_scalar_t *buf_a, *buf_b, *blkbuf_a, *blkbuf_b;
@@ -1096,7 +1096,7 @@ done:
 }
 
 static xm_dim_t *
-get_nonzero_blocks(struct ctx *ctx, size_t *nnzblkout)
+get_nonzero_blocks(struct xm_ctx *ctx, size_t *nnzblkout)
 {
 	struct xm_block *blk;
 	xm_dim_t *nzblk, *nzblkptr, idx;
@@ -1136,7 +1136,7 @@ xm_contract(xm_scalar_t alpha, struct xm_tensor *a, struct xm_tensor *b,
     xm_scalar_t beta, struct xm_tensor *c, const char *idxa, const char *idxb,
     const char *idxc)
 {
-	struct ctx ctx;
+	struct xm_ctx ctx;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;
 	size_t i, si1, si2, size, nnzblk;
 	int sym_k;
