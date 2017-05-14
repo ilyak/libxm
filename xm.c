@@ -555,7 +555,7 @@ xm_tensor_block_is_initialized(const struct xm_tensor *tensor,
 }
 
 xm_dim_t
-xm_tensor_get_block_dim(const struct xm_tensor *tensor, const xm_dim_t *idx)
+xm_tensor_get_block_dims(const struct xm_tensor *tensor, const xm_dim_t *idx)
 {
 	struct xm_block *block;
 
