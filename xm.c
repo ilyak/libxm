@@ -729,7 +729,7 @@ xm_tensor_is_initialized(const struct xm_tensor *tensor)
 }
 
 xm_dim_t
-xm_tensor_get_dim(const struct xm_tensor *tensor)
+xm_tensor_get_nblocks(const struct xm_tensor *tensor)
 {
 	assert(tensor);
 
@@ -737,7 +737,7 @@ xm_tensor_get_dim(const struct xm_tensor *tensor)
 }
 
 xm_dim_t
-xm_tensor_get_abs_dim(const struct xm_tensor *tensor)
+xm_tensor_get_abs_dims(const struct xm_tensor *tensor)
 {
 	struct xm_block *block;
 	xm_dim_t abs_dim, idx;

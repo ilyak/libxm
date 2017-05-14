@@ -87,9 +87,9 @@ ref_compare_1(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -121,9 +121,9 @@ ref_compare_3(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -159,9 +159,9 @@ ref_compare_4(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i, j;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -196,9 +196,9 @@ ref_compare_5(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i, j;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -237,9 +237,9 @@ ref_compare_7(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i, j;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -278,9 +278,9 @@ ref_compare_9(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -314,9 +314,9 @@ ref_compare_10(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -352,9 +352,9 @@ ref_compare_11(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -394,9 +394,9 @@ ref_compare_12(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -436,9 +436,9 @@ ref_compare_13(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -470,9 +470,9 @@ ref_compare_15(struct xm_tensor *a, struct xm_tensor *b,
 	size_t i, j;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;
@@ -506,9 +506,9 @@ ref_compare_16(struct xm_tensor *a, struct xm_tensor *b,
 	xm_dim_t dima, dimb, dimc, idxa, idxb, idxc;
 	xm_scalar_t aa, bb, dd, ref;
 
-	dima = xm_tensor_get_abs_dim(a);
-	dimb = xm_tensor_get_abs_dim(b);
-	dimc = xm_tensor_get_abs_dim(c);
+	dima = xm_tensor_get_abs_dims(a);
+	dimb = xm_tensor_get_abs_dims(b);
+	dimc = xm_tensor_get_abs_dims(c);
 	idxa.n = dima.n;
 	idxb.n = dimb.n;
 	idxc.n = dimc.n;

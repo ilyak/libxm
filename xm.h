@@ -96,10 +96,10 @@ void xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src);
 const char *xm_tensor_get_label(const struct xm_tensor *tensor);
 
 /* Returns tensor dimensions in number of blocks. */
-xm_dim_t xm_tensor_get_dim(const struct xm_tensor *tensor);
+xm_dim_t xm_tensor_get_nblocks(const struct xm_tensor *tensor);
 
 /* Returns absolute tensor dimensions in total number of elements. */
-xm_dim_t xm_tensor_get_abs_dim(const struct xm_tensor *tensor);
+xm_dim_t xm_tensor_get_abs_dims(const struct xm_tensor *tensor);
 
 /* Returns an individual tensor element given block index and element index
  * within a block. Note: this function is slow. */

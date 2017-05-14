@@ -78,7 +78,7 @@ xm_aux_init(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	idx = xm_dim_zero(dim.n);
 	blk_dim = xm_dim_same(dim.n, block_size);
 	size = xm_dim_dot(&dim);
@@ -108,7 +108,7 @@ xm_aux_init_oo(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 2);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -151,7 +151,7 @@ xm_aux_init_ov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 2);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -184,7 +184,7 @@ xm_aux_init_vv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 2);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -227,7 +227,7 @@ xm_aux_init_vvx(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 3);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -271,7 +271,7 @@ xm_aux_init_oooo(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -390,7 +390,7 @@ xm_aux_init_ooov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -435,7 +435,7 @@ xm_aux_init_oovv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -502,7 +502,7 @@ xm_aux_init_ovov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -551,7 +551,7 @@ xm_aux_init_ovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -596,7 +596,7 @@ xm_aux_init_vvvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -715,7 +715,7 @@ xm_aux_init_ooovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 6);
 
 	blk_dim = xm_dim_same(dim.n, block_size);
@@ -786,7 +786,7 @@ xm_aux_init_13(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 2);
 
 	blk_dim = xm_dim_2(2, 2);
@@ -834,7 +834,7 @@ xm_aux_init_13c(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 2);
 
 	blk_dim = xm_dim_2(2, 2);
@@ -884,7 +884,7 @@ xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_4(2, 2, 2, 2);
@@ -998,7 +998,7 @@ xm_aux_init_14b(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	wall = time(NULL);
 	fprintf(stderr, "%s(%s)\n", __func__, xm_tensor_get_label(tensor));
 
-	dim = xm_tensor_get_dim(tensor);
+	dim = xm_tensor_get_nblocks(tensor);
 	assert(dim.n == 4);
 
 	blk_dim = xm_dim_4(3, 3, 2, 2);
