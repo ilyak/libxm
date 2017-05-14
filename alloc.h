@@ -17,6 +17,7 @@
 #ifndef XM_ALLOC_H
 #define XM_ALLOC_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
