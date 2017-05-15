@@ -31,6 +31,8 @@ xm_block_space_create(const xm_dim_t *dims)
 	xm_block_space_t *ret;
 	size_t i;
 
+	assert(dims->n > 0 && dims->n <= XM_MAX_DIM);
+
 	if ((ret = calloc(1, sizeof *ret)) == NULL)
 		return NULL;
 	ret->dims = *dims;
