@@ -26,20 +26,20 @@ extern "C" {
 
 #define XM_NULL_PTR ((uintptr_t)(-1))
 
-struct xm_allocator;
+typedef struct xm_allocator xm_allocator_t;
 
-struct xm_allocator *xm_allocator_create(const char *path);
-const char *xm_allocator_get_path(struct xm_allocator *allocator);
-uintptr_t xm_allocator_allocate(struct xm_allocator *allocator,
+xm_allocator_t *xm_allocator_create(const char *path);
+const char *xm_allocator_get_path(xm_allocator_t *allocator);
+uintptr_t xm_allocator_allocate(xm_allocator_t *allocator,
     size_t size_bytes);
-void xm_allocator_memset(struct xm_allocator *allocator, uintptr_t data_ptr,
+void xm_allocator_memset(xm_allocator_t *allocator, uintptr_t data_ptr,
     unsigned char c, size_t size_bytes);
-void xm_allocator_read(struct xm_allocator *allocator, uintptr_t data_ptr,
+void xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
     void *mem, size_t size_bytes);
-void xm_allocator_write(struct xm_allocator *allocator, uintptr_t data_ptr,
+void xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
     const void *mem, size_t size_bytes);
-void xm_allocator_deallocate(struct xm_allocator *allocator, uintptr_t ptr);
-void xm_allocator_destroy(struct xm_allocator *allocator);
+void xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t ptr);
+void xm_allocator_destroy(xm_allocator_t *allocator);
 
 #ifdef __cplusplus
 } /* extern "C" */
