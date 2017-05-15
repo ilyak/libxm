@@ -101,7 +101,7 @@ int xm_block_space_eq1(const xm_block_space_t *, size_t,
 void xm_block_space_free(xm_block_space_t *);
 
 /* Create a labeled tensor specifying its dimensions in blocks. */
-xm_tensor_t *xm_tensor_create(struct xm_allocator *allocator,
+xm_tensor_t *xm_tensor_create(xm_allocator_t *allocator,
     const xm_dim_t *dim, const char *label);
 
 /* Copy tensor data. Tensors must have exactly the same block structure. */
@@ -139,7 +139,7 @@ xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
 /* Allocate data for block with dimensions specified by blk_dim. */
-uintptr_t xm_allocate_block_data(struct xm_allocator *allocator,
+uintptr_t xm_allocate_block_data(xm_allocator_t *allocator,
     const xm_dim_t *blk_dim);
 
 /* Get block data pointer. */

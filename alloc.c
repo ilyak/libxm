@@ -84,7 +84,7 @@ find_block(struct tree *tree, uintptr_t data_ptr)
 }
 
 static int
-extend_file(struct xm_allocator *allocator)
+extend_file(xm_allocator_t *allocator)
 {
 	size_t oldsize, newsize;
 
@@ -109,7 +109,7 @@ extend_file(struct xm_allocator *allocator)
 }
 
 static uintptr_t
-find_pages(struct xm_allocator *allocator, size_t n_pages)
+find_pages(xm_allocator_t *allocator, size_t n_pages)
 {
 	int i, n_free, n_total, offset, start;
 
@@ -135,7 +135,7 @@ find_pages(struct xm_allocator *allocator, size_t n_pages)
 }
 
 static uintptr_t
-allocate_pages(struct xm_allocator *allocator, size_t size_bytes)
+allocate_pages(xm_allocator_t *allocator, size_t size_bytes)
 {
 	size_t n_pages;
 	uintptr_t ptr;
@@ -152,10 +152,10 @@ allocate_pages(struct xm_allocator *allocator, size_t size_bytes)
 	return (ptr);
 }
 
-struct xm_allocator *
+xm_allocator_t *
 xm_allocator_create(const char *path)
 {
-	struct xm_allocator *allocator;
+	xm_allocator_t *allocator;
 
 	if ((allocator = calloc(1, sizeof(*allocator))) == NULL) {
 		perror("malloc");
@@ -202,13 +202,13 @@ xm_allocator_create(const char *path)
 }
 
 const char *
-xm_allocator_get_path(struct xm_allocator *allocator)
+xm_allocator_get_path(xm_allocator_t *allocator)
 {
 	return (allocator->path);
 }
 
 uintptr_t
-xm_allocator_allocate(struct xm_allocator *allocator, size_t size_bytes)
+xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 {
 	struct block *block;
 	void *data;
@@ -247,7 +247,7 @@ fail:
 }
 
 void
-xm_allocator_memset(struct xm_allocator *allocator, uintptr_t data_ptr,
+xm_allocator_memset(xm_allocator_t *allocator, uintptr_t data_ptr,
     unsigned char c, size_t size_bytes)
 {
 	size_t write_bytes;
@@ -278,7 +278,7 @@ xm_allocator_memset(struct xm_allocator *allocator, uintptr_t data_ptr,
 }
 
 void
-xm_allocator_read(struct xm_allocator *allocator, uintptr_t data_ptr,
+xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
     void *mem, size_t size_bytes)
 {
 	ssize_t read_bytes;
@@ -299,7 +299,7 @@ xm_allocator_read(struct xm_allocator *allocator, uintptr_t data_ptr,
 }
 
 void
-xm_allocator_write(struct xm_allocator *allocator, uintptr_t data_ptr,
+xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
     const void *mem, size_t size_bytes)
 {
 	ssize_t write_bytes;
@@ -320,7 +320,7 @@ xm_allocator_write(struct xm_allocator *allocator, uintptr_t data_ptr,
 }
 
 void
-xm_allocator_deallocate(struct xm_allocator *allocator, uintptr_t data_ptr)
+xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 {
 	struct block *block;
 
@@ -350,7 +350,7 @@ xm_allocator_deallocate(struct xm_allocator *allocator, uintptr_t data_ptr)
 }
 
 void
-xm_allocator_destroy(struct xm_allocator *allocator)
+xm_allocator_destroy(xm_allocator_t *allocator)
 {
 	struct block *block, *next;
 
