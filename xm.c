@@ -471,7 +471,7 @@ xm_tensor_copy_data(struct xm_tensor *dst, const struct xm_tensor *src)
 }
 
 xm_scalar_t
-xm_tensor_get_element(struct xm_tensor *tensor, const xm_dim_t *blk_i,
+xm_tensor_get_element(const struct xm_tensor *tensor, const xm_dim_t *blk_i,
     const xm_dim_t *el_i)
 {
 	struct xm_block *block;
@@ -496,7 +496,7 @@ xm_tensor_get_element(struct xm_tensor *tensor, const xm_dim_t *blk_i,
 }
 
 static void
-xm_tensor_get_idx(struct xm_tensor *tensor, const xm_dim_t *abs_idx,
+xm_tensor_get_idx(const struct xm_tensor *tensor, const xm_dim_t *abs_idx,
     xm_dim_t *blk_idx, xm_dim_t *el_idx)
 {
 	struct xm_block *block;
@@ -527,7 +527,7 @@ xm_tensor_get_idx(struct xm_tensor *tensor, const xm_dim_t *abs_idx,
 }
 
 xm_scalar_t
-xm_tensor_get_abs_element(struct xm_tensor *tensor, const xm_dim_t *idx)
+xm_tensor_get_abs_element(const struct xm_tensor *tensor, const xm_dim_t *idx)
 {
 	xm_dim_t blk_i, el_i;
 

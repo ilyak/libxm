@@ -103,12 +103,12 @@ xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
 
 /* Returns an individual tensor element given block index and element index
  * within a block. Note: this function is slow. */
-xm_scalar_t xm_tensor_get_element(xm_tensor_t *tensor,
+xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx, const xm_dim_t *el_idx);
 
 /* Returns an individual element of a tensor given its absolute index.
  * Note: this function is slow. */
-xm_scalar_t xm_tensor_get_abs_element(xm_tensor_t *tensor,
+xm_scalar_t xm_tensor_get_abs_element(const xm_tensor_t *tensor,
     const xm_dim_t *idx);
 
 /* Check if the block is non-zero. */
