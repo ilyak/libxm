@@ -107,11 +107,14 @@ void xm_block_space_free(xm_block_space_t *);
 xm_tensor_t *xm_tensor_create(xm_block_space_t *bs, const char *label,
     xm_allocator_t *allocator);
 
-/* Copy tensor data. Tensors must have exactly the same block structure. */
-void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
+/* Returns an allocator associated with this tensor. */
+xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 
 /* Returns tensor label. */
 const char *xm_tensor_get_label(const xm_tensor_t *tensor);
+
+/* Copy tensor data. Tensors must have exactly the same block structure. */
+void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
 
 /* Returns tensor dimensions in number of blocks. */
 xm_dim_t xm_tensor_get_nblocks(const xm_tensor_t *tensor);
@@ -141,10 +144,6 @@ int xm_tensor_block_is_initialized(const xm_tensor_t *tensor,
 xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
-/* Allocate data for block with dimensions specified by blk_dim. */
-uintptr_t xm_allocate_block_data(xm_allocator_t *allocator,
-    const xm_dim_t *blk_dim);
-
 /* Get block data pointer. */
 uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
@@ -164,17 +163,24 @@ void xm_tensor_reset_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 /* Set block as zero-block. No actual data is stored. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 
-/* Setup the source block. Each unique source block must be setup using this
- * function before being used in xm_tensor_set_block. Note: if blocks are
- * allocated using a disk-backed allocator they should be at least several
- * megabytes in size for best performance (e.g., 32^4 elements for 4-index
- * tensors). The data parameter is a handle allocated using an xm_allocator. */
+/* Setup the source (canonical) block.
+ * Each unique source block must be setup using this function before being used
+ * in xm_tensor_set_block.
+ * Note: if blocks are allocated using a disk-backed allocator they should be
+ * at least several megabytes in size for best performance (e.g., 32^4 elements
+ * for 4-index tensors).
+ * The data_ptr argument must be allocated using the same allocator that was
+ * used during tensor creation. It must be large enough to hold block data. */
 void xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
-    uintptr_t data);
+    uintptr_t data_ptr);
 
-/* Set a non-canonical block. This block is a copy of some source block with
- * applied permutation and multiplication by a scalar factor. No actual data is
- * stored. */
+/* Allocate storage sufficient to hold data for a particular block. */
+uintptr_t xm_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
+
+/* Setup a non-canonical block.
+ * A non-canonical block is a copy of some source block with applied
+ * permutation and multiplication by a scalar factor.
+ * No actual data is stored for non-canonical blocks. */
 void xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
 

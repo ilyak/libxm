@@ -42,8 +42,7 @@ fatal(const char *msg)
 }
 
 static uintptr_t
-allocate_new_block(xm_allocator_t *allocator, const xm_dim_t *dim,
-    int type)
+allocate_new_block(xm_allocator_t *allocator, const xm_dim_t *dim, int type)
 {
 	uintptr_t ptr;
 	size_t size, size_bytes, i;
@@ -51,7 +50,7 @@ allocate_new_block(xm_allocator_t *allocator, const xm_dim_t *dim,
 
 	size = xm_dim_dot(dim);
 	size_bytes = size * sizeof(xm_scalar_t);
-	ptr = xm_allocate_block_data(allocator, dim);
+	ptr = xm_allocator_allocate(allocator, size_bytes);
 	if (ptr == XM_NULL_PTR)
 		fatal("cannot allocate tensor block data");
 	if (type == XM_INIT_NONE)

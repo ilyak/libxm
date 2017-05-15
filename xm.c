@@ -427,6 +427,12 @@ xm_tensor_create(xm_block_space_t *bs, const char *label,
 	return (tensor);
 }
 
+xm_allocator_t *
+xm_tensor_get_allocator(xm_tensor_t *tensor)
+{
+	return (tensor->allocator);
+}
+
 const char *
 xm_tensor_get_label(const xm_tensor_t *tensor)
 {
@@ -578,16 +584,17 @@ xm_tensor_get_block_dims(const xm_tensor_t *tensor, const xm_dim_t *idx)
 }
 
 uintptr_t
-xm_allocate_block_data(xm_allocator_t *allocator, const xm_dim_t *blk_dim)
+xm_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx)
 {
+	xm_dim_t blkdims;
 	size_t size;
 
-	assert(allocator);
-	assert(blk_dim);
+	assert(tensor);
+	assert(blk_idx);
 
-	size = xm_dim_dot(blk_dim) * sizeof(xm_scalar_t);
-
-	return (xm_allocator_allocate(allocator, size));
+	blkdims = xm_block_space_get_block_dims(tensor->bs, blk_idx);
+	size = xm_dim_dot(&blkdims) * sizeof(xm_scalar_t);
+	return (xm_allocator_allocate(tensor->allocator, size));
 }
 
 uintptr_t
