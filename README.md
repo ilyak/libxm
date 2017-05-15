@@ -36,7 +36,7 @@ To compile libxm you need a POSIX environment, an efficient BLAS library, and
 an ANSI C complaint compiler. To use libxm in your project, include `xm.h` file
 and compile the code:
 
-    cc myprog.c xm.c alloc.c -lblas -lpthread -lm
+    cc myprog.c xm.c alloc.c blockspace.c -lblas -lpthread -lm
 
 Replace `-lblas` with appropriate accelerated libraries (e.g. `-lnvblas`) to
 get the benefits of corresponding hardware. Detailed documentation can be

@@ -41,6 +41,9 @@ typedef double xm_scalar_t;
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
+/* A multi-dimensional block-space. */
+typedef struct xm_block_space xm_block_space_t;
+
 /* Multidimensional tensor index. */
 typedef struct {
 	size_t n, i[XM_MAX_DIM];
@@ -84,6 +87,18 @@ int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 /* Increment an index by one wrapping on dimensions.
  * Returns nonzero if the operation has wrapped to an all-zero index. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
+
+xm_block_space_t *xm_block_space_create(const xm_dim_t *);
+size_t xm_block_space_get_ndims(const xm_block_space_t *);
+xm_dim_t xm_block_space_get_abs_dims(const xm_block_space_t *);
+xm_dim_t xm_block_space_get_nblocks(const xm_block_space_t *);
+void xm_block_space_split(xm_block_space_t *, size_t, size_t);
+xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *,
+    const xm_dim_t *);
+int xm_block_space_eq(const xm_block_space_t *, const xm_block_space_t *);
+int xm_block_space_eq1(const xm_block_space_t *, size_t,
+    const xm_block_space_t *, size_t);
+void xm_block_space_free(xm_block_space_t *);
 
 /* Create a labeled tensor specifying its dimensions in blocks. */
 xm_tensor_t *xm_tensor_create(struct xm_allocator *allocator,

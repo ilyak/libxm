@@ -44,7 +44,7 @@ TEST_O= test.o
 
 AUX_O= auxil.o
 XM_A= xm.a
-XM_O= alloc.o xm.o
+XM_O= alloc.o blockspace.o xm.o
 
 AR= ar rc
 RANLIB= ranlib
