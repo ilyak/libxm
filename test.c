@@ -827,12 +827,14 @@ make_test_11(void)
 			  rnd(1, max_dim),
 			  t.dima.i[1],
 			  rnd(1, max_dim));
-	t.dimc = xm_dim_6(t.dima.i[0],
-			  t.dima.i[2],
-			  t.dima.i[3],
-			  t.dimb.i[0],
-			  t.dimb.i[1],
-			  t.dimb.i[3]);
+	t.dimc.n = 6;
+	t.dimc.i[0] = t.dima.i[0];
+	t.dimc.i[1] = t.dima.i[2];
+	t.dimc.i[2] = t.dima.i[3];
+	t.dimc.i[3] = t.dimb.i[0];
+	t.dimc.i[4] = t.dimb.i[1];
+	t.dimc.i[5] = t.dimb.i[3];
+
 	t.idxa = "idjk";
 	t.idxb = "abdc";
 	t.idxc = "ijkabc";
@@ -858,7 +860,13 @@ make_test_12(void)
 	t.block_size = rnd(1, max_block_size);
 	t.dima = xm_dim_4(o, o, v, v);
 	t.dimb = xm_dim_4(o, v, v, v);
-	t.dimc = xm_dim_6(o, o, o, v, v, v);
+	t.dimc.n = 6;
+	t.dimc.i[0] = o;
+	t.dimc.i[1] = o;
+	t.dimc.i[2] = o;
+	t.dimc.i[3] = v;
+	t.dimc.i[4] = v;
+	t.dimc.i[5] = v;
 	t.idxa = "ijda";
 	t.idxb = "kdbc";
 	t.idxc = "ijkabc";

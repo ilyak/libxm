@@ -23,8 +23,8 @@
 extern "C" {
 #endif
 
-/* Maximum number of tensor dimensions; change if necessary. */
-#define XM_MAX_DIM 6
+/* Maximum number of tensor dimensions. */
+#define XM_MAX_DIM 8
 
 #if defined(XM_SCALAR_FLOAT)
 typedef float xm_scalar_t;
@@ -58,6 +58,9 @@ xm_dim_t xm_dim_zero(size_t n);
 /* Initialize all indices of a dim to the same value. */
 xm_dim_t xm_dim_same(size_t n, size_t dim);
 
+/* Initialize a 1-D dim. */
+xm_dim_t xm_dim_1(size_t dim1);
+
 /* Initialize a 2-D dim. */
 xm_dim_t xm_dim_2(size_t dim1, size_t dim2);
 
@@ -66,14 +69,6 @@ xm_dim_t xm_dim_3(size_t dim1, size_t dim2, size_t dim3);
 
 /* Initialize a 4-D dim. */
 xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
-
-/* Initialize a 5-D dim. */
-xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
-    size_t dim5);
-
-/* Initialize a 6-D dim. */
-xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
-    size_t dim5, size_t dim6);
 
 /* Returns an n-dimensional identity permutation. */
 xm_dim_t xm_dim_identity_permutation(size_t n);

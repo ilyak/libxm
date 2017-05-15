@@ -120,6 +120,17 @@ xcalloc(size_t nmemb, size_t size)
 }
 
 xm_dim_t
+xm_dim_1(size_t dim1)
+{
+	xm_dim_t dim;
+
+	dim.n = 1;
+	dim.i[0] = dim1;
+
+	return (dim);
+}
+
+xm_dim_t
 xm_dim_2(size_t dim1, size_t dim2)
 {
 	xm_dim_t dim;
@@ -159,38 +170,6 @@ xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4)
 }
 
 xm_dim_t
-xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4, size_t dim5)
-{
-	xm_dim_t dim;
-
-	dim.n = 5;
-	dim.i[0] = dim1;
-	dim.i[1] = dim2;
-	dim.i[2] = dim3;
-	dim.i[3] = dim4;
-	dim.i[4] = dim5;
-
-	return (dim);
-}
-
-xm_dim_t
-xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4, size_t dim5,
-    size_t dim6)
-{
-	xm_dim_t dim;
-
-	dim.n = 6;
-	dim.i[0] = dim1;
-	dim.i[1] = dim2;
-	dim.i[2] = dim3;
-	dim.i[3] = dim4;
-	dim.i[4] = dim5;
-	dim.i[5] = dim6;
-
-	return (dim);
-}
-
-xm_dim_t
 xm_dim_same(size_t n, size_t dim)
 {
 	xm_dim_t ret;
@@ -199,7 +178,6 @@ xm_dim_same(size_t n, size_t dim)
 
 	for (ret.n = 0; ret.n < n; ret.n++)
 		ret.i[ret.n] = dim;
-
 	return (ret);
 }
 
@@ -311,6 +289,8 @@ xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim)
 	assert(xm_dim_less(idx, dim));
 
 	switch (idx->n) {
+	case 8: ret += idx->i[7] * idx->i[6] * idx->i[5] * dim->i[4] * dim->i[3] * dim->i[2] * dim->i[1] * dim->i[0];
+	case 7: ret += idx->i[6] * idx->i[5] * dim->i[4] * dim->i[3] * dim->i[2] * dim->i[1] * dim->i[0];
 	case 6: ret += idx->i[5] * dim->i[4] * dim->i[3] * dim->i[2] * dim->i[1] * dim->i[0];
 	case 5: ret += idx->i[4] * dim->i[3] * dim->i[2] * dim->i[1] * dim->i[0];
 	case 4: ret += idx->i[3] * dim->i[2] * dim->i[1] * dim->i[0];
