@@ -38,7 +38,7 @@ void xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
     void *mem, size_t size_bytes);
 void xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
     const void *mem, size_t size_bytes);
-void xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t ptr);
+void xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr);
 void xm_allocator_destroy(xm_allocator_t *allocator);
 
 #ifdef __cplusplus
