@@ -41,15 +41,15 @@ typedef double xm_scalar_t;
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
-/* A multi-dimensional block-space. */
+/* Multidimensional block-space. */
 typedef struct xm_block_space xm_block_space_t;
 
-/* Multidimensional tensor index. */
+/* Multidimensional index. */
 typedef struct {
 	size_t n, i[XM_MAX_DIM];
 } xm_dim_t;
 
-/* Print libxm banner to standard output. */
+/* Prints libxm banner to the standard output. */
 void xm_print_banner(void);
 
 /* Initialize all indices of a dim to zero. */
@@ -73,7 +73,7 @@ xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
 /* Returns an n-dimensional identity permutation. */
 xm_dim_t xm_dim_identity_permutation(size_t n);
 
-/* Multiply all dimensions of a dim by value s. */
+/* Scale all dimensions of a dim by s. */
 xm_dim_t xm_dim_scale(const xm_dim_t *dim, size_t s);
 
 /* Returns dot product of all indices of a dim. */
@@ -99,14 +99,16 @@ int xm_block_space_eq1(const xm_block_space_t *, size_t,
     const xm_block_space_t *, size_t);
 void xm_block_space_free(xm_block_space_t *);
 
-/* Create a block-tensor. */
+/* Creates a block-tensor. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
 /* Returns an allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 
-/* Copy tensor data. Tensors must have exactly the same block structure. */
+/* Copies tensor block data from src to dst.
+ * Tensors must have exactly the same block structure. Blocks must be
+ * allocated beforehand in the destination tensor. */
 void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
 
 /* Returns tensor dimensions in number of blocks. */
@@ -172,8 +174,7 @@ void xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
 /* Deallocate all blocks associated with this tensor. */
 void xm_tensor_free_blocks(xm_tensor_t *tensor);
 
-/* Release a tensor. The actual block-data is not freed by this function.
- * xm_tensor_free_blocks can be used to deallocate those data. */
+/* Release a tensor. The actual block-data is not freed by this function. */
 void xm_tensor_free(xm_tensor_t *tensor);
 
 /* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
