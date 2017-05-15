@@ -1,4 +1,4 @@
-# libxm
+# libxm 2.0 (beta)
 
 Libxm is a library that provides routines for efficient contractions of very
 large (terabytes in size) disk-based block-tensors on multi-core CPUs, GPUs,
