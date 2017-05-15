@@ -19,29 +19,26 @@
 
 #include "xm.h"
 
-#define XM_INIT_NONE          0  /* Do not initialize memory. */
-#define XM_INIT_ZERO          1  /* Initialize with zeros. */
-#define XM_INIT_RAND          2  /* Initialize with random data. */
+#define XM_INIT_NONE    0  /* Do not initialize memory. */
+#define XM_INIT_ZERO    1  /* Initialize with zeros. */
+#define XM_INIT_RAND    2  /* Initialize with random data. */
 
-#define XM_RESULT_SUCCESS     0  /* No error. */
-#define XM_RESULT_NO_MEMORY   1  /* Cannot allocate memory. */
-
-int xm_aux_init(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_oo(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_ov(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_vv(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_vvx(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_oooo(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_ooov(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_oovv(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_ovov(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_ovvv(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_vvvv(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_ooovvv(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_13(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_13c(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_14(struct xm_tensor *, struct xm_allocator *, size_t, int);
-int xm_aux_init_14b(struct xm_tensor *, struct xm_allocator *, size_t, int);
+xm_tensor_t *xm_aux_init(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_oo(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_ov(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_vv(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_vvx(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_oooo(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_ooov(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_oovv(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_ovov(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_ovvv(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_vvvv(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_ooovvv(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_13(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_13c(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_14(xm_allocator_t *, xm_dim_t, size_t, int);
+xm_tensor_t *xm_aux_init_14b(xm_allocator_t *, xm_dim_t, size_t, int);
 xm_scalar_t xm_random_scalar(void);
 
 #endif /* XM_AUXIL_H */

@@ -35,8 +35,7 @@
 #endif
 
 typedef struct test (*make_test_fn_t)(void);
-typedef int (*init_fn_t)(struct xm_tensor *, struct xm_allocator *,
-    size_t, int);
+typedef xm_tensor_t *(*init_fn_t)(xm_allocator_t *, xm_dim_t, size_t, int);
 
 struct test {
 	size_t block_size;
@@ -1016,23 +1015,18 @@ run_test(int test_num, int skip)
 	if ((allocator = xm_allocator_create(path)) == NULL)
 		fatal("xm_allocator_create");
 
-	if ((a = xm_tensor_create(allocator, &t.dima, "a")) == NULL)
-		fatal("xm_tensor_create(a)");
-	if ((b = xm_tensor_create(allocator, &t.dimb, "b")) == NULL)
-		fatal("xm_tensor_create(b)");
-	if ((c = xm_tensor_create(allocator, &t.dimc, "c")) == NULL)
-		fatal("xm_tensor_create(c)");
-	if ((d = xm_tensor_create(allocator, &t.dimc, "d")) == NULL)
-		fatal("xm_tensor_create(d)");
-
-	if (t.init_a(a, allocator, t.block_size, XM_INIT_RAND))
-		fatal("tensor_init(a)");
-	if (t.init_b(b, allocator, t.block_size, XM_INIT_RAND))
-		fatal("tensor_init(b)");
-	if (t.init_c(c, allocator, t.block_size, XM_INIT_RAND))
-		fatal("tensor_init(c)");
-	if (t.init_c(d, allocator, t.block_size, XM_INIT_NONE))
-		fatal("tensor_init(d)");
+	if ((a = t.init_a(allocator, t.dima, t.block_size,
+	    XM_INIT_RAND)) == NULL)
+		fatal("failed to create tensor a");
+	if ((b = t.init_b(allocator, t.dimb, t.block_size,
+	    XM_INIT_RAND)) == NULL)
+		fatal("failed to create tensor b");
+	if ((c = t.init_c(allocator, t.dimc, t.block_size,
+	    XM_INIT_RAND)) == NULL)
+		fatal("failed to create tensor c");
+	if ((d = t.init_c(allocator, t.dimc, t.block_size,
+	    XM_INIT_NONE)) == NULL)
+		fatal("failed to create tensor d");
 	xm_tensor_copy_data(d, c);
 
 	if (!skip) {
