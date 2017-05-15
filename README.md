@@ -16,7 +16,8 @@ complex numbers.
 
 ### Reference
 
-The libxm paper is available [here](https://dx.doi.org/10.1002/jcc.24713).
+[I.A. Kaliman and A.I. Krylov, JCC 2017](https://dx.doi.org/10.1002/jcc.24713)
+
 The code described in the paper can be found in the **xm1** branch.
 
 ### Usage
