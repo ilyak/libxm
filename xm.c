@@ -640,60 +640,55 @@ xm_tensor_reset_block(xm_tensor_t *tensor, const xm_dim_t *idx)
 }
 
 void
-xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *idx,
-    const xm_dim_t *blkdim)
+xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *idx)
 {
 	struct xm_block *block;
-	xm_dim_t bsdim;
+	xm_dim_t blkdims;
 
 	assert(tensor != NULL);
 	assert(idx != NULL);
-	assert(blkdim != NULL);
 
+	blkdims = xm_block_space_get_block_dims(tensor->bs, idx);
 	block = xm_tensor_get_block(tensor, idx);
 	assert(!block->is_initialized);
-	bsdim = xm_block_space_get_block_dims(tensor->bs, idx);
-	assert(xm_dim_eq(blkdim, &bsdim));
 
 	block->source_idx = *idx;
-	block->dim = *blkdim;
+	block->dim = blkdims;
 	block->data_ptr = XM_NULL_PTR;
-	block->permutation = xm_dim_identity_permutation(blkdim->n);
+	block->permutation = xm_dim_identity_permutation(blkdims.n);
 	block->scalar = 1.0;
 	block->is_source = 0;
 	block->is_nonzero = 0;
 	block->is_initialized = 1;
 
-	xm_tensor_set_max_block_size(tensor, blkdim);
+	xm_tensor_set_max_block_size(tensor, &blkdims);
 }
 
 void
 xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *idx,
-    const xm_dim_t *blkdim, uintptr_t data_ptr)
+    uintptr_t data_ptr)
 {
 	struct xm_block *block;
-	xm_dim_t bsdim;
+	xm_dim_t blkdims;
 
 	assert(tensor != NULL);
 	assert(idx != NULL);
-	assert(blkdim != NULL);
 	assert(data_ptr != XM_NULL_PTR);
 
+	blkdims = xm_block_space_get_block_dims(tensor->bs, idx);
 	block = xm_tensor_get_block(tensor, idx);
 	assert(!block->is_initialized);
-	bsdim = xm_block_space_get_block_dims(tensor->bs, idx);
-	assert(xm_dim_eq(blkdim, &bsdim));
 
 	block->source_idx = *idx;
-	block->dim = *blkdim;
+	block->dim = blkdims;
 	block->data_ptr = data_ptr;
-	block->permutation = xm_dim_identity_permutation(blkdim->n);
+	block->permutation = xm_dim_identity_permutation(blkdims.n);
 	block->scalar = 1.0;
 	block->is_source = 1;
 	block->is_nonzero = 1;
 	block->is_initialized = 1;
 
-	xm_tensor_set_max_block_size(tensor, blkdim);
+	xm_tensor_set_max_block_size(tensor, &blkdims);
 }
 
 void

@@ -162,17 +162,15 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
 void xm_tensor_reset_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 
 /* Set block as zero-block. No actual data is stored. */
-void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
-    const xm_dim_t *blk_dim);
+void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 
-/* Set source block with dimensions blk_dim. Each unique source block must
- * be setup using this function before being used in xm_tensor_set_block.
- * Note: if blocks are allocated using a disk-backed allocator they should be
- * at least several megabytes in size for best performance (e.g., 32^4 elements
- * for 4-index tensors). The data parameter is a handle allocated using
- * an xm_allocator. */
-void xm_tensor_set_source_block(xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx, const xm_dim_t *blk_dim, uintptr_t data);
+/* Setup the source block. Each unique source block must be setup using this
+ * function before being used in xm_tensor_set_block. Note: if blocks are
+ * allocated using a disk-backed allocator they should be at least several
+ * megabytes in size for best performance (e.g., 32^4 elements for 4-index
+ * tensors). The data parameter is a handle allocated using an xm_allocator. */
+void xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
+    uintptr_t data);
 
 /* Set a non-canonical block. This block is a copy of some source block with
  * applied permutation and multiplication by a scalar factor. No actual data is
