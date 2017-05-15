@@ -49,8 +49,6 @@ struct xm_block {
 
 /** defines a tensor */
 struct xm_tensor {
-	/** tensor label string */
-	char                   *label;
 	/** allocator used to allocate tensor data */
 	xm_allocator_t         *allocator;
 	/** array of all tensor blocks */
@@ -119,16 +117,6 @@ xcalloc(size_t nmemb, size_t size)
 		errx(1, "xcalloc: allocating %zu * %zu bytes: %s",
 		    nmemb, size, strerror(errno));
 	return ptr;
-}
-
-static char *
-xstrdup(const char *str)
-{
-	char *cp;
-
-	if ((cp = strdup(str)) == NULL)
-		errx(1, "xstrdup: %s", strerror(errno));
-	return cp;
 }
 
 xm_dim_t
@@ -404,8 +392,7 @@ xm_dim_permute_rev(const xm_dim_t *idx, const xm_dim_t *permutation)
 }
 
 xm_tensor_t *
-xm_tensor_create(const xm_block_space_t *bs, const char *label,
-    xm_allocator_t *allocator)
+xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 {
 	xm_tensor_t *tensor;
 	xm_dim_t idx, nblocks;
@@ -416,7 +403,6 @@ xm_tensor_create(const xm_block_space_t *bs, const char *label,
 	nblocks = xm_block_space_get_nblocks(tensor->bs);
 	size = xm_dim_dot(&nblocks);
 	tensor->blocks = xcalloc(size, sizeof *tensor->blocks);
-	tensor->label = xstrdup(label ? label : "");
 	tensor->allocator = allocator;
 
 	idx = xm_dim_zero(nblocks.n);
@@ -431,14 +417,6 @@ xm_allocator_t *
 xm_tensor_get_allocator(xm_tensor_t *tensor)
 {
 	return (tensor->allocator);
-}
-
-const char *
-xm_tensor_get_label(const xm_tensor_t *tensor)
-{
-	assert(tensor);
-
-	return (tensor->label);
 }
 
 static struct xm_block *
@@ -764,7 +742,6 @@ xm_tensor_free(xm_tensor_t *tensor)
 	if (tensor) {
 		xm_block_space_free(tensor->bs);
 		free(tensor->blocks);
-		free(tensor->label);
 		free(tensor);
 	}
 }

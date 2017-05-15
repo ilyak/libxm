@@ -104,15 +104,12 @@ int xm_block_space_eq1(const xm_block_space_t *, size_t,
     const xm_block_space_t *, size_t);
 void xm_block_space_free(xm_block_space_t *);
 
-/* Create a labeled tensor specifying its dimensions in blocks. */
-xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, const char *label,
+/* Create a block-tensor. */
+xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
 /* Returns an allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
-
-/* Returns tensor label. */
-const char *xm_tensor_get_label(const xm_tensor_t *tensor);
 
 /* Copy tensor data. Tensors must have exactly the same block structure. */
 void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
