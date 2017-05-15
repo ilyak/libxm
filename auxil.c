@@ -35,7 +35,7 @@ xm_random_scalar(void)
 }
 
 static uintptr_t
-xm_allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
+allocate_new_block(struct xm_allocator *allocator, const xm_dim_t *dim,
     int type)
 {
 	uintptr_t ptr;
@@ -84,7 +84,7 @@ xm_aux_init(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	size = xm_dim_dot(&dim);
 
 	for (i = 0; i < size; i++) {
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -119,7 +119,7 @@ xm_aux_init_oo(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[1] = 0; idx.i[1] < dim.i[1]; idx.i[1]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -161,7 +161,7 @@ xm_aux_init_ov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[1] = 0; idx.i[1] < dim.i[1]; idx.i[1]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -195,7 +195,7 @@ xm_aux_init_vv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[1] = 0; idx.i[1] < dim.i[1]; idx.i[1]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -239,7 +239,7 @@ xm_aux_init_vvx(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[2] = 0; idx.i[2] < dim.i[2]; idx.i[2]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -284,7 +284,7 @@ xm_aux_init_oooo(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[3] = 0; idx.i[3] < dim.i[3]; idx.i[3]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -403,7 +403,7 @@ xm_aux_init_ooov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[3] = 0; idx.i[3] < dim.i[3]; idx.i[3]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -448,7 +448,7 @@ xm_aux_init_oovv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[3] = 0; idx.i[3] < dim.i[3]; idx.i[3]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -515,7 +515,7 @@ xm_aux_init_ovov(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[3] = 0; idx.i[3] < dim.i[3]; idx.i[3]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -564,7 +564,7 @@ xm_aux_init_ovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[3] = 0; idx.i[3] < dim.i[3]; idx.i[3]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -609,7 +609,7 @@ xm_aux_init_vvvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[3] = 0; idx.i[3] < dim.i[3]; idx.i[3]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -730,7 +730,7 @@ xm_aux_init_ooovvv(struct xm_tensor *tensor, struct xm_allocator *allocator,
 	for (idx.i[5] = 0; idx.i[5] < dim.i[5]; idx.i[5]++) {
 		if (xm_tensor_get_block_data_ptr(tensor, &idx) != XM_NULL_PTR)
 			continue;
-		block = xm_allocate_new_block(allocator, &blk_dim, type);
+		block = allocate_new_block(allocator, &blk_dim, type);
 		if (block == XM_NULL_PTR)
 			return (XM_RESULT_NO_MEMORY);
 		xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -791,21 +791,21 @@ xm_aux_init_13(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_2(2, 2);
 	idx = xm_dim_2(0, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_2(3, 3);
 	idx = xm_dim_2(1, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_2(2, 3);
 	idx = xm_dim_2(0, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -839,28 +839,28 @@ xm_aux_init_13c(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_2(2, 2);
 	idx = xm_dim_2(0, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_2(3, 3);
 	idx = xm_dim_2(1, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_2(2, 3);
 	idx = xm_dim_2(0, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_2(3, 2);
 	idx = xm_dim_2(1, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -889,14 +889,14 @@ xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_4(2, 2, 2, 2);
 	idx = xm_dim_4(0, 0, 0, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_4(4, 2, 2, 2);
 	idx = xm_dim_4(1, 0, 0, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -908,7 +908,7 @@ xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_4(4, 4, 2, 2);
 	idx = xm_dim_4(1, 1, 0, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -920,7 +920,7 @@ xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_4(4, 2, 4, 2);
 	idx = xm_dim_4(1, 0, 1, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -932,7 +932,7 @@ xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_4(4, 4, 4, 2);
 	idx = xm_dim_4(1, 1, 1, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -974,7 +974,7 @@ xm_aux_init_14(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_4(4, 4, 4, 4);
 	idx = xm_dim_4(1, 1, 1, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
@@ -1003,28 +1003,28 @@ xm_aux_init_14b(struct xm_tensor *tensor, struct xm_allocator *allocator,
 
 	blk_dim = xm_dim_4(3, 3, 2, 2);
 	idx = xm_dim_4(0, 0, 0, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_4(3, 3, 2, 4);
 	idx = xm_dim_4(0, 0, 0, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_4(3, 3, 4, 2);
 	idx = xm_dim_4(0, 0, 1, 0);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
 
 	blk_dim = xm_dim_4(3, 3, 4, 4);
 	idx = xm_dim_4(0, 0, 1, 1);
-	block = xm_allocate_new_block(allocator, &blk_dim, type);
+	block = allocate_new_block(allocator, &blk_dim, type);
 	if (block == XM_NULL_PTR)
 		return (XM_RESULT_NO_MEMORY);
 	xm_tensor_set_source_block(tensor, &idx, &blk_dim, block);
