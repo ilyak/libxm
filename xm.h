@@ -150,10 +150,6 @@ xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
 xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
-/* Reset block to the uninitialized state. This does not deallocate memory
- * allocated for the specified block. */
-void xm_tensor_reset_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
-
 /* Set block as zero-block. No actual data is stored. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 

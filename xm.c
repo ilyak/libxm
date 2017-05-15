@@ -601,19 +601,6 @@ xm_tensor_set_max_block_size(xm_tensor_t *a, const xm_dim_t *blkdim)
 }
 
 void
-xm_tensor_reset_block(xm_tensor_t *tensor, const xm_dim_t *idx)
-{
-	struct xm_block *block;
-
-	assert(tensor != NULL);
-	assert(idx != NULL);
-
-	block = xm_tensor_get_block(tensor, idx);
-	memset(block, 0, sizeof(*block));
-	block->data_ptr = XM_NULL_PTR;
-}
-
-void
 xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *idx)
 {
 	struct xm_block *block;
