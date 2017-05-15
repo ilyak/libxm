@@ -48,6 +48,28 @@ xm_block_space_create(const xm_dim_t *dims)
 	return ret;
 }
 
+xm_block_space_t *
+xm_block_space_clone(const xm_block_space_t *bs)
+{
+	xm_block_space_t *ret;
+	size_t i;
+
+	if ((ret = calloc(1, sizeof *ret)) == NULL)
+		return NULL;
+	ret->dims = bs->dims;
+	ret->nblocks = bs->nblocks;
+	for (i = 0; i < ret->dims.n; i++) {
+		ret->splits[i] = malloc((ret->nblocks.i[i]+1)*sizeof(size_t));
+		if (ret->splits[i] == NULL) {
+			xm_block_space_free(ret);
+			return NULL;
+		}
+		memcpy(ret->splits[i], bs->splits[i],
+		    (ret->nblocks.i[i]+1)*sizeof(size_t));
+	}
+	return ret;
+}
+
 size_t
 xm_block_space_get_ndims(const xm_block_space_t *bs)
 {

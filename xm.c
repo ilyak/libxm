@@ -404,7 +404,7 @@ xm_dim_permute_rev(const xm_dim_t *idx, const xm_dim_t *permutation)
 }
 
 xm_tensor_t *
-xm_tensor_create(xm_block_space_t *bs, const char *label,
+xm_tensor_create(const xm_block_space_t *bs, const char *label,
     xm_allocator_t *allocator)
 {
 	xm_tensor_t *tensor;
@@ -412,8 +412,8 @@ xm_tensor_create(xm_block_space_t *bs, const char *label,
 	size_t i, size;
 
 	tensor = xcalloc(1, sizeof *tensor);
-	tensor->bs = bs; /*XXX copy??? */
-	nblocks = xm_block_space_get_nblocks(bs);
+	tensor->bs = xm_block_space_clone(bs);
+	nblocks = xm_block_space_get_nblocks(tensor->bs);
 	size = xm_dim_dot(&nblocks);
 	tensor->blocks = xcalloc(size, sizeof *tensor->blocks);
 	tensor->label = xstrdup(label ? label : "");
@@ -762,6 +762,7 @@ void
 xm_tensor_free(xm_tensor_t *tensor)
 {
 	if (tensor) {
+		xm_block_space_free(tensor->bs);
 		free(tensor->blocks);
 		free(tensor->label);
 		free(tensor);
