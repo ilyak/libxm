@@ -45,8 +45,6 @@ struct xm_block {
 	int                     is_source;
 	/** specifies whether the block is a zero-block (boolean) */
 	int                     is_nonzero;
-	/** specifies whether the block is initialized (boolean) */
-	int                     is_initialized;
 };
 
 /** defines a tensor */
@@ -410,7 +408,7 @@ xm_tensor_create(xm_block_space_t *bs, const char *label,
     xm_allocator_t *allocator)
 {
 	xm_tensor_t *tensor;
-	xm_dim_t nblocks;
+	xm_dim_t idx, nblocks;
 	size_t i, size;
 
 	tensor = xcalloc(1, sizeof *tensor);
@@ -421,9 +419,11 @@ xm_tensor_create(xm_block_space_t *bs, const char *label,
 	tensor->label = xstrdup(label ? label : "");
 	tensor->allocator = allocator;
 
-	for (i = 0; i < size; i++)
-		tensor->blocks[i].data_ptr = XM_NULL_PTR;
-
+	idx = xm_dim_zero(nblocks.n);
+	for (i = 0; i < size; i++) {
+		xm_tensor_set_zero_block(tensor, &idx);
+		xm_dim_inc(&idx, &nblocks);
+	}
 	return (tensor);
 }
 
@@ -463,8 +463,6 @@ xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src)
 	xm_scalar_t *buf;
 	size_t i, nblk, size;
 
-	assert(xm_tensor_is_initialized(dst));
-	assert(xm_tensor_is_initialized(src));
 	assert(xm_block_space_eq(dst->bs, src->bs));
 
 	nblocks = xm_tensor_get_nblocks(dst);
@@ -565,15 +563,6 @@ xm_tensor_block_is_nonzero(const xm_tensor_t *tensor, const xm_dim_t *idx)
 	return (block->is_nonzero);
 }
 
-int
-xm_tensor_block_is_initialized(const xm_tensor_t *tensor, const xm_dim_t *idx)
-{
-	struct xm_block *block;
-
-	block = xm_tensor_get_block(tensor, idx);
-	return (block->is_initialized);
-}
-
 xm_dim_t
 xm_tensor_get_block_dims(const xm_tensor_t *tensor, const xm_dim_t *idx)
 {
@@ -657,8 +646,6 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *idx)
 
 	blkdims = xm_block_space_get_block_dims(tensor->bs, idx);
 	block = xm_tensor_get_block(tensor, idx);
-	assert(!block->is_initialized);
-
 	block->source_idx = *idx;
 	block->dim = blkdims;
 	block->data_ptr = XM_NULL_PTR;
@@ -666,7 +653,6 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *idx)
 	block->scalar = 1.0;
 	block->is_source = 0;
 	block->is_nonzero = 0;
-	block->is_initialized = 1;
 
 	xm_tensor_set_max_block_size(tensor, &blkdims);
 }
@@ -684,8 +670,6 @@ xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 
 	blkdims = xm_block_space_get_block_dims(tensor->bs, idx);
 	block = xm_tensor_get_block(tensor, idx);
-	assert(!block->is_initialized);
-
 	block->source_idx = *idx;
 	block->dim = blkdims;
 	block->data_ptr = data_ptr;
@@ -693,7 +677,6 @@ xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 	block->scalar = 1.0;
 	block->is_source = 1;
 	block->is_nonzero = 1;
-	block->is_initialized = 1;
 
 	xm_tensor_set_max_block_size(tensor, &blkdims);
 }
@@ -712,13 +695,10 @@ xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 	assert(permutation != NULL);
 
 	source_block = xm_tensor_get_block(tensor, source_idx);
-	assert(source_block->is_initialized);
 	assert(source_block->is_source);
 	assert(source_block->is_nonzero);
 
 	block = xm_tensor_get_block(tensor, idx);
-	assert(!block->is_initialized);
-
 	blkdim = xm_dim_permute_rev(&source_block->dim, permutation);
 	bsdim = xm_block_space_get_block_dims(tensor->bs, idx);
 	assert(xm_dim_eq(&blkdim, &bsdim));
@@ -729,26 +709,8 @@ xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 	block->scalar = scalar;
 	block->is_source = 0;
 	block->is_nonzero = 1;
-	block->is_initialized = 1;
 
 	xm_tensor_set_max_block_size(tensor, &blkdim);
-}
-
-int
-xm_tensor_is_initialized(const xm_tensor_t *tensor)
-{
-	size_t i, nblk;
-	xm_dim_t nblocks;
-
-	assert(tensor);
-
-	nblocks = xm_tensor_get_nblocks(tensor);
-	nblk = xm_dim_dot(&nblocks);
-
-	for (i = 0; i < nblk; i++)
-		if (!tensor->blocks[i].is_initialized)
-			return (0);
-	return (1);
 }
 
 xm_dim_t
@@ -765,8 +727,6 @@ xm_tensor_get_abs_dims(const xm_tensor_t *tensor)
 	struct xm_block *block;
 	xm_dim_t abs_dim, idx, nblocks;
 	size_t dim_i, blk_i;
-
-	assert(xm_tensor_is_initialized(tensor));
 
 	nblocks = xm_tensor_get_nblocks(tensor);
 	abs_dim = xm_dim_zero(nblocks.n);
@@ -1146,9 +1106,6 @@ xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	size_t i, si1, si2, size, nnzblk;
 	int sym_k;
 
-	assert(xm_tensor_is_initialized(a));
-	assert(xm_tensor_is_initialized(b));
-	assert(xm_tensor_is_initialized(c));
 	assert(strlen(idxa) == xm_block_space_get_ndims(a->bs));
 	assert(strlen(idxb) == xm_block_space_get_ndims(b->bs));
 	assert(strlen(idxc) == xm_block_space_get_ndims(c->bs));

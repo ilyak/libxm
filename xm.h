@@ -136,10 +136,6 @@ xm_scalar_t xm_tensor_get_abs_element(const xm_tensor_t *tensor,
 int xm_tensor_block_is_nonzero(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
-/* Check if the block is initialized. */
-int xm_tensor_block_is_initialized(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
 /* Get block dimensions. */
 xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
@@ -183,9 +179,6 @@ uintptr_t xm_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
  * No actual data is stored for non-canonical blocks. */
 void xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
-
-/* Returns non-zero if all blocks of a tensor are initialized. */
-int xm_tensor_is_initialized(const xm_tensor_t *tensor);
 
 /* Deallocate all blocks associated with this tensor. */
 void xm_tensor_free_blocks(xm_tensor_t *tensor);
