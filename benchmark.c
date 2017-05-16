@@ -38,9 +38,9 @@ struct setup {
 	const char *idxb;
 	const char *idxc;
 	xm_scalar_t alpha;
-	int (*init_a)(struct xm_tensor *, struct xm_allocator *, size_t, int);
-	int (*init_b)(struct xm_tensor *, struct xm_allocator *, size_t, int);
-	int (*init_c)(struct xm_tensor *, struct xm_allocator *, size_t, int);
+	xm_tensor_t *(*init_a)(xm_allocator_t *, xm_dim_t, size_t, int);
+	xm_tensor_t *(*init_b)(xm_allocator_t *, xm_dim_t, size_t, int);
+	xm_tensor_t *(*init_c)(xm_allocator_t *, xm_dim_t, size_t, int);
 };
 
 static struct setup
@@ -107,7 +107,13 @@ make_benchmark_4(size_t o, size_t v)
 
 	setup.dima = xm_dim_4(o, o, v, v);
 	setup.dimb = xm_dim_4(o, v, v, v);
-	setup.dimc = xm_dim_6(o, o, o, v, v, v);
+	setup.dimc.n = 6;
+	setup.dimc.i[0] = o;
+	setup.dimc.i[1] = o;
+	setup.dimc.i[2] = o;
+	setup.dimc.i[3] = v;
+	setup.dimc.i[4] = v;
+	setup.dimc.i[5] = v;
 	setup.idxa = "ijda";
 	setup.idxb = "kdbc";
 	setup.idxc = "ijkabc";
@@ -218,8 +224,8 @@ main(int argc, char **argv)
 {
 	struct args args;
 	struct setup s;
-	struct xm_allocator *allocator;
-	struct xm_tensor *a, *b, *c;
+	xm_allocator_t *allocator;
+	xm_tensor_t *a, *b, *c;
 	const char *path;
 
 	args = args_parse(argc, argv);
@@ -231,19 +237,15 @@ main(int argc, char **argv)
 	if ((allocator = xm_allocator_create(path)) == NULL)
 		fatal("xm_allocator_create");
 
-	if ((a = xm_tensor_create(allocator, &s.dima, "a")) == NULL)
-		fatal("xm_tensor_create(a)");
-	if ((b = xm_tensor_create(allocator, &s.dimb, "b")) == NULL)
-		fatal("xm_tensor_create(b)");
-	if ((c = xm_tensor_create(allocator, &s.dimc, "c")) == NULL)
-		fatal("xm_tensor_create(c)");
-
-	if (s.init_a(a, allocator, args.block_size, XM_INIT_RAND))
-		fatal("init(a)");
-	if (s.init_b(b, allocator, args.block_size, XM_INIT_RAND))
-		fatal("init(b)");
-	if (s.init_c(c, allocator, args.block_size, XM_INIT_ZERO))
-		fatal("init(c)");
+	if ((a = s.init_a(allocator, s.dima, args.block_size,
+	    XM_INIT_RAND)) == NULL)
+		fatal("failed to create tensor a");
+	if ((b = s.init_b(allocator, s.dimb, args.block_size,
+	    XM_INIT_RAND)) == NULL)
+		fatal("failed to create tensor b");
+	if ((c = s.init_c(allocator, s.dimc, args.block_size,
+	    XM_INIT_RAND)) == NULL)
+		fatal("failed to create tensor c");
 
 	xm_contract(s.alpha, a, b, 0.0, c, s.idxa, s.idxb, s.idxc);
 
