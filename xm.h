@@ -52,6 +52,9 @@ typedef struct {
 /* Prints libxm banner to the standard output. */
 void xm_print_banner(void);
 
+
+/* Operations on multidimensional indices. */
+
 /* Initialize all indices of a dim to zero. */
 xm_dim_t xm_dim_zero(size_t n);
 
@@ -86,18 +89,44 @@ int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
  * Returns non-zero if the operation has wrapped to an all-zero index. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
-xm_block_space_t *xm_block_space_create(const xm_dim_t *);
-xm_block_space_t *xm_block_space_clone(const xm_block_space_t *);
-size_t xm_block_space_get_ndims(const xm_block_space_t *);
-xm_dim_t xm_block_space_get_abs_dims(const xm_block_space_t *);
-xm_dim_t xm_block_space_get_nblocks(const xm_block_space_t *);
-void xm_block_space_split(xm_block_space_t *, size_t, size_t);
-xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *,
-    const xm_dim_t *);
-int xm_block_space_eq(const xm_block_space_t *, const xm_block_space_t *);
-int xm_block_space_eq1(const xm_block_space_t *, size_t,
-    const xm_block_space_t *, size_t);
-void xm_block_space_free(xm_block_space_t *);
+
+/* Operations on block-spaces. */
+
+/* Create a block-space with specific absolute dimensions. */
+xm_block_space_t *xm_block_space_create(const xm_dim_t *dims);
+
+/* Create deep copy of a block-space. */
+xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
+
+/* Return number of dimensions a block-space has. */
+size_t xm_block_space_get_ndims(const xm_block_space_t *bs);
+
+/* Return absolute dimensions of a block-space. */
+xm_dim_t xm_block_space_get_abs_dims(const xm_block_space_t *bs);
+
+/* Return block-space dimensions in number of blocks. */
+xm_dim_t xm_block_space_get_nblocks(const xm_block_space_t *bs);
+
+/* Split block-space along a dimension at point x. */
+void xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x);
+
+/* Return dimensions of a block with specific index. */
+xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *bs,
+    const xm_dim_t *blkidx);
+
+/* Return non-zero if the block-spaces have same block structures. */
+int xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb);
+
+/* Return non-zero if specific block-space dimensions have same block
+ * structures. */
+int xm_block_space_eq1(const xm_block_space_t *bsa, size_t dima,
+    const xm_block_space_t *bsb, size_t dimb);
+
+/* Release resources used by a block-space. */
+void xm_block_space_free(xm_block_space_t *bs);
+
+
+/* Operations on tensors. */
 
 /* Creates a block-tensor. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,

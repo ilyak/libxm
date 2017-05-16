@@ -131,31 +131,31 @@ xm_block_space_get_block_dims(const xm_block_space_t *bs,
 }
 
 int
-xm_block_space_eq(const xm_block_space_t *a, const xm_block_space_t *b)
+xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb)
 {
 	size_t i;
 
-	if (a->dims.n != b->dims.n)
+	if (bsa->dims.n != bsb->dims.n)
 		return 0;
-	for (i = 0; i < a->dims.n; i++)
-		if (!xm_block_space_eq1(a, i, b, i))
+	for (i = 0; i < bsa->dims.n; i++)
+		if (!xm_block_space_eq1(bsa, i, bsb, i))
 			return 0;
 	return 1;
 }
 
 int
-xm_block_space_eq1(const xm_block_space_t *a, size_t dima,
-    const xm_block_space_t *b, size_t dimb)
+xm_block_space_eq1(const xm_block_space_t *bsa, size_t dima,
+    const xm_block_space_t *bsb, size_t dimb)
 {
 	size_t i;
 
-	assert(dima < a->nblocks.n);
-	assert(dimb < b->nblocks.n);
+	assert(dima < bsa->nblocks.n);
+	assert(dimb < bsb->nblocks.n);
 
-	if (a->nblocks.i[dima] != b->nblocks.i[dimb])
+	if (bsa->nblocks.i[dima] != bsb->nblocks.i[dimb])
 		return 0;
-	for (i = 0; i < a->nblocks.i[dima]+1; i++)
-		if (a->splits[dima][i] != b->splits[dimb][i])
+	for (i = 0; i < bsa->nblocks.i[dima]+1; i++)
+		if (bsa->splits[dima][i] != bsb->splits[dimb][i])
 			return 0;
 	return 1;
 }
