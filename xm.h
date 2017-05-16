@@ -132,6 +132,9 @@ void xm_block_space_free(xm_block_space_t *bs);
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
+/* Return a block-space associated with this tensor. */
+const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
+
 /* Return an allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 

@@ -393,6 +393,12 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 	return (tensor);
 }
 
+const xm_block_space_t *
+xm_tensor_get_block_space(const xm_tensor_t *tensor)
+{
+	return (tensor->bs);
+}
+
 xm_allocator_t *
 xm_tensor_get_allocator(xm_tensor_t *tensor)
 {
