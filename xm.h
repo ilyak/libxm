@@ -83,7 +83,7 @@ size_t xm_dim_dot(const xm_dim_t *dim);
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
 /* Increment an index by one wrapping on dimensions.
- * Returns nonzero if the operation has wrapped to an all-zero index. */
+ * Returns non-zero if the operation has wrapped to an all-zero index. */
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
 xm_block_space_t *xm_block_space_create(const xm_dim_t *);
@@ -139,7 +139,7 @@ xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor,
 uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
-/* Get permutation of a block. */
+/* Get permutation for a block. */
 xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
@@ -150,19 +150,20 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
 /* Set block as zero-block. No actual data is stored. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 
-/* Setup the source (canonical) block.
- * Each unique source block must be setup using this function before being used
- * in xm_tensor_set_block.
+/* Setup the source (canonical) block. Each unique source block must be setup
+ * using this function before being used in xm_tensor_set_block.
  * Note: if blocks are allocated using a disk-backed allocator they should be
  * at least several megabytes in size for best performance (e.g., 32^4 elements
  * for 4-index tensors).
  * The data_ptr argument must be allocated using the same allocator that was
- * used during tensor creation. It must be large enough to hold block data. */
+ * used during tensor creation. Allocation must be large enough to hold block
+ * data. */
 void xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
     uintptr_t data_ptr);
 
 /* Allocate storage sufficient to hold data for a particular block. */
-uintptr_t xm_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
+uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor,
+    const xm_dim_t *blk_idx);
 
 /* Setup a non-canonical block.
  * A non-canonical block is a copy of some source block with applied
@@ -180,9 +181,10 @@ void xm_tensor_free(xm_tensor_t *tensor);
 /* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
  * specified by strings idxa and idxb. Permutation of tensor c is specified by
  * idxc. The routine will perform optimal contraction using symmetry and
- * sparsity information obtained from tensors' block-structures. It is user's
- * responsibility to setup all tensors so that they have correct symmetries and
- * block-structures.
+ * sparsity information obtained from tensors' block structures. It is the
+ * user's responsibility to setup all tensors so that they have correct
+ * symmetries. This function does not change the original symmetry of the
+ * resulting tensor c.
  *
  * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
  */

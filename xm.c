@@ -531,7 +531,7 @@ xm_tensor_get_block_dims(const xm_tensor_t *tensor, const xm_dim_t *idx)
 }
 
 uintptr_t
-xm_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx)
+xm_tensor_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx)
 {
 	xm_dim_t blkdims;
 	size_t size;
