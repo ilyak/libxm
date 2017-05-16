@@ -22,6 +22,7 @@ The code described in the paper can be found in the **xm1** branch.
 
 ### Usage
 
+A documented example on how to use libxm can be found in the `example.c` file.
 Once tensors are setup the contraction routine is similar to BLAS dgemm call:
 
     xm_contract(alpha, A, B, beta, C, "abcd", "ijcd", "ijab");

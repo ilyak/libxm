@@ -39,6 +39,8 @@ LIBS= -lblas -lpthread -lm
 
 BENCHMARK= benchmark
 BENCHMARK_O= benchmark.o
+EXAMPLE= example
+EXAMPLE_O= example.o
 TEST= test
 TEST_O= test.o
 
@@ -50,10 +52,13 @@ AR= ar rc
 RANLIB= ranlib
 RM= rm -f
 
-all: $(BENCHMARK) $(TEST)
+all: $(BENCHMARK) $(EXAMPLE) $(TEST)
 
 $(BENCHMARK): $(AUX_O) $(XM_A) $(BENCHMARK_O)
 	$(CC) -o $@ $(CFLAGS) $(BENCHMARK_O) $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
+
+$(EXAMPLE): $(AUX_O) $(XM_A) $(EXAMPLE_O)
+	$(CC) -o $@ $(CFLAGS) $(EXAMPLE_O) $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
 
 $(TEST): $(AUX_O) $(XM_A) $(TEST_O)
 	$(CC) -o $@ $(CFLAGS) $(TEST_O) $(AUX_O) $(XM_A) $(LDFLAGS) $(LIBS)
@@ -71,6 +76,7 @@ dist:
 clean:
 	$(RM) $(XM_A) $(XM_O) $(AUX_O)
 	$(RM) $(BENCHMARK) $(BENCHMARK_O)
+	$(RM) $(EXAMPLE) $(EXAMPLE_O)
 	$(RM) $(TEST) $(TEST_O)
 	$(RM) *.core xmpagefile xmpagefile.* libxm.tgz
 
