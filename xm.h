@@ -171,8 +171,8 @@ uintptr_t xm_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 void xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
 
-/* Deallocate all blocks associated with this tensor. */
-void xm_tensor_free_blocks(xm_tensor_t *tensor);
+/* Deallocate all block data associated with this tensor. */
+void xm_tensor_free_block_data(xm_tensor_t *tensor);
 
 /* Release a tensor. The actual block-data is not freed by this function. */
 void xm_tensor_free(xm_tensor_t *tensor);

@@ -688,7 +688,7 @@ xm_tensor_get_abs_dims(const xm_tensor_t *tensor)
 }
 
 void
-xm_tensor_free_blocks(xm_tensor_t *tensor)
+xm_tensor_free_block_data(xm_tensor_t *tensor)
 {
 	xm_dim_t nblocks;
 	size_t i, nblk;
