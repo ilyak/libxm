@@ -62,7 +62,7 @@ $(XM_A): $(XM_O)
 	$(RANLIB) $@
 
 check: $(TEST)
-	@./test 30 2>/dev/null
+	./test 30
 
 dist:
 	git archive --format=tar.gz --prefix=libxm/ -o libxm.tgz HEAD
