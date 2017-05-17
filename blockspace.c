@@ -130,6 +130,23 @@ xm_block_space_get_block_dims(const xm_block_space_t *bs,
 	return blkdims;
 }
 
+size_t
+xm_block_space_get_largest_block_size(const xm_block_space_t *bs)
+{
+	size_t i, j, size, maxsize, blksize = 1;
+
+	for (i = 0; i < bs->dims.n; i++) {
+		maxsize = 0;
+		for (j = 0; j < bs->nblocks.i[i]; j++) {
+			size = bs->splits[i][j+1]-bs->splits[i][j];
+			if (size > maxsize)
+				maxsize = size;
+		}
+		blksize *= maxsize;
+	}
+	return blksize;
+}
+
 int
 xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb)
 {
