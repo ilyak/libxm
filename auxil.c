@@ -706,6 +706,7 @@ xm_aux_init_13(xm_allocator_t *allocator, xm_dim_t nblocks,
 	xm_block_space_split(bs, 1, 2);
 	if ((ret = xm_tensor_create(bs, allocator)) == NULL)
 		fatal("xm_tensor_create");
+	xm_block_space_free(bs);
 
 	blk_dim = xm_dim_2(2, 2);
 	idx = xm_dim_2(0, 0);
@@ -749,6 +750,7 @@ xm_aux_init_13c(xm_allocator_t *allocator, xm_dim_t nblocks,
 	xm_block_space_split(bs, 1, 2);
 	if ((ret = xm_tensor_create(bs, allocator)) == NULL)
 		fatal("xm_tensor_create");
+	xm_block_space_free(bs);
 
 	blk_dim = xm_dim_2(2, 2);
 	idx = xm_dim_2(0, 0);
@@ -794,6 +796,7 @@ xm_aux_init_14(xm_allocator_t *allocator, xm_dim_t nblocks,
 	xm_block_space_split(bs, 3, 2);
 	if ((ret = xm_tensor_create(bs, allocator)) == NULL)
 		fatal("xm_tensor_create");
+	xm_block_space_free(bs);
 
 	blk_dim = xm_dim_4(2, 2, 2, 2);
 	idx = xm_dim_4(0, 0, 0, 0);
@@ -897,6 +900,7 @@ xm_aux_init_14b(xm_allocator_t *allocator, xm_dim_t nblocks,
 	xm_block_space_split(bs, 3, 2);
 	if ((ret = xm_tensor_create(bs, allocator)) == NULL)
 		fatal("xm_tensor_create");
+	xm_block_space_free(bs);
 
 	blk_dim = xm_dim_4(3, 3, 2, 2);
 	idx = xm_dim_4(0, 0, 0, 0);

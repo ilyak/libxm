@@ -52,6 +52,11 @@ main(void)
 	xm_tensor_t *b = xm_tensor_create(bsb, allocator);
 	xm_tensor_t *c = xm_tensor_create(bsc, allocator);
 
+	/* Block-spaces can be freed now. */
+	xm_block_space_free(bsa);
+	xm_block_space_free(bsb);
+	xm_block_space_free(bsc);
+
 	/* Fill a and b with some data. */
 	xm_dim_t ii, jj, perm;
 	uintptr_t data_ptr;
@@ -104,9 +109,6 @@ main(void)
 	xm_tensor_free(a);
 	xm_tensor_free(b);
 	xm_tensor_free(c);
-	xm_block_space_free(bsa);
-	xm_block_space_free(bsb);
-	xm_block_space_free(bsc);
 	xm_allocator_destroy(allocator);
 	return 0;
 }
