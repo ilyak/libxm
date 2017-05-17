@@ -666,28 +666,14 @@ xm_dim_t
 xm_tensor_get_nblocks(const xm_tensor_t *tensor)
 {
 	assert(tensor);
-
 	return xm_block_space_get_nblocks(tensor->bs);
 }
 
 xm_dim_t
 xm_tensor_get_abs_dims(const xm_tensor_t *tensor)
 {
-	struct xm_block *block;
-	xm_dim_t abs_dim, idx, nblocks;
-	size_t dim_i, blk_i;
-
-	nblocks = xm_tensor_get_nblocks(tensor);
-	abs_dim = xm_dim_zero(nblocks.n);
-	for (dim_i = 0; dim_i < nblocks.n; dim_i++) {
-		idx = xm_dim_zero(nblocks.n);
-		for (blk_i = 0; blk_i < nblocks.i[dim_i]; blk_i++) {
-			idx.i[dim_i] = blk_i;
-			block = xm_tensor_get_block(tensor, &idx);
-			abs_dim.i[dim_i] += block->dim.i[dim_i];
-		}
-	}
-	return (abs_dim);
+	assert(tensor);
+	return xm_block_space_get_abs_dims(tensor->bs);
 }
 
 void
