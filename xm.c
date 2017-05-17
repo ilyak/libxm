@@ -1022,7 +1022,7 @@ xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 {
 	struct xm_ctx ctx;
 	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *nzblk;
-	xm_dim_t nblocksa, nblocksb, nblocksc;
+	xm_dim_t nblocksa, nblocksb;
 	size_t i, si1, si2, size, nnzblk;
 	size_t maxblocksizea, maxblocksizeb, maxblocksizec;
 	int sym_k;
@@ -1037,7 +1037,6 @@ xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 
 	nblocksa = xm_tensor_get_nblocks(a);
 	nblocksb = xm_tensor_get_nblocks(b);
-	nblocksc = xm_tensor_get_nblocks(c);
 
 	ctx.alpha = alpha;
 	ctx.beta = beta;

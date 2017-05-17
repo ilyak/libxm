@@ -86,7 +86,7 @@ main(void)
 	data_ptr = xm_tensor_allocate_block_data(c, &ii);
 	xm_tensor_set_source_block(c, &ii, data_ptr);
 
-	/* Compute: c = 2*a*b */
+	/* Compute c = 2*a*b */
 	xm_contract(2.0, a, b, 0.0, c, "ik", "kj", "ij");
 
 	/* Print the result. */
