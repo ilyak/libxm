@@ -84,6 +84,7 @@ create_tensor(xm_allocator_t *allocator, xm_dim_t nblocks, size_t blocksize)
 			xm_block_space_split(bs, i, j * blocksize);
 	if ((tensor = xm_tensor_create(bs, allocator)) == NULL)
 		fatal("cannot create a tensor");
+	xm_block_space_free(bs);
 	return tensor;
 }
 
