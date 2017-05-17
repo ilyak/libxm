@@ -333,6 +333,8 @@ xm_dim_permute(const xm_dim_t *idx, const xm_dim_t *permutation)
 
 	ret.n = idx->n;
 	switch (ret.n) {
+	case 8: ret.i[permutation->i[7]] = idx->i[7];
+	case 7: ret.i[permutation->i[6]] = idx->i[6];
 	case 6: ret.i[permutation->i[5]] = idx->i[5];
 	case 5: ret.i[permutation->i[4]] = idx->i[4];
 	case 4: ret.i[permutation->i[3]] = idx->i[3];
@@ -352,6 +354,8 @@ xm_dim_permute_rev(const xm_dim_t *idx, const xm_dim_t *permutation)
 
 	ret.n = idx->n;
 	switch (ret.n) {
+	case 8: ret.i[7] = idx->i[permutation->i[7]];
+	case 7: ret.i[6] = idx->i[permutation->i[6]];
 	case 6: ret.i[5] = idx->i[permutation->i[5]];
 	case 5: ret.i[4] = idx->i[permutation->i[4]];
 	case 4: ret.i[3] = idx->i[permutation->i[3]];
@@ -371,11 +375,10 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 
 	tensor = xcalloc(1, sizeof *tensor);
 	tensor->bs = xm_block_space_clone(bs);
+	tensor->allocator = allocator;
 	nblocks = xm_block_space_get_nblocks(tensor->bs);
 	size = xm_dim_dot(&nblocks);
 	tensor->blocks = xcalloc(size, sizeof *tensor->blocks);
-	tensor->allocator = allocator;
-
 	idx = xm_dim_zero(nblocks.n);
 	for (i = 0; i < size; i++) {
 		xm_tensor_set_zero_block(tensor, &idx);
@@ -664,11 +667,11 @@ xm_tensor_free_block_data(xm_tensor_t *tensor)
 	assert(tensor);
 	nblocks = xm_tensor_get_nblocks(tensor);
 	nblk = xm_dim_dot(&nblocks);
-	for (i = 0; i < nblk; i++) {
-		if (tensor->blocks[i].is_source)
+	for (i = 0; i < nblk; i++)
+		if (tensor->blocks[i].is_source) {
 			xm_allocator_deallocate(tensor->allocator,
 			    tensor->blocks[i].data_ptr);
-	}
+		}
 }
 
 void
