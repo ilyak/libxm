@@ -20,8 +20,8 @@ print_tensor(const xm_tensor_t *t)
 int
 main(void)
 {
-	/* Create an allocator. NULL as path means that we store data in RAM,
-	 * not on disk. */
+	/* Create an allocator. Passing NULL means that we store data in RAM,
+	 * not in a file on disk. */
 	xm_allocator_t *allocator = xm_allocator_create(NULL);
 
 	/* Our matrices will be 4x5, 5x3, and 4x3 elements in size. */
@@ -46,7 +46,7 @@ main(void)
 	/* block-space c - 2 blocks */
 	xm_block_space_split(bsc, 0, 2);
 
-	/* Create tensors a, b, and c. Tensors are initialized with all
+	/* Create tensors a, b, c. Tensors are initialized with all
 	 * zero-blocks by default. */
 	xm_tensor_t *a = xm_tensor_create(bsa, allocator);
 	xm_tensor_t *b = xm_tensor_create(bsb, allocator);
@@ -92,14 +92,12 @@ main(void)
 	/* Print the result. */
 	printf("tensor a\n");
 	print_tensor(a);
-	printf("\n");
-	printf("tensor b\n");
+	printf("\ntensor b\n");
 	print_tensor(b);
-	printf("\n");
-	printf("tensor c = 2*a*b\n");
+	printf("\ntensor c = 2*a*b\n");
 	print_tensor(c);
 
-	/* Finally, free all allocated resources. */
+	/* Finally, cleanup all allocated resources. */
 	xm_tensor_free_block_data(a);
 	xm_tensor_free_block_data(b);
 	xm_tensor_free_block_data(c);

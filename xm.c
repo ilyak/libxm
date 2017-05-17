@@ -313,7 +313,6 @@ xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
 		carry = idx->i[i] / dim->i[i];
 		idx->i[i] %= dim->i[i];
 	}
-
 	return (carry);
 }
 
@@ -329,7 +328,6 @@ xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask)
 		carry = idx->i[mask->i[i]] / dim->i[mask->i[i]];
 		idx->i[mask->i[i]] %= dim->i[mask->i[i]];
 	}
-
 	return (carry);
 }
 
@@ -689,7 +687,6 @@ xm_tensor_get_abs_dims(const xm_tensor_t *tensor)
 			abs_dim.i[dim_i] += block->dim.i[dim_i];
 		}
 	}
-
 	return (abs_dim);
 }
 

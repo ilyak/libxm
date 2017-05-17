@@ -82,7 +82,7 @@ xm_dim_t xm_dim_scale(const xm_dim_t *dim, size_t s);
 /* Return dot product of all indices of a dim. */
 size_t xm_dim_dot(const xm_dim_t *dim);
 
-/* Return non-zero if index is within zero and dim. */
+/* Return non-zero if an index is within zero and dim. */
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
 /* Increment an index by one wrapping on dimensions.
@@ -95,10 +95,10 @@ size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 /* Create a block-space with specific absolute dimensions. */
 xm_block_space_t *xm_block_space_create(const xm_dim_t *dims);
 
-/* Create deep copy of a block-space. */
+/* Create a deep copy of a block-space. */
 xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
 
-/* Return number of dimensions a block-space has. */
+/* Return number of dimensions of a block-space. */
 size_t xm_block_space_get_ndims(const xm_block_space_t *bs);
 
 /* Return absolute dimensions of a block-space. */
@@ -139,7 +139,7 @@ const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 
 /* Copy tensor block data from src to dst.
- * Tensors must have exactly the same block structure. Blocks must be
+ * Tensors must have exactly the same block structures. Blocks must be
  * allocated beforehand in the destination tensor. */
 void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
 
@@ -183,7 +183,7 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
 uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
-/* Setup a zero-block. No actual data is stored. */
+/* Setup a zero-block. No actual data are stored. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 
 /* Setup a source (canonical) block. Each unique source block must be
@@ -200,14 +200,14 @@ void xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
 /* Setup a non-canonical block.
  * A non-canonical block is a copy of some source block with applied
  * permutation and multiplication by a scalar factor.
- * No actual data is stored for non-canonical blocks. */
+ * No actual data are stored for non-canonical blocks. */
 void xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
     const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
 
 /* Deallocate all block data associated with this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);
 
-/* Release resources associated with a tensor. The actual block-data is not
+/* Release resources associated with a tensor. The actual block data are not
  * freed by this function. */
 void xm_tensor_free(xm_tensor_t *tensor);
 
