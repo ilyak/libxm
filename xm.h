@@ -98,6 +98,99 @@ int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
 
+/* Operations on tensors. */
+
+/* Create a block-tensor. */
+xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
+    xm_allocator_t *allocator);
+
+/* Return a block-space associated with this tensor. */
+const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
+
+/* Return an allocator associated with this tensor. */
+xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
+
+/* Copy block data from source tensor to destination.
+ * Tensors must have exactly the same block structures. Blocks must be
+ * allocated beforehand in the destination tensor. */
+void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
+
+/* Return absolute tensor dimensions in total number of elements. */
+xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
+
+/* Return tensor dimensions in number of blocks. */
+xm_dim_t xm_tensor_get_nblocks(const xm_tensor_t *tensor);
+
+/* Return an individual element of a tensor given its absolute index.
+ * Note: this function is relatively slow. */
+xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor,
+    const xm_dim_t *idx);
+
+/* Get elements of a particular block. The storage pointed to by data should
+ * be large enough to store all elements of a block. */
+void xm_tensor_get_block_elements(xm_tensor_t *tensor, const xm_dim_t *blkidx,
+    xm_scalar_t *data, size_t data_bytes);
+
+/* Return type of a block. This returns one of the XM_BLOCK_TYPE_ values. */
+int xm_tensor_get_block_type(const xm_tensor_t *tensor, const xm_dim_t *blkidx);
+
+/* Return dimensions of a specific block. */
+xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor,
+    const xm_dim_t *blkidx);
+
+/* Setup a zero-block (all elements of a block are zeros).
+ * No actual data are stored. */
+void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blkidx);
+
+/* Setup a canonical tensor block. Canonical blocks are the only ones that
+ * store actual data.
+ * Note: if blocks are allocated using a disk-backed allocator they should be
+ * at least several megabytes in size for best performance (e.g., 32^4 elements
+ * for 4-index tensors).
+ * The data_ptr argument must be allocated using the same allocator that was
+ * used during tensor creation. Allocation must be large enough to hold block
+ * data. */
+void xm_tensor_set_canonical_block(xm_tensor_t *tensor, const xm_dim_t *blkidx,
+    uintptr_t data_ptr);
+
+/* Allocate storage sufficient to hold data for a particular block using
+ * associated allocator. */
+uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor,
+    const xm_dim_t *blkidx);
+
+/* Setup a derivative block. A derivative block is a copy of some canonical
+ * block with applied permutation and multiplication by a scalar factor.
+ * No actual data are stored for derivative blocks. */
+void xm_tensor_set_derivative_block(xm_tensor_t *tensor, const xm_dim_t *blkidx,
+    const xm_dim_t *source_idx, const xm_dim_t *permutation,
+    xm_scalar_t scalar);
+
+/* Deallocate all block data associated with this tensor. */
+void xm_tensor_free_block_data(xm_tensor_t *tensor);
+
+/* Release resources associated with a tensor. The actual block data are not
+ * freed by this function. */
+void xm_tensor_free(xm_tensor_t *tensor);
+
+/* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
+ * specified by strings idxa and idxb. Permutation of tensor c is specified by
+ * idxc. The routine will perform optimal contraction using symmetry and
+ * sparsity information obtained from tensors' block structures. It is the
+ * user's responsibility to setup all tensors so that they have correct
+ * symmetries. This function does not change the original symmetry of the
+ * resulting tensor c.
+ *
+ * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
+ */
+void xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
+    xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
+    const char *idxc);
+
+/* Compute y = alpha * x + y */
+void xm_axpy(xm_scalar_t alpha, xm_tensor_t *x, xm_tensor_t *y,
+    const char *xidx, const char *yidx);
+
+
 /* Operations on block-spaces. */
 
 /* Create a block-space with specific absolute dimensions. */
@@ -106,7 +199,7 @@ xm_block_space_t *xm_block_space_create(const xm_dim_t *dims);
 /* Create a deep copy of a block-space. */
 xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
 
-/* Return number of dimensions of a block-space. */
+/* Return number of dimensions a block-space has. */
 size_t xm_block_space_get_ndims(const xm_block_space_t *bs);
 
 /* Return absolute dimensions of a block-space. */
@@ -135,105 +228,6 @@ int xm_block_space_eq1(const xm_block_space_t *bsa, size_t dima,
 
 /* Release resources used by a block-space. */
 void xm_block_space_free(xm_block_space_t *bs);
-
-
-/* Operations on tensors. */
-
-/* Create a block-tensor. */
-xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
-    xm_allocator_t *allocator);
-
-/* Return a block-space associated with this tensor. */
-const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
-
-/* Return an allocator associated with this tensor. */
-xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
-
-/* Copy tensor block data from src to dst.
- * Tensors must have exactly the same block structures. Blocks must be
- * allocated beforehand in the destination tensor. */
-void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
-
-/* Return tensor dimensions in number of blocks. */
-xm_dim_t xm_tensor_get_nblocks(const xm_tensor_t *tensor);
-
-/* Return absolute tensor dimensions in total number of elements. */
-xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
-
-/* Return an individual tensor element given block index and element index
- * within a block. Note: this function is slow. */
-xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx, const xm_dim_t *el_idx);
-
-/* Return an individual element of a tensor given its absolute index.
- * Note: this function is slow. */
-xm_scalar_t xm_tensor_get_abs_element(const xm_tensor_t *tensor,
-    const xm_dim_t *idx);
-
-/* Return type of a block. This returns one of the XM_BLOCK_TYPE_ values. */
-int xm_tensor_get_block_type(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
-/* Return dimensions of a specific block. */
-xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
-/* Return block data pointer. */
-uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
-/* Return permutation for a block. */
-xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
-/* Return scalar multiplier for a block. */
-xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
-/* Allocate storage sufficient to hold data for a particular block. */
-uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor,
-    const xm_dim_t *blk_idx);
-
-/* Setup a zero-block (all elements of a block are zeros).
- * No actual data are stored. */
-void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
-
-/* Setup a canonical block. Each canonical block must be initialized using this
- * function before being used in xm_tensor_set_derivative_block.
- * Note: if blocks are allocated using a disk-backed allocator they should be
- * at least several megabytes in size for best performance (e.g., 32^4 elements
- * for 4-index tensors).
- * The data_ptr argument must be allocated using the same allocator that was
- * used during tensor creation. Allocation must be large enough to hold block
- * data. */
-void xm_tensor_set_canonical_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
-    uintptr_t data_ptr);
-
-/* Setup a derivative block. A derivative block is a copy of some canonical
- * block with applied permutation and multiplication by a scalar factor.
- * No actual data are stored for derivative blocks. */
-void xm_tensor_set_derivative_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx, const xm_dim_t *source_idx, const xm_dim_t *permutation, xm_scalar_t scalar);
-
-/* Deallocate all block data associated with this tensor. */
-void xm_tensor_free_block_data(xm_tensor_t *tensor);
-
-/* Release resources associated with a tensor. The actual block data are not
- * freed by this function. */
-void xm_tensor_free(xm_tensor_t *tensor);
-
-/* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
- * specified by strings idxa and idxb. Permutation of tensor c is specified by
- * idxc. The routine will perform optimal contraction using symmetry and
- * sparsity information obtained from tensors' block structures. It is the
- * user's responsibility to setup all tensors so that they have correct
- * symmetries. This function does not change the original symmetry of the
- * resulting tensor c.
- *
- * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
- */
-void xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
-    xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
-    const char *idxc);
 
 #ifdef __cplusplus
 } /* extern "C" */
