@@ -181,7 +181,7 @@ xm_dim_zero(size_t n)
 	return (xm_dim_same(n, 0));
 }
 
-static int
+int
 xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 {
 	size_t i;

@@ -82,6 +82,9 @@ xm_dim_t xm_dim_scale(const xm_dim_t *dim, size_t s);
 /* Return dot product of all indices of a dim. */
 size_t xm_dim_dot(const xm_dim_t *dim);
 
+/* Return non-zero if two dims are equal. */
+int xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b);
+
 /* Return non-zero if an index is within zero and dim. */
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
