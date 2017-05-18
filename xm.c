@@ -41,10 +41,8 @@ struct xm_block {
 	xm_dim_t                source_idx;
 	/** scalar multiplier for the raw data */
 	xm_scalar_t             scalar;
-	/** specifies whether the block is a source block (boolean) */
-	int                     is_source;
-	/** specifies whether the block is a zero-block (boolean) */
-	int                     is_nonzero;
+	/** type of this block */
+	int                     type;
 };
 
 struct xm_tensor {
@@ -431,10 +429,9 @@ xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src)
 	for (i = 0; i < nblk; i++) {
 		dstblk = &dst->blocks[i];
 		srcblk = &src->blocks[i];
-		assert(srcblk->is_source == dstblk->is_source);
-		assert(srcblk->is_nonzero == dstblk->is_nonzero);
+		assert(srcblk->type == dstblk->type);
 		assert(xm_dim_eq(&srcblk->dim, &dstblk->dim));
-		if (dstblk->is_source) {
+		if (dstblk->type == XM_BLOCK_TYPE_CANONICAL) {
 			size = xm_dim_dot(&dstblk->dim) * sizeof(xm_scalar_t);
 			assert(srcblk->data_ptr != XM_NULL_PTR);
 			xm_allocator_read(src->allocator, srcblk->data_ptr,
@@ -457,7 +454,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, const xm_dim_t *blk_i,
 	size_t el_off, size_bytes;
 
 	block = xm_tensor_get_block(tensor, blk_i);
-	if (!block->is_nonzero)
+	if (block->type == XM_BLOCK_TYPE_ZERO)
 		return (0.0);
 	assert(block->data_ptr != XM_NULL_PTR);
 	size_bytes = xm_dim_dot(&block->dim) * sizeof(xm_scalar_t);
@@ -514,12 +511,12 @@ xm_tensor_get_abs_element(const xm_tensor_t *tensor, const xm_dim_t *idx)
 }
 
 int
-xm_tensor_block_is_nonzero(const xm_tensor_t *tensor, const xm_dim_t *idx)
+xm_tensor_get_block_type(const xm_tensor_t *tensor, const xm_dim_t *idx)
 {
 	struct xm_block *block;
 
 	block = xm_tensor_get_block(tensor, idx);
-	return (block->is_nonzero);
+	return (block->type);
 }
 
 xm_dim_t
@@ -588,12 +585,11 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *idx)
 	block->data_ptr = XM_NULL_PTR;
 	block->permutation = xm_dim_identity_permutation(blkdims.n);
 	block->scalar = 1.0;
-	block->is_source = 0;
-	block->is_nonzero = 0;
+	block->type = XM_BLOCK_TYPE_ZERO;
 }
 
 void
-xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *idx,
+xm_tensor_set_canonical_block(xm_tensor_t *tensor, const xm_dim_t *idx,
     uintptr_t data_ptr)
 {
 	struct xm_block *block;
@@ -610,14 +606,12 @@ xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 	block->data_ptr = data_ptr;
 	block->permutation = xm_dim_identity_permutation(blkdims.n);
 	block->scalar = 1.0;
-	block->is_source = 1;
-	block->is_nonzero = 1;
+	block->type = XM_BLOCK_TYPE_CANONICAL;
 }
 
 void
-xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *idx,
-    const xm_dim_t *source_idx, const xm_dim_t *permutation,
-    xm_scalar_t scalar)
+xm_tensor_set_derivative_block(xm_tensor_t *tensor, const xm_dim_t *idx,
+    const xm_dim_t *source_idx, const xm_dim_t *permutation, xm_scalar_t scalar)
 {
 	struct xm_block *block, *source_block;
 	xm_dim_t blkdim, bsdim;
@@ -628,8 +622,7 @@ xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 	assert(permutation != NULL);
 
 	source_block = xm_tensor_get_block(tensor, source_idx);
-	assert(source_block->is_source);
-	assert(source_block->is_nonzero);
+	assert(source_block->type == XM_BLOCK_TYPE_CANONICAL);
 
 	block = xm_tensor_get_block(tensor, idx);
 	blkdim = xm_dim_permute_rev(&source_block->dim, permutation);
@@ -640,8 +633,7 @@ xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *idx,
 	block->data_ptr = source_block->data_ptr;
 	block->permutation = *permutation;
 	block->scalar = scalar;
-	block->is_source = 0;
-	block->is_nonzero = 1;
+	block->type = XM_BLOCK_TYPE_DERIVATIVE;
 }
 
 xm_dim_t
@@ -668,7 +660,7 @@ xm_tensor_free_block_data(xm_tensor_t *tensor)
 	nblocks = xm_tensor_get_nblocks(tensor);
 	nblk = xm_dim_dot(&nblocks);
 	for (i = 0; i < nblk; i++)
-		if (tensor->blocks[i].is_source) {
+		if (tensor->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
 			xm_allocator_deallocate(tensor->allocator,
 			    tensor->blocks[i].data_ptr);
 		}
@@ -757,7 +749,7 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 	xm_dim_t el_dim, el_i;
 	size_t ii, jj, offset;
 
-	assert(block->is_source);
+	assert(block->type == XM_BLOCK_TYPE_CANONICAL);
 	assert(block->data_ptr != XM_NULL_PTR);
 
 	el_dim = block->dim;
@@ -829,7 +821,8 @@ has_k_symmetry(xm_tensor_t *a, xm_dim_t cidxa, xm_dim_t aidxa,
 				idx2.i[cidxa.i[si1]] = idx.i[cidxa.i[si2]];
 				idx2.i[cidxa.i[si2]] = idx.i[cidxa.i[si1]];
 				blk2 = xm_tensor_get_block(a, &idx2);
-				if (blk->is_nonzero || blk2->is_nonzero) {
+				if (blk->type != XM_BLOCK_TYPE_ZERO ||
+				    blk2->type != XM_BLOCK_TYPE_ZERO) {
 					if (!xm_dim_eq(&blk->source_idx,
 						       &blk2->source_idx))
 						return (0);
@@ -859,12 +852,12 @@ set_k_symmetry(xm_tensor_t *a, xm_dim_t cidxa, xm_dim_t aidxa,
 		xm_dim_zero_mask(&idx, &cidxa);
 		for (j = 0; j < nblk_j; j++) {
 			blk = xm_tensor_get_block(a, &idx);
-			if (idx.i[cidxa.i[si1]] < idx.i[cidxa.i[si2]])
-				blk->scalar *= enable ? 2.0 : 0.5;
-			else if (idx.i[cidxa.i[si1]] > idx.i[cidxa.i[si2]]) {
-				blk->is_nonzero = !enable &&
-				    blk->data_ptr != XM_NULL_PTR;
-			}
+//			if (idx.i[cidxa.i[si1]] < idx.i[cidxa.i[si2]])
+//				blk->scalar *= enable ? 2.0 : 0.5;
+//			else if (idx.i[cidxa.i[si1]] > idx.i[cidxa.i[si2]]) {
+//				blk->is_nonzero = !enable &&
+//				    blk->data_ptr != XM_NULL_PTR;
+//			}
 			xm_dim_inc_mask(&idx, &nblocksa, &cidxa);
 		}
 		xm_dim_inc_mask(&idx, &nblocksa, &aidxa);
@@ -928,7 +921,8 @@ compute_block(struct xm_ctx *ctx, xm_dim_t blkidxc, xm_scalar_t *buf)
 		struct xm_block *blk_a = xm_tensor_get_block(ctx->a, &blkidxa);
 		struct xm_block *blk_b = xm_tensor_get_block(ctx->b, &blkidxb);
 
-		if (blk_a->is_nonzero && blk_b->is_nonzero) {
+		if (blk_a->type != XM_BLOCK_TYPE_ZERO &&
+		    blk_b->type != XM_BLOCK_TYPE_ZERO) {
 			size_t mblk, nblk, kblk;
 			mblk = xm_dim_dot_mask(&blk_a->dim, &ctx->aidxa);
 			nblk = xm_dim_dot_mask(&blk_b->dim, &ctx->aidxb);
@@ -992,7 +986,7 @@ get_nonzero_blocks(struct xm_ctx *ctx, size_t *nnzblkout)
 	for (i = 0; i < ctx->nblk_m; i++) {
 		for (j = 0; j < ctx->nblk_n; j++) {
 			blk = xm_tensor_get_block(ctx->c, &idx);
-			if (blk->is_source)
+			if (blk->type == XM_BLOCK_TYPE_CANONICAL)
 				nnzblk++;
 			xm_dim_inc_mask(&idx, &nblocksc, &ctx->aidxc);
 		}
@@ -1006,7 +1000,7 @@ get_nonzero_blocks(struct xm_ctx *ctx, size_t *nnzblkout)
 	for (i = 0; i < ctx->nblk_m; i++) {
 		for (j = 0; j < ctx->nblk_n; j++) {
 			blk = xm_tensor_get_block(ctx->c, &idx);
-			if (blk->is_source)
+			if (blk->type == XM_BLOCK_TYPE_CANONICAL)
 				*nzblkptr++ = idx;
 			xm_dim_inc_mask(&idx, &nblocksc, &ctx->aidxc);
 		}

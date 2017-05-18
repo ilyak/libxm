@@ -104,7 +104,7 @@ xm_aux_init(xm_allocator_t *allocator, xm_dim_t nblocks,
 
 	for (i = 0; i < size; i++) {
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 		xm_dim_inc(&idx, &nblocks);
 	}
 	return (ret);
@@ -130,7 +130,7 @@ xm_aux_init_oo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -139,7 +139,8 @@ xm_aux_init_oo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 	} }
 	return (ret);
 }
@@ -163,7 +164,7 @@ xm_aux_init_ov(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 	} }
 	return (ret);
 }
@@ -188,7 +189,7 @@ xm_aux_init_vv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -197,7 +198,8 @@ xm_aux_init_vv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 	} }
 	return (ret);
 }
@@ -223,7 +225,7 @@ xm_aux_init_vvx(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -232,7 +234,8 @@ xm_aux_init_vvx(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 	} } }
 	return (ret);
 }
@@ -259,7 +262,7 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -268,7 +271,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[2] = idx.i[3];
@@ -277,7 +281,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -290,7 +295,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[2];
@@ -303,7 +309,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[0];
 		perm2.i[3] = perm.i[1];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[3];
@@ -316,7 +323,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[0];
 		perm2.i[3] = perm.i[1];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[2];
@@ -329,7 +337,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[1];
 		perm2.i[3] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[3];
@@ -342,7 +351,8 @@ xm_aux_init_oooo(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[1];
 		perm2.i[3] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 	} } } }
 	return (ret);
 }
@@ -369,7 +379,7 @@ xm_aux_init_ooov(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -378,7 +388,8 @@ xm_aux_init_ooov(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 	} } } }
 	return (ret);
 }
@@ -405,7 +416,7 @@ xm_aux_init_oovv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -414,7 +425,8 @@ xm_aux_init_oovv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[2] = idx.i[3];
@@ -423,7 +435,8 @@ xm_aux_init_oovv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -436,7 +449,8 @@ xm_aux_init_oovv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 	} } } }
 	return (ret);
 }
@@ -463,7 +477,7 @@ xm_aux_init_ovov(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[2];
@@ -476,7 +490,8 @@ xm_aux_init_ovov(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[0];
 		perm2.i[3] = perm.i[1];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 	} } } }
 	return (ret);
 }
@@ -503,7 +518,7 @@ xm_aux_init_ovvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[2] = idx.i[3];
@@ -512,7 +527,8 @@ xm_aux_init_ovvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 	} } } }
 	return (ret);
 }
@@ -539,7 +555,7 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -548,7 +564,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[2] = idx.i[3];
@@ -557,7 +574,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -570,7 +588,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[3];
 		perm2.i[3] = perm.i[2];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[2];
@@ -583,7 +602,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[0];
 		perm2.i[3] = perm.i[1];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[3];
@@ -596,7 +616,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[0];
 		perm2.i[3] = perm.i[1];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[2];
@@ -609,7 +630,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[1];
 		perm2.i[3] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[3];
@@ -622,7 +644,8 @@ xm_aux_init_vvvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[2] = perm.i[1];
 		perm2.i[3] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 	} } } }
 	return (ret);
 }
@@ -651,7 +674,7 @@ xm_aux_init_ooovvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		if (xm_tensor_get_block_data_ptr(ret, &idx) != XM_NULL_PTR)
 			continue;
 		block = allocate_new_block(allocator, &blk_dim, type);
-		xm_tensor_set_source_block(ret, &idx, block);
+		xm_tensor_set_canonical_block(ret, &idx, block);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -660,7 +683,8 @@ xm_aux_init_ooovvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[0] = perm.i[1];
 		perm2.i[1] = perm.i[0];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[4] = idx.i[5];
@@ -669,7 +693,8 @@ xm_aux_init_ooovvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[4] = perm.i[5];
 		perm2.i[5] = perm.i[4];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, -1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, -1.0);
 
 		idx2 = idx;
 		idx2.i[0] = idx.i[1];
@@ -682,7 +707,8 @@ xm_aux_init_ooovvv(xm_allocator_t *allocator, xm_dim_t nblocks,
 		perm2.i[4] = perm.i[5];
 		perm2.i[5] = perm.i[4];
 		if (xm_tensor_get_block_data_ptr(ret, &idx2) == XM_NULL_PTR)
-			xm_tensor_set_block(ret, &idx2, &idx, &perm2, 1.0);
+			xm_tensor_set_derivative_block(ret, &idx2, &idx,
+			    &perm2, 1.0);
 	} } } } } }
 	return (ret);
 }
@@ -711,22 +737,22 @@ xm_aux_init_13(xm_allocator_t *allocator, xm_dim_t nblocks,
 	blk_dim = xm_dim_2(2, 2);
 	idx = xm_dim_2(0, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_2(3, 3);
 	idx = xm_dim_2(1, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_2(2, 3);
 	idx = xm_dim_2(0, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	idx = xm_dim_2(1, 0);
 	idx2 = xm_dim_2(0, 1);
 	perm = xm_dim_2(1, 0);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, 1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, 1.0);
 
 	return (ret);
 }
@@ -755,22 +781,22 @@ xm_aux_init_13c(xm_allocator_t *allocator, xm_dim_t nblocks,
 	blk_dim = xm_dim_2(2, 2);
 	idx = xm_dim_2(0, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_2(3, 3);
 	idx = xm_dim_2(1, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_2(2, 3);
 	idx = xm_dim_2(0, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_2(3, 2);
 	idx = xm_dim_2(1, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	return (ret);
 }
@@ -801,82 +827,82 @@ xm_aux_init_14(xm_allocator_t *allocator, xm_dim_t nblocks,
 	blk_dim = xm_dim_4(2, 2, 2, 2);
 	idx = xm_dim_4(0, 0, 0, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_4(4, 2, 2, 2);
 	idx = xm_dim_4(1, 0, 0, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	idx = xm_dim_4(0, 1, 0, 0);
 	idx2 = xm_dim_4(1, 0, 0, 0);
 	perm = xm_dim_4(1, 0, 2, 3);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, -1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, -1.0);
 
 	blk_dim = xm_dim_4(4, 4, 2, 2);
 	idx = xm_dim_4(1, 1, 0, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	idx = xm_dim_4(0, 0, 1, 0);
 	idx2 = xm_dim_4(1, 0, 0, 0);
 	perm = xm_dim_4(2, 3, 0, 1);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, 1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, 1.0);
 
 	blk_dim = xm_dim_4(4, 2, 4, 2);
 	idx = xm_dim_4(1, 0, 1, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	idx = xm_dim_4(0, 1, 1, 0);
 	idx2 = xm_dim_4(1, 0, 1, 0);
 	perm = xm_dim_4(1, 0, 2, 3);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, -1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, -1.0);
 
 	blk_dim = xm_dim_4(4, 4, 4, 2);
 	idx = xm_dim_4(1, 1, 1, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	idx = xm_dim_4(0, 0, 0, 1);
 	idx2 = xm_dim_4(1, 0, 0, 0);
 	perm = xm_dim_4(2, 3, 1, 0);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, -1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, -1.0);
 
 	idx = xm_dim_4(1, 0, 0, 1);
 	idx2 = xm_dim_4(1, 0, 1, 0);
 	perm = xm_dim_4(0, 1, 3, 2);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, -1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, -1.0);
 
 	idx = xm_dim_4(0, 1, 0, 1);
 	idx2 = xm_dim_4(1, 0, 1, 0);
 	perm = xm_dim_4(1, 0, 3, 2);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, 1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, 1.0);
 
 	idx = xm_dim_4(1, 1, 0, 1);
 	idx2 = xm_dim_4(1, 1, 1, 0);
 	perm = xm_dim_4(0, 1, 3, 2);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, -1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, -1.0);
 
 	idx = xm_dim_4(0, 0, 1, 1);
 	idx2 = xm_dim_4(1, 1, 0, 0);
 	perm = xm_dim_4(2, 3, 0, 1);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, 1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, 1.0);
 
 	idx = xm_dim_4(1, 0, 1, 1);
 	idx2 = xm_dim_4(1, 1, 1, 0);
 	perm = xm_dim_4(2, 3, 0, 1);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, 1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, 1.0);
 
 	idx = xm_dim_4(0, 1, 1, 1);
 	idx2 = xm_dim_4(1, 1, 1, 0);
 	perm = xm_dim_4(3, 2, 0, 1);
-	xm_tensor_set_block(ret, &idx, &idx2, &perm, -1.0);
+	xm_tensor_set_derivative_block(ret, &idx, &idx2, &perm, -1.0);
 
 	blk_dim = xm_dim_4(4, 4, 4, 4);
 	idx = xm_dim_4(1, 1, 1, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	return (ret);
 }
@@ -905,22 +931,22 @@ xm_aux_init_14b(xm_allocator_t *allocator, xm_dim_t nblocks,
 	blk_dim = xm_dim_4(3, 3, 2, 2);
 	idx = xm_dim_4(0, 0, 0, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_4(3, 3, 2, 4);
 	idx = xm_dim_4(0, 0, 0, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_4(3, 3, 4, 2);
 	idx = xm_dim_4(0, 0, 1, 0);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	blk_dim = xm_dim_4(3, 3, 4, 4);
 	idx = xm_dim_4(0, 0, 1, 1);
 	block = allocate_new_block(allocator, &blk_dim, type);
-	xm_tensor_set_source_block(ret, &idx, block);
+	xm_tensor_set_canonical_block(ret, &idx, block);
 
 	return (ret);
 }

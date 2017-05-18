@@ -26,6 +26,11 @@ extern "C" {
 /* Maximum number of tensor dimensions. */
 #define XM_MAX_DIM 8
 
+/* Block type. */
+#define XM_BLOCK_TYPE_ZERO        0  /* see xm_tensor_set_zero_block */
+#define XM_BLOCK_TYPE_CANONICAL   1  /* see xm_tensor_set_canonical_block */
+#define XM_BLOCK_TYPE_DERIVATIVE  2  /* see xm_tensor_set_derivative_block */
+
 #if defined(XM_SCALAR_FLOAT)
 typedef float xm_scalar_t;
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
@@ -165,8 +170,8 @@ xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor,
 xm_scalar_t xm_tensor_get_abs_element(const xm_tensor_t *tensor,
     const xm_dim_t *idx);
 
-/* Check if block is non-zero. */
-int xm_tensor_block_is_nonzero(const xm_tensor_t *tensor,
+/* Return type of a block. This returns one of the XM_BLOCK_TYPE_ values. */
+int xm_tensor_get_block_type(const xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
 /* Return dimensions of a specific block. */
@@ -189,26 +194,25 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
 uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor,
     const xm_dim_t *blk_idx);
 
-/* Setup a zero-block. No actual data are stored. */
+/* Setup a zero-block (all elements of a block are zeros).
+ * No actual data are stored. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx);
 
-/* Setup a source (canonical) block. Each unique source block must be
- * initialized using this function before being used in xm_tensor_set_block.
+/* Setup a canonical block. Each canonical block must be initialized using this
+ * function before being used in xm_tensor_set_derivative_block.
  * Note: if blocks are allocated using a disk-backed allocator they should be
  * at least several megabytes in size for best performance (e.g., 32^4 elements
  * for 4-index tensors).
  * The data_ptr argument must be allocated using the same allocator that was
  * used during tensor creation. Allocation must be large enough to hold block
  * data. */
-void xm_tensor_set_source_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
+void xm_tensor_set_canonical_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
     uintptr_t data_ptr);
 
-/* Setup a non-canonical block.
- * A non-canonical block is a copy of some source block with applied
- * permutation and multiplication by a scalar factor.
- * No actual data are stored for non-canonical blocks. */
-void xm_tensor_set_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx,
-    const xm_dim_t *source_idx, const xm_dim_t *perm, xm_scalar_t scalar);
+/* Setup a derivative block. A derivative block is a copy of some canonical
+ * block with applied permutation and multiplication by a scalar factor.
+ * No actual data are stored for derivative blocks. */
+void xm_tensor_set_derivative_block(xm_tensor_t *tensor, const xm_dim_t *blk_idx, const xm_dim_t *source_idx, const xm_dim_t *permutation, xm_scalar_t scalar);
 
 /* Deallocate all block data associated with this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);

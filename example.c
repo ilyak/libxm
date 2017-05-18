@@ -66,30 +66,30 @@ main(void)
 	ii = xm_dim_2(0, 0);
 	data_ptr = xm_tensor_allocate_block_data(a, &ii);
 	xm_allocator_write(allocator, data_ptr, blka, sizeof blka);
-	xm_tensor_set_source_block(a, &ii, data_ptr);
+	xm_tensor_set_canonical_block(a, &ii, data_ptr);
 	/* second block is transposed and negated first one */
 	jj = xm_dim_2(1, 2);
 	perm = xm_dim_2(1, 0);
-	xm_tensor_set_block(a, &jj, &ii, &perm, -1.0);
+	xm_tensor_set_derivative_block(a, &jj, &ii, &perm, -1.0);
 
 	/* tensor b */
 	xm_scalar_t blkb[] = { 6, 5, -4, 3, 2, -1 };
 	ii = xm_dim_2(0, 0);
 	data_ptr = xm_tensor_allocate_block_data(b, &ii);
 	xm_allocator_write(allocator, data_ptr, blkb, sizeof blkb);
-	xm_tensor_set_source_block(b, &ii, data_ptr);
+	xm_tensor_set_canonical_block(b, &ii, data_ptr);
 	/* second block is a copy of the first one multiplied by -0.5 */
 	jj = xm_dim_2(2, 0);
 	perm = xm_dim_identity_permutation(perm.n);
-	xm_tensor_set_block(b, &jj, &ii, &perm, -0.5);
+	xm_tensor_set_derivative_block(b, &jj, &ii, &perm, -0.5);
 
 	/* The result c must be allocated explicitly. */
 	ii = xm_dim_2(0, 0);
 	data_ptr = xm_tensor_allocate_block_data(c, &ii);
-	xm_tensor_set_source_block(c, &ii, data_ptr);
+	xm_tensor_set_canonical_block(c, &ii, data_ptr);
 	ii = xm_dim_2(1, 0);
 	data_ptr = xm_tensor_allocate_block_data(c, &ii);
-	xm_tensor_set_source_block(c, &ii, data_ptr);
+	xm_tensor_set_canonical_block(c, &ii, data_ptr);
 
 	/* Compute c = 2*a*b */
 	xm_contract(2.0, a, b, 0.0, c, "ik", "kj", "ij");
