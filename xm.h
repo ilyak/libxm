@@ -90,12 +90,21 @@ size_t xm_dim_dot(const xm_dim_t *dim);
 /* Return non-zero if two dims are equal. */
 int xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b);
 
+/* Return non-zero if two dims are not equal. */
+int xm_dim_ne(const xm_dim_t *a, const xm_dim_t *b);
+
 /* Return non-zero if an index is within zero and dim. */
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Increment an index by one wrapping on dimensions.
- * Returns non-zero if the operation has wrapped to an all-zero index. */
-size_t xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
+/* Increment an index by one wrapping on dimensions. */
+void xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
+
+void xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *ma, const xm_dim_t *b,
+    const xm_dim_t *mb);
+
+size_t xm_dim_dot_mask(const xm_dim_t *dim, const xm_dim_t *mask);
+
+void xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask);
 
 
 /* Operations on tensors. */
@@ -110,10 +119,10 @@ const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 /* Return an allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 
-/* Copy block data from source tensor to destination.
- * Tensors must have exactly the same block structures. Blocks must be
- * allocated beforehand in the destination tensor. */
-void xm_tensor_copy_data(xm_tensor_t *dst, const xm_tensor_t *src);
+/* Clone a tensor using given allocator. If allocator argument is NULL, the one
+ * from tensor is used. */
+xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
+    xm_allocator_t *allocator);
 
 /* Return absolute tensor dimensions in total number of elements. */
 xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
@@ -153,17 +162,22 @@ void xm_tensor_set_zero_block(xm_tensor_t *tensor, const xm_dim_t *blkidx);
 void xm_tensor_set_canonical_block(xm_tensor_t *tensor, const xm_dim_t *blkidx,
     uintptr_t data_ptr);
 
+/* Setup a derivative block. A derivative block is a copy of some canonical
+ * block with applied permutation and multiplication by a scalar factor.
+ * No actual data are stored for derivative blocks. */
+void xm_tensor_set_derivative_block(xm_tensor_t *tensor, const xm_dim_t *blkidx,
+    const xm_dim_t *source_blkidx, const xm_dim_t *permutation,
+    xm_scalar_t scalar);
+
 /* Allocate storage sufficient to hold data for a particular block using
  * associated allocator. */
 uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor,
     const xm_dim_t *blkidx);
 
-/* Setup a derivative block. A derivative block is a copy of some canonical
- * block with applied permutation and multiplication by a scalar factor.
- * No actual data are stored for derivative blocks. */
-void xm_tensor_set_derivative_block(xm_tensor_t *tensor, const xm_dim_t *blkidx,
-    const xm_dim_t *source_idx, const xm_dim_t *permutation,
-    xm_scalar_t scalar);
+/* Return block data pointer. This will return XM_NULL_PTR for zero and
+ * derivative blocks. */
+uintptr_t xm_tensor_get_block_data_ptr(xm_tensor_t *tensor,
+    const xm_dim_t *blkidx);
 
 /* Deallocate all block data associated with this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);

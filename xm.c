@@ -192,7 +192,13 @@ xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 	return (1);
 }
 
-static void
+int
+xm_dim_ne(const xm_dim_t *a, const xm_dim_t *b)
+{
+	return (!xm_dim_eq(a, b));
+}
+
+void
 xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *ma,
     const xm_dim_t *b, const xm_dim_t *mb)
 {
@@ -236,7 +242,7 @@ xm_dim_dot(const xm_dim_t *dim)
 	return (ret);
 }
 
-static size_t
+size_t
 xm_dim_dot_mask(const xm_dim_t *dim, const xm_dim_t *mask)
 {
 	size_t i, ret;
@@ -292,7 +298,7 @@ xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim)
 	return (ret);
 }
 
-size_t
+void
 xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
 {
 	size_t i, carry = 1;
@@ -304,10 +310,11 @@ xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
 		carry = idx->i[i] / dim->i[i];
 		idx->i[i] %= dim->i[i];
 	}
-	return (carry);
+	if (carry)
+		*idx = *dim;
 }
 
-static size_t
+void
 xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask)
 {
 	size_t i, carry = 1;
@@ -319,7 +326,6 @@ xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask)
 		carry = idx->i[mask->i[i]] / dim->i[mask->i[i]];
 		idx->i[mask->i[i]] %= dim->i[mask->i[i]];
 	}
-	return (carry);
 }
 
 static xm_dim_t
@@ -364,39 +370,6 @@ xm_dim_permute_rev(const xm_dim_t *idx, const xm_dim_t *permutation)
 	return (ret);
 }
 
-xm_tensor_t *
-xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
-{
-	xm_tensor_t *tensor;
-	xm_dim_t idx, nblocks;
-	size_t i, size;
-
-	tensor = xcalloc(1, sizeof *tensor);
-	tensor->bs = xm_block_space_clone(bs);
-	tensor->allocator = allocator;
-	nblocks = xm_block_space_get_nblocks(tensor->bs);
-	size = xm_dim_dot(&nblocks);
-	tensor->blocks = xcalloc(size, sizeof *tensor->blocks);
-	idx = xm_dim_zero(nblocks.n);
-	for (i = 0; i < size; i++) {
-		xm_tensor_set_zero_block(tensor, &idx);
-		xm_dim_inc(&idx, &nblocks);
-	}
-	return (tensor);
-}
-
-const xm_block_space_t *
-xm_tensor_get_block_space(const xm_tensor_t *tensor)
-{
-	return (tensor->bs);
-}
-
-xm_allocator_t *
-xm_tensor_get_allocator(xm_tensor_t *tensor)
-{
-	return (tensor->allocator);
-}
-
 static struct xm_block *
 xm_tensor_get_block(const xm_tensor_t *tensor, const xm_dim_t *idx)
 {
@@ -409,6 +382,80 @@ xm_tensor_get_block(const xm_tensor_t *tensor, const xm_dim_t *idx)
 	nblocks = xm_tensor_get_nblocks(tensor);
 	offset = xm_dim_offset(idx, &nblocks);
 	return (tensor->blocks + offset);
+}
+
+xm_tensor_t *
+xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
+{
+	xm_tensor_t *tensor;
+	xm_dim_t idx, nblocks;
+
+	tensor = xcalloc(1, sizeof *tensor);
+	tensor->bs = xm_block_space_clone(bs);
+	tensor->allocator = allocator;
+	nblocks = xm_block_space_get_nblocks(tensor->bs);
+	tensor->blocks = xcalloc(xm_dim_dot(&nblocks), sizeof *tensor->blocks);
+	for (idx = xm_dim_zero(nblocks.n);
+	     xm_dim_ne(&idx, &nblocks);
+	     xm_dim_inc(&idx, &nblocks))
+		xm_tensor_set_zero_block(tensor, &idx);
+	return (tensor);
+}
+
+xm_tensor_t *
+xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
+{
+	xm_tensor_t *ret;
+	struct xm_block *srcblk, *dstblk;
+	xm_dim_t idx, blkdims, nblocks;
+	xm_scalar_t *data;
+	size_t blksize, maxblksize;
+
+	if (allocator == NULL)
+		allocator = tensor->allocator;
+	if ((ret = xm_tensor_create(tensor->bs, allocator)) == NULL)
+		return NULL;
+	nblocks = xm_block_space_get_nblocks(ret->bs);
+	maxblksize = xm_block_space_get_largest_block_size(ret->bs);
+	data = xmalloc(maxblksize * sizeof(xm_scalar_t));
+	for (idx = xm_dim_zero(nblocks.n);
+	     xm_dim_ne(&idx, &nblocks);
+	     xm_dim_inc(&idx, &nblocks)) {
+		srcblk = xm_tensor_get_block(tensor, &idx);
+		dstblk = xm_tensor_get_block(ret, &idx);
+		*dstblk = *srcblk;
+		dstblk->data_ptr = XM_NULL_PTR;
+		if (dstblk->type != XM_BLOCK_TYPE_CANONICAL)
+			continue;
+		blkdims = xm_block_space_get_block_dims(ret->bs, &idx);
+		blksize = xm_dim_dot(&blkdims);
+		dstblk->data_ptr = xm_allocator_allocate(ret->allocator,
+		    blksize * sizeof(xm_scalar_t));
+		if (dstblk->data_ptr == XM_NULL_PTR) {
+			xm_tensor_free_block_data(ret);
+			xm_tensor_free(ret);
+			free(data);
+			return NULL;
+		}
+		xm_allocator_read(tensor->allocator, srcblk->data_ptr,
+		    data, blksize * sizeof(xm_scalar_t));
+		xm_allocator_write(ret->allocator, dstblk->data_ptr,
+		    data, blksize * sizeof(xm_scalar_t));
+	}
+	free(data);
+	return ret;
+}
+
+const xm_block_space_t *
+xm_tensor_get_block_space(const xm_tensor_t *tensor)
+{
+	return (tensor->bs);
+}
+
+xm_allocator_t *
+xm_tensor_get_allocator(xm_tensor_t *tensor)
+{
+	return (tensor->allocator);
 }
 
 static uintptr_t
@@ -570,7 +617,7 @@ xm_tensor_allocate_block_data(xm_tensor_t *tensor, const xm_dim_t *blk_idx)
 }
 
 uintptr_t
-xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor, const xm_dim_t *idx)
+xm_tensor_get_block_data_ptr(xm_tensor_t *tensor, const xm_dim_t *idx)
 {
 	struct xm_block *block;
 
@@ -806,21 +853,18 @@ block_set_matrix(struct xm_block *block, xm_dim_t mask_i, xm_dim_t mask_j,
 static void
 parse_idx(const char *str1, const char *str2, xm_dim_t *mask1, xm_dim_t *mask2)
 {
-	size_t len1, len2, i, j;
-
-	len1 = strlen(str1);
-	len2 = strlen(str2);
+	size_t i, j, len1, len2;
 
 	mask1->n = 0;
 	mask2->n = 0;
-	for (i = 0; i < len1; i++) {
-		for (j = 0; j < len2; j++) {
+	len1 = strlen(str1);
+	len2 = strlen(str2);
+	for (i = 0; i < len1; i++)
+		for (j = 0; j < len2; j++)
 			if (str1[i] == str2[j]) {
 				mask1->i[mask1->n++] = i;
 				mask2->i[mask2->n++] = j;
 			}
-		}
-	}
 }
 
 static int
