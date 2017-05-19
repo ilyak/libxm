@@ -1032,10 +1032,8 @@ run_test(int test_num, int skip)
 	if ((c = t.init_c(allocator, t.dimc, t.block_size,
 	    XM_INIT_RAND)) == NULL)
 		fatal("failed to create tensor c");
-	if ((d = t.init_c(allocator, t.dimc, t.block_size,
-	    XM_INIT_NONE)) == NULL)
+	if ((d = xm_tensor_clone(c, allocator)) == NULL)
 		fatal("failed to create tensor d");
-	xm_tensor_copy_data(d, c);
 
 	if (!skip) {
 		xm_contract(t.alpha, a, b, t.beta, d, t.idxa, t.idxb, t.idxc);
