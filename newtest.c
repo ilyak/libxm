@@ -18,11 +18,11 @@ static int
 scalar_eq(xm_scalar_t a, xm_scalar_t b)
 {
 #if defined(XM_SCALAR_FLOAT)
-	return fabsf(a - b) < 1.0e-4;
+	return fabsf(a - b) < 1.0e-4f;
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
 	return cabs(a - b) < 1.0e-8;
 #elif defined(XM_SCALAR_FLOAT_COMPLEX)
-	return cabsf(a - b) < 1.0e-4;
+	return cabsf(a - b) < 1.0e-4f;
 #else /* assume double */
 	return fabs(a - b) < 1.0e-8;
 #endif
