@@ -22,6 +22,18 @@
 
 #include "auxil.h"
 
+static xm_dim_t
+xm_dim_scale(const xm_dim_t *dim, size_t s)
+{
+	xm_dim_t ret;
+	size_t i;
+
+	ret = *dim;
+	for (i = 0; i < ret.n; i++)
+		ret.i[i] *= s;
+	return (ret);
+}
+
 xm_scalar_t
 xm_random_scalar(void)
 {

@@ -40,11 +40,11 @@ LIBS= -lblas -lpthread -lm
 EXAMPLE= example
 EXAMPLE_O= example.o
 TEST= test
-TEST_O= test.o
+TEST_O= newtest.o
 
 AUX_O= auxil.o
 XM_A= xm.a
-XM_O= alloc.o blockspace.o xm.o
+XM_O= alloc.o blockspace.o dim.o xm.o
 
 AR= ar rc
 RANLIB= ranlib

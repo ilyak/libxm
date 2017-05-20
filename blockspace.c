@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "xm.h"
+#include "blockspace.h"
 
 #include <assert.h>
 #include <stdlib.h>

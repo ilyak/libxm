@@ -18,13 +18,11 @@
 #define XM_H_INCLUDED
 
 #include "alloc.h"
+#include "blockspace.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* Maximum number of tensor dimensions. */
-#define XM_MAX_DIM 8
 
 /* Block type. */
 #define XM_BLOCK_TYPE_ZERO        0  /* see xm_tensor_set_zero_block */
@@ -46,68 +44,8 @@ typedef double xm_scalar_t;
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
-/* Multidimensional block-space. */
-typedef struct xm_block_space xm_block_space_t;
-
-/* Multidimensional index. */
-typedef struct {
-	size_t n, i[XM_MAX_DIM];
-} xm_dim_t;
-
 /* Print libxm banner to the standard output. */
 void xm_print_banner(void);
-
-
-/* Operations on multidimensional indices. */
-
-/* Initialize all indices of a dim to zero. */
-xm_dim_t xm_dim_zero(size_t n);
-
-/* Initialize all indices of a dim to the same value. */
-xm_dim_t xm_dim_same(size_t n, size_t dim);
-
-/* Initialize a 1-D dim. */
-xm_dim_t xm_dim_1(size_t dim1);
-
-/* Initialize a 2-D dim. */
-xm_dim_t xm_dim_2(size_t dim1, size_t dim2);
-
-/* Initialize a 3-D dim. */
-xm_dim_t xm_dim_3(size_t dim1, size_t dim2, size_t dim3);
-
-/* Initialize a 4-D dim. */
-xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
-
-/* Return an n-dimensional identity permutation. */
-xm_dim_t xm_dim_identity_permutation(size_t n);
-
-/* Scale all dimensions of a dim by s. */
-xm_dim_t xm_dim_scale(const xm_dim_t *dim, size_t s);
-
-/* Return dot product of all indices of a dim. */
-size_t xm_dim_dot(const xm_dim_t *dim);
-
-/* Return non-zero if two dims are equal. */
-int xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b);
-
-/* Return non-zero if two dims are not equal. */
-int xm_dim_ne(const xm_dim_t *a, const xm_dim_t *b);
-
-/* Return non-zero if an index is within zero and dim. */
-int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
-
-/* Increment an index by one wrapping on dimensions. */
-void xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
-
-void xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *ma, const xm_dim_t *b,
-    const xm_dim_t *mb);
-
-size_t xm_dim_dot_mask(const xm_dim_t *dim, const xm_dim_t *mask);
-
-void xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask);
-
-
-/* Operations on tensors. */
 
 /* Create a block-tensor. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
@@ -203,45 +141,6 @@ void xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 /* Compute y = alpha * x + y */
 void xm_axpy(xm_scalar_t alpha, xm_tensor_t *x, xm_tensor_t *y,
     const char *xidx, const char *yidx);
-
-
-/* Operations on block-spaces. */
-
-/* Create a block-space with specific absolute dimensions. */
-xm_block_space_t *xm_block_space_create(const xm_dim_t *dims);
-
-/* Create a deep copy of a block-space. */
-xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
-
-/* Return number of dimensions a block-space has. */
-size_t xm_block_space_get_ndims(const xm_block_space_t *bs);
-
-/* Return absolute dimensions of a block-space. */
-xm_dim_t xm_block_space_get_abs_dims(const xm_block_space_t *bs);
-
-/* Return block-space dimensions in number of blocks. */
-xm_dim_t xm_block_space_get_nblocks(const xm_block_space_t *bs);
-
-/* Split block-space along a dimension at point x. */
-void xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x);
-
-/* Return dimensions of a block with specific index. */
-xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *bs,
-    const xm_dim_t *blkidx);
-
-/* Return size in number of elements of the largest block in block-space. */
-size_t xm_block_space_get_largest_block_size(const xm_block_space_t *bs);
-
-/* Return non-zero if the block-spaces have same block structures. */
-int xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb);
-
-/* Return non-zero if specific block-space dimensions have same block
- * structures. */
-int xm_block_space_eq1(const xm_block_space_t *bsa, size_t dima,
-    const xm_block_space_t *bsb, size_t dimb);
-
-/* Release resources used by a block-space. */
-void xm_block_space_free(xm_block_space_t *bs);
 
 #ifdef __cplusplus
 } /* extern "C" */
