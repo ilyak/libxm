@@ -95,17 +95,17 @@ ref_compare_1(struct xm_tensor *a, struct xm_tensor *b,
 
 	for (idxc.i[0] = 0; idxc.i[0] < dimc.i[0]; idxc.i[0]++) {
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[1]; i++) {
 			idxa.i[0] = idxc.i[1];
 			idxa.i[1] = i;
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[0];
 			idxb.i[1] = i;
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
@@ -131,19 +131,19 @@ ref_compare_3(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
 	for (idxc.i[2] = 0; idxc.i[2] < dimc.i[2]; idxc.i[2]++) {
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[1]; i++) {
 			idxa.i[0] = idxc.i[1];
 			idxa.i[1] = i;
 			idxa.i[2] = idxc.i[3];
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[2];
 			idxb.i[1] = i;
 			idxb.i[2] = idxc.i[0];
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
@@ -167,20 +167,20 @@ ref_compare_4(struct xm_tensor *a, struct xm_tensor *b,
 
 	for (idxc.i[0] = 0; idxc.i[0] < dimc.i[0]; idxc.i[0]++) {
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[1]; i++) {
 		for (j = 0; j < dima.i[2]; j++) {
 			idxa.i[0] = idxc.i[0];
 			idxa.i[1] = i;
 			idxa.i[2] = j;
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[1];
 			idxb.i[1] = i;
 			idxb.i[2] = j;
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		} }
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
@@ -206,22 +206,22 @@ ref_compare_5(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
 	for (idxc.i[2] = 0; idxc.i[2] < dimc.i[2]; idxc.i[2]++) {
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[1]; i++) {
 		for (j = 0; j < dima.i[3]; j++) {
 			idxa.i[0] = idxc.i[2];
 			idxa.i[1] = i;
 			idxa.i[2] = idxc.i[3];
 			idxa.i[3] = j;
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[0];
 			idxb.i[1] = i;
 			idxb.i[2] = idxc.i[1];
 			idxb.i[3] = j;
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		} }
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
@@ -247,22 +247,22 @@ ref_compare_7(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
 	for (idxc.i[2] = 0; idxc.i[2] < dimc.i[2]; idxc.i[2]++) {
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[2]; i++) {
 		for (j = 0; j < dima.i[3]; j++) {
 			idxa.i[0] = idxc.i[2];
 			idxa.i[1] = idxc.i[3];
 			idxa.i[2] = i;
 			idxa.i[3] = j;
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[0];
 			idxb.i[1] = idxc.i[1];
 			idxb.i[2] = i;
 			idxb.i[3] = j;
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		} }
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
@@ -287,18 +287,18 @@ ref_compare_9(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[0] = 0; idxc.i[0] < dimc.i[0]; idxc.i[0]++) {
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
 	for (idxc.i[2] = 0; idxc.i[2] < dimc.i[2]; idxc.i[2]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[1]; i++) {
 			idxa.i[0] = idxc.i[1];
 			idxa.i[1] = i;
 			idxa.i[2] = idxc.i[0];
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[2];
 			idxb.i[1] = i;
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } }
@@ -324,19 +324,19 @@ ref_compare_10(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
 	for (idxc.i[2] = 0; idxc.i[2] < dimc.i[2]; idxc.i[2]++) {
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[0]; i++) {
 			idxa.i[0] = i;
 			idxa.i[1] = idxc.i[1];
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[0];
 			idxb.i[1] = idxc.i[2];
 			idxb.i[2] = i;
 			idxb.i[3] = idxc.i[3];
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
@@ -364,21 +364,21 @@ ref_compare_11(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
 	for (idxc.i[4] = 0; idxc.i[4] < dimc.i[4]; idxc.i[4]++) {
 	for (idxc.i[5] = 0; idxc.i[5] < dimc.i[5]; idxc.i[5]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[1]; i++) {
 			idxa.i[0] = idxc.i[0];
 			idxa.i[1] = i;
 			idxa.i[2] = idxc.i[1];
 			idxa.i[3] = idxc.i[2];
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[3];
 			idxb.i[1] = idxc.i[4];
 			idxb.i[2] = i;
 			idxb.i[3] = idxc.i[5];
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } } } }
@@ -406,21 +406,21 @@ ref_compare_12(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
 	for (idxc.i[4] = 0; idxc.i[4] < dimc.i[4]; idxc.i[4]++) {
 	for (idxc.i[5] = 0; idxc.i[5] < dimc.i[5]; idxc.i[5]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[2]; i++) {
 			idxa.i[0] = idxc.i[0];
 			idxa.i[1] = idxc.i[1];
 			idxa.i[2] = i;
 			idxa.i[3] = idxc.i[3];
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[2];
 			idxb.i[1] = i;
 			idxb.i[2] = idxc.i[4];
 			idxb.i[3] = idxc.i[5];
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } } } }
@@ -444,17 +444,17 @@ ref_compare_13(struct xm_tensor *a, struct xm_tensor *b,
 
 	for (idxc.i[0] = 0; idxc.i[0] < dimc.i[0]; idxc.i[0]++) {
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[0]; i++) {
 			idxa.i[0] = i;
 			idxa.i[1] = idxc.i[1];
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = i;
 			idxb.i[1] = idxc.i[0];
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		}
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
@@ -478,20 +478,20 @@ ref_compare_15(struct xm_tensor *a, struct xm_tensor *b,
 
 	for (idxc.i[0] = 0; idxc.i[0] < dimc.i[0]; idxc.i[0]++) {
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		for (i = 0; i < dima.i[0]; i++) {
 		for (j = 0; j < dima.i[1]; j++) {
 			idxa.i[0] = i;
 			idxa.i[1] = j;
-			aa = xm_tensor_get_element(a, &idxa);
+			aa = xm_tensor_get_element(a, idxa);
 			idxb.i[0] = idxc.i[0];
 			idxb.i[1] = idxc.i[1];
 			idxb.i[2] = i;
 			idxb.i[3] = j;
-			bb = xm_tensor_get_element(b, &idxb);
+			bb = xm_tensor_get_element(b, idxb);
 			ref += alpha * aa * bb;
 		} }
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} }
@@ -516,15 +516,15 @@ ref_compare_16(struct xm_tensor *a, struct xm_tensor *b,
 	for (idxc.i[1] = 0; idxc.i[1] < dimc.i[1]; idxc.i[1]++) {
 	for (idxc.i[2] = 0; idxc.i[2] < dimc.i[2]; idxc.i[2]++) {
 	for (idxc.i[3] = 0; idxc.i[3] < dimc.i[3]; idxc.i[3]++) {
-		ref = beta * xm_tensor_get_element(c, &idxc);
+		ref = beta * xm_tensor_get_element(c, idxc);
 		idxa.i[0] = idxc.i[0];
 		idxa.i[1] = idxc.i[1];
-		aa = xm_tensor_get_element(a, &idxa);
+		aa = xm_tensor_get_element(a, idxa);
 		idxb.i[0] = idxc.i[2];
 		idxb.i[1] = idxc.i[3];
-		bb = xm_tensor_get_element(b, &idxb);
+		bb = xm_tensor_get_element(b, idxb);
 		ref += alpha * aa * bb;
-		dd = xm_tensor_get_element(d, &idxc);
+		dd = xm_tensor_get_element(d, idxc);
 		if (xm_abs(ref - dd) > EPSILON)
 			fatal("result != reference");
 	} } } }
