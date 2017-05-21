@@ -27,7 +27,7 @@ extern "C" {
 typedef struct xm_block_space xm_block_space_t;
 
 /* Create a block-space with specific absolute dimensions. */
-xm_block_space_t *xm_block_space_create(const xm_dim_t *dims);
+xm_block_space_t *xm_block_space_create(xm_dim_t dims);
 
 /* Create a deep copy of a block-space. */
 xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
@@ -46,7 +46,7 @@ void xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x);
 
 /* Return dimensions of a block with specific index. */
 xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *bs,
-    const xm_dim_t *blkidx);
+    xm_dim_t blkidx);
 
 /* Return size in number of elements of the largest block in block-space. */
 size_t xm_block_space_get_largest_block_size(const xm_block_space_t *bs);

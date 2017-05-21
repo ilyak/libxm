@@ -26,24 +26,24 @@ struct xm_block_space {
 };
 
 xm_block_space_t *
-xm_block_space_create(const xm_dim_t *dims)
+xm_block_space_create(xm_dim_t dims)
 {
 	xm_block_space_t *ret;
 	size_t i;
 
-	assert(dims->n > 0 && dims->n <= XM_MAX_DIM);
+	assert(dims.n > 0 && dims.n <= XM_MAX_DIM);
 
 	if ((ret = calloc(1, sizeof *ret)) == NULL)
 		return NULL;
-	ret->dims = *dims;
-	ret->nblocks = xm_dim_same(dims->n, 1);
-	for (i = 0; i < dims->n; i++) {
+	ret->dims = dims;
+	ret->nblocks = xm_dim_same(ret->dims.n, 1);
+	for (i = 0; i < ret->dims.n; i++) {
 		if ((ret->splits[i] = malloc(2 * sizeof(size_t))) == NULL) {
 			xm_block_space_free(ret);
 			return NULL;
 		}
 		ret->splits[i][0] = 0;
-		ret->splits[i][1] = dims->i[i];
+		ret->splits[i][1] = ret->dims.i[i];
 	}
 	return ret;
 }
@@ -94,7 +94,7 @@ xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x)
 	size_t i, *nptr;
 
 	assert(dim < bs->dims.n);
-	assert(x < bs->dims.i[dim]);
+	assert(x <= bs->dims.i[dim]);
 
 	for (i = 0; i < bs->nblocks.i[dim]+1; i++) {
 		if (bs->splits[dim][i] > x) {
@@ -113,19 +113,18 @@ xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x)
 }
 
 xm_dim_t
-xm_block_space_get_block_dims(const xm_block_space_t *bs,
-    const xm_dim_t *blkidx)
+xm_block_space_get_block_dims(const xm_block_space_t *bs, xm_dim_t blkidx)
 {
 	xm_dim_t blkdims;
 	size_t i;
 
-	assert(bs->dims.n == blkidx->n);
-	assert(xm_dim_less(blkidx, &bs->nblocks));
+	assert(bs->dims.n == blkidx.n);
+	assert(xm_dim_less(&blkidx, &bs->nblocks));
 
 	blkdims.n = bs->dims.n;
 	for (i = 0; i < blkdims.n; i++) {
-		blkdims.i[i] = bs->splits[i][blkidx->i[i]+1] -
-		    bs->splits[i][blkidx->i[i]];
+		blkdims.i[i] = bs->splits[i][blkidx.i[i]+1] -
+		    bs->splits[i][blkidx.i[i]];
 	}
 	return blkdims;
 }
