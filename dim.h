@@ -67,10 +67,10 @@ size_t xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim);
 /* Increment an index by one wrapping on dimensions. */
 void xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Zero indices specified by mask. */
-void xm_dim_zero_mask(xm_dim_t *a, const xm_dim_t *mask);
+/* Set to zero all indices of dim specified by mask. */
+void xm_dim_zero_mask(xm_dim_t *dim, const xm_dim_t *mask);
 
-/* Copy indices from b to a using masks to specify elements. */
+/* Set indices of dim a to b using masks to specify elements. */
 void xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *maska, const xm_dim_t *b,
     const xm_dim_t *maskb);
 
@@ -83,7 +83,7 @@ void xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask);
 /* Return an n-dimensional identity permutation. */
 xm_dim_t xm_dim_identity_permutation(size_t ndim);
 
-/* Return permutation of an index. */
+/* Return a specific permutation of an index. */
 xm_dim_t xm_dim_permute(const xm_dim_t *idx, const xm_dim_t *permutation);
 
 #ifdef __cplusplus

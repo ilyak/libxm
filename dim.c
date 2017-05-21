@@ -169,12 +169,12 @@ xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
 }
 
 void
-xm_dim_zero_mask(xm_dim_t *a, const xm_dim_t *mask)
+xm_dim_zero_mask(xm_dim_t *dim, const xm_dim_t *mask)
 {
 	size_t i;
 
 	for (i = 0; i < mask->n; i++)
-		a->i[mask->i[i]] = 0;
+		dim->i[mask->i[i]] = 0;
 }
 
 void
