@@ -89,7 +89,7 @@ create_tensor(xm_allocator_t *allocator, xm_dim_t nblocks, size_t blocksize)
 	size_t i, j;
 
 	absdims = xm_dim_scale(&nblocks, blocksize);
-	if ((bs = xm_block_space_create(&absdims)) == NULL)
+	if ((bs = xm_block_space_create(absdims)) == NULL)
 		fatal("cannot create a block-space");
 	for (i = 0; i < nblocks.n; i++)
 		for (j = 1; j < nblocks.i[i]; j++)
@@ -738,7 +738,7 @@ xm_aux_init_13(xm_allocator_t *allocator, xm_dim_t nblocks,
 	(void)nblocks;
 
 	absdims = xm_dim_2(5, 5);
-	if ((bs = xm_block_space_create(&absdims)) == NULL)
+	if ((bs = xm_block_space_create(absdims)) == NULL)
 		fatal("xm_block_space_create");
 	xm_block_space_split(bs, 0, 2);
 	xm_block_space_split(bs, 1, 2);
@@ -782,7 +782,7 @@ xm_aux_init_13c(xm_allocator_t *allocator, xm_dim_t nblocks,
 	(void)nblocks;
 
 	absdims = xm_dim_2(5, 5);
-	if ((bs = xm_block_space_create(&absdims)) == NULL)
+	if ((bs = xm_block_space_create(absdims)) == NULL)
 		fatal("xm_block_space_create");
 	xm_block_space_split(bs, 0, 2);
 	xm_block_space_split(bs, 1, 2);
@@ -826,7 +826,7 @@ xm_aux_init_14(xm_allocator_t *allocator, xm_dim_t nblocks,
 	(void)nblocks;
 
 	absdims = xm_dim_4(6, 6, 6, 6);
-	if ((bs = xm_block_space_create(&absdims)) == NULL)
+	if ((bs = xm_block_space_create(absdims)) == NULL)
 		fatal("xm_block_space_create");
 	xm_block_space_split(bs, 0, 2);
 	xm_block_space_split(bs, 1, 2);
@@ -932,7 +932,7 @@ xm_aux_init_14b(xm_allocator_t *allocator, xm_dim_t nblocks,
 	(void)nblocks;
 
 	absdims = xm_dim_4(3, 3, 6, 6);
-	if ((bs = xm_block_space_create(&absdims)) == NULL)
+	if ((bs = xm_block_space_create(absdims)) == NULL)
 		fatal("xm_block_space_create");
 	xm_block_space_split(bs, 2, 2);
 	xm_block_space_split(bs, 3, 2);

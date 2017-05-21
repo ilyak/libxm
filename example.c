@@ -24,15 +24,11 @@ main(void)
 	 * not in a file on disk. */
 	xm_allocator_t *allocator = xm_allocator_create(NULL);
 
-	/* Our matrices will be 4x5, 5x3, and 4x3 elements in size. */
-	xm_dim_t absdimsa = xm_dim_2(4, 5);
-	xm_dim_t absdimsb = xm_dim_2(5, 3);
-	xm_dim_t absdimsc = xm_dim_2(4, 3);
-
-	/* Create the block-spaces. */
-	xm_block_space_t *bsa = xm_block_space_create(&absdimsa);
-	xm_block_space_t *bsb = xm_block_space_create(&absdimsb);
-	xm_block_space_t *bsc = xm_block_space_create(&absdimsc);
+	/* Create the block-spaces. Our matrices will be 4x5, 5x3, and 4x3
+	 * elements in size. */
+	xm_block_space_t *bsa = xm_block_space_create(xm_dim_2(4, 5));
+	xm_block_space_t *bsb = xm_block_space_create(xm_dim_2(5, 3));
+	xm_block_space_t *bsc = xm_block_space_create(xm_dim_2(4, 3));
 
 	/* Split the block-spaces into blocks. Block-spaces must be consistent
 	 * with each other. */
