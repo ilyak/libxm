@@ -205,6 +205,8 @@ make_abc_2(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	for (idx = xm_dim_zero(nblocks.n);
 	     xm_dim_ne(&idx, &nblocks);
 	     xm_dim_inc(&idx, &nblocks)) {
+		if (xm_tensor_get_block_type(a, idx) != XM_BLOCK_TYPE_ZERO)
+			abort();
 		ptr = xm_tensor_allocate_block_data(a, idx);
 		xm_tensor_set_canonical_block(a, idx, ptr);
 		ptr = xm_tensor_allocate_block_data(b, idx);
@@ -371,7 +373,7 @@ static void
 make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
     xm_tensor_t **cc)
 {
-	xm_dim_t idx, canidx, perm, nblocks;
+	xm_dim_t idx, nblocks;
 	xm_block_space_t *bsa, *bsb, *bsc;
 	xm_tensor_t *a, *b, *c;
 	uintptr_t ptr;
@@ -391,9 +393,31 @@ make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	ptr = xm_tensor_allocate_block_data(a, idx);
 	xm_tensor_set_canonical_block(a, idx, ptr);
 	idx = xm_dim_3(2, 0, 0);
-	canidx = xm_dim_3(0, 0, 0);
-	perm = xm_dim_3(2, 1, 0);
-	xm_tensor_set_derivative_block(a, idx, canidx, perm, -0.5);
+	xm_tensor_set_derivative_block(a, idx, xm_dim_3(0, 0, 0),
+	    xm_dim_3(2, 1, 0), -0.5);
+	idx = xm_dim_3(0, 1, 0);
+	xm_tensor_set_derivative_block(a, idx, xm_dim_3(0, 0, 0),
+	    xm_dim_3(1, 0, 2), 1.5);
+	idx = xm_dim_3(1, 1, 0);
+	ptr = xm_tensor_allocate_block_data(a, idx);
+	xm_tensor_set_canonical_block(a, idx, ptr);
+	idx = xm_dim_3(2, 1, 0);
+	xm_tensor_set_derivative_block(a, idx, xm_dim_3(0, 0, 0),
+	    xm_dim_3(2, 0, 1), 0.7);
+	nblocks = xm_tensor_get_nblocks(a);
+	for (idx = xm_dim_zero(nblocks.n);
+	     xm_dim_ne(&idx, &nblocks);
+	     xm_dim_inc(&idx, &nblocks)) {
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_dim_t tt[] = { xm_dim_3(0, 0, 0),
+					  xm_dim_3(2, 1, 0) };
+			if (xm_dim_eq(&idx, &tt[0]) ||
+			    xm_dim_eq(&idx, &tt[1]))
+				abort();
+			ptr = xm_tensor_allocate_block_data(a, idx);
+			xm_tensor_set_canonical_block(a, idx, ptr);
+		}
+	}
 
 	bsb = xm_block_space_create(xm_dim_3(7, 4, 8));
 	xm_block_space_split(bsb, 0, 2);
@@ -403,6 +427,13 @@ make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	xm_block_space_split(bsb, 2, 6);
 	b = xm_tensor_create(bsb, allocator);
 	xm_block_space_free(bsb);
+	nblocks = xm_tensor_get_nblocks(b);
+	for (idx = xm_dim_zero(nblocks.n);
+	     xm_dim_ne(&idx, &nblocks);
+	     xm_dim_inc(&idx, &nblocks)) {
+		ptr = xm_tensor_allocate_block_data(b, idx);
+		xm_tensor_set_canonical_block(b, idx, ptr);
+	}
 
 	bsc = xm_block_space_create(xm_dim_2(8, 11));
 	xm_block_space_split(bsc, 0, 2);
