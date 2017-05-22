@@ -57,8 +57,8 @@ const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 /* Return an allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 
-/* Clone a tensor using given allocator. If allocator argument is NULL, the one
- * from tensor is used. */
+/* Clone a tensor using a given allocator. If allocator argument is NULL, use
+ * one from tensor. */
 xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
     xm_allocator_t *allocator);
 

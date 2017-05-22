@@ -48,7 +48,7 @@ main(void)
 	xm_tensor_t *b = xm_tensor_create(bsb, allocator);
 	xm_tensor_t *c = xm_tensor_create(bsc, allocator);
 
-	/* Block-spaces can be freed now. */
+	/* Block-spaces can be deallocated now. */
 	xm_block_space_free(bsa);
 	xm_block_space_free(bsb);
 	xm_block_space_free(bsc);
@@ -79,7 +79,7 @@ main(void)
 	xm_tensor_set_derivative_block(b, jj, ii, xm_dim_2(0, 1), -0.5);
 	/* other blocks stay zero */
 
-	/* The result c must be allocated explicitly. */
+	/* The result "c" must be allocated explicitly. */
 	ii = xm_dim_2(0, 0);
 	data_ptr = xm_tensor_allocate_block_data(c, ii);
 	xm_tensor_set_canonical_block(c, ii, data_ptr);
