@@ -454,6 +454,272 @@ make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	*cc = c;
 }
 
+static void
+make_abc_8(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
+    xm_tensor_t **cc)
+{
+	xm_dim_t idx;
+	xm_block_space_t *bsa, *bsb, *bsc;
+	xm_tensor_t *a, *b, *c;
+	uintptr_t ptr;
+
+	bsa = xm_block_space_create(xm_dim_2(15, 10));
+	xm_block_space_split(bsa, 0, 5);
+	xm_block_space_split(bsa, 0, 10);
+	xm_block_space_split(bsa, 1, 5);
+	a = xm_tensor_create(bsa, allocator);
+	xm_block_space_free(bsa);
+	idx = xm_dim_2(0, 0);
+	ptr = xm_tensor_allocate_block_data(a, idx);
+	xm_tensor_set_canonical_block(a, idx, ptr);
+	idx = xm_dim_2(0, 1);
+	xm_tensor_set_derivative_block(a, idx, xm_dim_2(0, 0),
+	    xm_dim_2(1, 0), -0.3);
+	idx = xm_dim_2(2, 0);
+	ptr = xm_tensor_allocate_block_data(a, idx);
+	xm_tensor_set_canonical_block(a, idx, ptr);
+	idx = xm_dim_2(2, 1);
+	ptr = xm_tensor_allocate_block_data(a, idx);
+	xm_tensor_set_canonical_block(a, idx, ptr);
+
+	bsb = xm_block_space_create(xm_dim_1(10));
+	xm_block_space_split(bsb, 0, 5);
+	b = xm_tensor_create(bsb, allocator);
+	xm_block_space_free(bsb);
+	idx = xm_dim_1(0);
+	ptr = xm_tensor_allocate_block_data(b, idx);
+	xm_tensor_set_canonical_block(b, idx, ptr);
+	idx = xm_dim_1(1);
+	ptr = xm_tensor_allocate_block_data(b, idx);
+	xm_tensor_set_canonical_block(b, idx, ptr);
+
+	bsc = xm_block_space_create(xm_dim_1(15));
+	xm_block_space_split(bsc, 0, 5);
+	xm_block_space_split(bsc, 0, 10);
+	c = xm_tensor_create(bsc, allocator);
+	xm_block_space_free(bsc);
+	idx = xm_dim_1(0);
+	ptr = xm_tensor_allocate_block_data(c, idx);
+	xm_tensor_set_canonical_block(c, idx, ptr);
+	/* idx = xm_dim_1(1) stays zero */
+	idx = xm_dim_1(2);
+	ptr = xm_tensor_allocate_block_data(c, idx);
+	xm_tensor_set_canonical_block(c, idx, ptr);
+
+	*aa = a;
+	*bb = b;
+	*cc = c;
+}
+
+static void
+make_abc_9(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
+    xm_tensor_t **cc)
+{
+	xm_dim_t idx, idx2, perm;
+	xm_block_space_t *bsa, *bsb;
+	xm_tensor_t *a, *b, *c;
+	uintptr_t ptr;
+	const size_t o = 8, v = 11, blocksize = 3;
+	const size_t nblko = 3, nblkv = 4;
+	size_t i;
+
+	bsa = xm_block_space_create(xm_dim_4(o, o, v, v));
+	for (i = 1; i < nblko; i++) {
+		xm_block_space_split(bsa, 0, i * blocksize);
+		xm_block_space_split(bsa, 1, i * blocksize);
+	}
+	for (i = 1; i < nblkv; i++) {
+		xm_block_space_split(bsa, 2, i * blocksize);
+		xm_block_space_split(bsa, 3, i * blocksize);
+	}
+	a = xm_tensor_create(bsa, allocator);
+	c = xm_tensor_create(bsa, allocator);
+	xm_block_space_free(bsa);
+	idx = xm_dim_zero(4);
+	for (idx.i[0] = 0; idx.i[0] < nblko; idx.i[0]++)
+	for (idx.i[1] = 0; idx.i[1] < nblko; idx.i[1]++)
+	for (idx.i[2] = 0; idx.i[2] < nblkv; idx.i[2]++)
+	for (idx.i[3] = 0; idx.i[3] < nblkv; idx.i[3]++) {
+		if (xm_tensor_get_block_type(a, idx) != XM_BLOCK_TYPE_ZERO)
+			continue;
+		ptr = xm_tensor_allocate_block_data(a, idx);
+		xm_tensor_set_canonical_block(a, idx, ptr);
+		ptr = xm_tensor_allocate_block_data(c, idx);
+		xm_tensor_set_canonical_block(c, idx, ptr);
+
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
+		perm = xm_dim_4(1, 0, 2, 3);
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(0, 1, 3, 2);
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(1, 0, 3, 2);
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
+			xm_tensor_set_derivative_block(c, idx2, idx, perm, 1);
+		}
+	}
+
+	bsb = xm_block_space_create(xm_dim_4(v, v, v, v));
+	for (i = 1; i < nblkv; i++) {
+		xm_block_space_split(bsb, 0, i * blocksize);
+		xm_block_space_split(bsb, 1, i * blocksize);
+		xm_block_space_split(bsb, 2, i * blocksize);
+		xm_block_space_split(bsb, 3, i * blocksize);
+	}
+	b = xm_tensor_create(bsb, allocator);
+	xm_block_space_free(bsb);
+	idx = xm_dim_zero(4);
+	for (idx.i[0] = 0; idx.i[0] < nblkv; idx.i[0]++)
+	for (idx.i[1] = 0; idx.i[1] < nblkv; idx.i[1]++)
+	for (idx.i[2] = 0; idx.i[2] < nblkv; idx.i[2]++)
+	for (idx.i[3] = 0; idx.i[3] < nblkv; idx.i[3]++) {
+		if (xm_tensor_get_block_type(b, idx) != XM_BLOCK_TYPE_ZERO)
+			continue;
+		ptr = xm_tensor_allocate_block_data(b, idx);
+		xm_tensor_set_canonical_block(b, idx, ptr);
+
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
+		perm = xm_dim_4(1, 0, 2, 3);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(0, 1, 3, 2);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[0], idx.i[1]);
+		perm = xm_dim_4(2, 3, 0, 1);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[0], idx.i[1]);
+		perm = xm_dim_4(3, 2, 0, 1);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[1], idx.i[0]);
+		perm = xm_dim_4(2, 3, 1, 0);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[1], idx.i[0]);
+		perm = xm_dim_4(3, 2, 1, 0);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+	}
+	*aa = a;
+	*bb = b;
+	*cc = c;
+}
+
+static void
+make_abc_10(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
+    xm_tensor_t **cc)
+{
+	xm_dim_t idx, idx2, perm;
+	xm_block_space_t *bsa, *bsb;
+	xm_tensor_t *a, *b, *c;
+	uintptr_t ptr;
+	const size_t o = 6, v = 9;
+	const size_t nblko = 2, nblkv = 3;
+
+	bsa = xm_block_space_create(xm_dim_4(o, o, v, v));
+	xm_block_space_split(bsa, 0, 4);
+	xm_block_space_split(bsa, 1, 4);
+	xm_block_space_split(bsa, 2, 3);
+	xm_block_space_split(bsa, 3, 3);
+	xm_block_space_split(bsa, 2, 7);
+	xm_block_space_split(bsa, 3, 7);
+	a = xm_tensor_create(bsa, allocator);
+	c = xm_tensor_create(bsa, allocator);
+	xm_block_space_free(bsa);
+	idx = xm_dim_zero(4);
+	for (idx.i[0] = 0; idx.i[0] < nblko; idx.i[0]++)
+	for (idx.i[1] = 0; idx.i[1] < nblko; idx.i[1]++)
+	for (idx.i[2] = 0; idx.i[2] < nblkv; idx.i[2]++)
+	for (idx.i[3] = 0; idx.i[3] < nblkv; idx.i[3]++) {
+		if (xm_tensor_get_block_type(a, idx) != XM_BLOCK_TYPE_ZERO)
+			continue;
+		ptr = xm_tensor_allocate_block_data(a, idx);
+		xm_tensor_set_canonical_block(a, idx, ptr);
+		ptr = xm_tensor_allocate_block_data(c, idx);
+		xm_tensor_set_canonical_block(c, idx, ptr);
+
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
+		perm = xm_dim_4(1, 0, 2, 3);
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(0, 1, 3, 2);
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(1, 0, 3, 2);
+		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
+			xm_tensor_set_derivative_block(c, idx2, idx, perm, 1);
+		}
+	}
+
+	bsb = xm_block_space_create(xm_dim_4(v, v, v, v));
+	xm_block_space_split(bsb, 0, 3);
+	xm_block_space_split(bsb, 1, 3);
+	xm_block_space_split(bsb, 2, 3);
+	xm_block_space_split(bsb, 3, 3);
+	xm_block_space_split(bsb, 0, 7);
+	xm_block_space_split(bsb, 1, 7);
+	xm_block_space_split(bsb, 2, 7);
+	xm_block_space_split(bsb, 3, 7);
+	b = xm_tensor_create(bsb, allocator);
+	xm_block_space_free(bsb);
+	idx = xm_dim_zero(4);
+	for (idx.i[0] = 0; idx.i[0] < nblkv; idx.i[0]++)
+	for (idx.i[1] = 0; idx.i[1] < nblkv; idx.i[1]++)
+	for (idx.i[2] = 0; idx.i[2] < nblkv; idx.i[2]++)
+	for (idx.i[3] = 0; idx.i[3] < nblkv; idx.i[3]++) {
+		if (xm_tensor_get_block_type(b, idx) != XM_BLOCK_TYPE_ZERO)
+			continue;
+		ptr = xm_tensor_allocate_block_data(b, idx);
+		xm_tensor_set_canonical_block(b, idx, ptr);
+
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
+		perm = xm_dim_4(1, 0, 2, 3);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(0, 1, 3, 2);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[0], idx.i[1]);
+		perm = xm_dim_4(2, 3, 0, 1);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[0], idx.i[1]);
+		perm = xm_dim_4(3, 2, 0, 1);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[1], idx.i[0]);
+		perm = xm_dim_4(2, 3, 1, 0);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[1], idx.i[0]);
+		perm = xm_dim_4(3, 2, 1, 0);
+		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+	}
+	*aa = b; /* switch */
+	*bb = a; /* switch */
+	*cc = c;
+}
+
 static struct test tests[] = {
 	{ make_abc_1, "ik", "kj", "ij" },
 	{ make_abc_1, "ik", "kj", "ji" },
@@ -489,6 +755,11 @@ static struct test tests[] = {
 	{ make_abc_5, "ki", "jk", "ji" },
 	{ make_abc_6, "y", "xz", "xyz" },
 	{ make_abc_7, "abc", "abd", "dc" },
+	{ make_abc_8, "ab", "b", "a" },
+	{ make_abc_9, "ijab", "abcd", "ijcd" },
+	{ make_abc_9, "ijcd", "abcd", "ijab" },
+	{ make_abc_10, "abcd", "ijab", "ijcd" },
+	{ make_abc_10, "cdab", "ijab", "ijcd" },
 };
 
 int
@@ -498,7 +769,7 @@ main(void)
 	size_t i;
 
 	for (i = 0; i < sizeof tests / sizeof *tests; i++) {
-		printf("Test contract %2zu... ", i+1);
+		printf("xm_contract test %2zu... ", i+1);
 		fflush(stdout);
 		test_contract(&tests[i], NULL, 0, 0);
 		test_contract(&tests[i], NULL, 0, random_scalar());
