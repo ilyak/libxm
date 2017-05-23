@@ -130,7 +130,6 @@ find_pages(xm_allocator_t *allocator, size_t n_pages)
 			return ((uintptr_t)offset * XM_PAGE_SIZE);
 		}
 	}
-
 	return (XM_NULL_PTR);
 }
 
@@ -148,7 +147,6 @@ allocate_pages(xm_allocator_t *allocator, size_t size_bytes)
 	while ((ptr = find_pages(allocator, n_pages)) == XM_NULL_PTR)
 		if (extend_file(allocator))
 			return (XM_NULL_PTR);
-
 	return (ptr);
 }
 
@@ -161,7 +159,6 @@ xm_allocator_create(const char *path)
 		perror("malloc");
 		return (NULL);
 	}
-
 	if (path) {
 		if ((allocator->fd = open(path, O_CREAT|O_RDWR,
 		    S_IRUSR|S_IWUSR)) == -1) {
@@ -188,7 +185,6 @@ xm_allocator_create(const char *path)
 			return (NULL);
 		}
 	}
-
 	if (pthread_mutex_init(&allocator->mutex, NULL)) {
 		perror("pthread_mutex_init");
 		if (close(allocator->fd))
@@ -293,7 +289,6 @@ xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
 
 	offset = (off_t)data_ptr;
 	read_bytes = pread(allocator->fd, mem, size_bytes, offset);
-
 	if (read_bytes != (ssize_t)size_bytes)
 		err(1, "pread");
 }
@@ -314,7 +309,6 @@ xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
 
 	offset = (off_t)data_ptr;
 	write_bytes = pwrite(allocator->fd, mem, size_bytes, offset);
-
 	if (write_bytes != (ssize_t)size_bytes)
 		err(1, "pwrite");
 }
