@@ -245,38 +245,6 @@ get_source_block_data_ptr(xm_tensor_t *tensor, struct xm_block *block)
 //	free(buf);
 //}
 
-static xm_scalar_t
-xm_tensor_get_block_element(const xm_tensor_t *tensor, const xm_dim_t *blk_i,
-    const xm_dim_t *el_i)
-{
-	struct xm_block *block;
-	xm_scalar_t *buf, ret;
-	xm_dim_t idx, dim_p;
-	size_t el_off, size_bytes;
-	uintptr_t data_ptr = XM_NULL_PTR;
-
-	block = xm_tensor_get_block(tensor, blk_i);
-	if (block->type == XM_BLOCK_TYPE_ZERO)
-		return (0.0);
-	if (block->type == XM_BLOCK_TYPE_CANONICAL)
-		data_ptr = block->data_ptr;
-	if (block->type == XM_BLOCK_TYPE_DERIVATIVE) {
-		struct xm_block *canon_block = xm_tensor_get_block(tensor,
-		    &block->source_blkidx);
-		data_ptr = canon_block->data_ptr;
-	}
-	assert(data_ptr != XM_NULL_PTR);
-	size_bytes = xm_dim_dot(&block->dim) * sizeof(xm_scalar_t);
-	buf = xmalloc(size_bytes);
-	xm_allocator_read(tensor->allocator, data_ptr, buf, size_bytes);
-	idx = xm_dim_permute(el_i, &block->permutation);
-	dim_p = xm_dim_permute(&block->dim, &block->permutation);
-	el_off = xm_dim_offset(&idx, &dim_p);
-	ret = block->scalar * buf[el_off];
-	free(buf);
-	return (ret);
-}
-
 static void
 xm_tensor_get_idx(const xm_tensor_t *tensor, const xm_dim_t *abs_idx,
     xm_dim_t *blk_idx, xm_dim_t *el_idx)
@@ -312,10 +280,33 @@ xm_tensor_get_idx(const xm_tensor_t *tensor, const xm_dim_t *abs_idx,
 xm_scalar_t
 xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 {
-	xm_dim_t blk_i, el_i;
+	struct xm_block *block;
+	xm_scalar_t *buf, ret;
+	xm_dim_t eidx, dim_p, blk_i, el_i;
+	size_t el_off, size_bytes;
+	uintptr_t data_ptr = XM_NULL_PTR;
 
 	xm_tensor_get_idx(tensor, &idx, &blk_i, &el_i);
-	return (xm_tensor_get_block_element(tensor, &blk_i, &el_i));
+	block = xm_tensor_get_block(tensor, &blk_i);
+	if (block->type == XM_BLOCK_TYPE_ZERO)
+		return (0.0);
+	if (block->type == XM_BLOCK_TYPE_CANONICAL)
+		data_ptr = block->data_ptr;
+	if (block->type == XM_BLOCK_TYPE_DERIVATIVE) {
+		struct xm_block *canon_block = xm_tensor_get_block(tensor,
+		    &block->source_blkidx);
+		data_ptr = canon_block->data_ptr;
+	}
+	assert(data_ptr != XM_NULL_PTR);
+	size_bytes = xm_dim_dot(&block->dim) * sizeof(xm_scalar_t);
+	buf = xmalloc(size_bytes);
+	xm_allocator_read(tensor->allocator, data_ptr, buf, size_bytes);
+	eidx = xm_dim_permute(&el_i, &block->permutation);
+	dim_p = xm_dim_permute(&block->dim, &block->permutation);
+	el_off = xm_dim_offset(&eidx, &dim_p);
+	ret = block->scalar * buf[el_off];
+	free(buf);
+	return (ret);
 }
 
 void
