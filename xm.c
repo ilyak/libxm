@@ -97,20 +97,6 @@ xmalloc(size_t size)
 	return ptr;
 }
 
-static void *
-xcalloc(size_t nmemb, size_t size)
-{
-	void *ptr;
-
-	if (size == 0 || nmemb == 0)
-		errx(1, "xcalloc: zero size");
-	ptr = calloc(nmemb, size);
-	if (ptr == NULL)
-		errx(1, "xcalloc: allocating %zu * %zu bytes: %s",
-		    nmemb, size, strerror(errno));
-	return ptr;
-}
-
 static struct xm_block *
 xm_tensor_get_block(const xm_tensor_t *tensor, const xm_dim_t *idx)
 {
@@ -131,11 +117,22 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 	xm_tensor_t *tensor;
 	xm_dim_t idx, nblocks;
 
-	tensor = xcalloc(1, sizeof *tensor);
-	tensor->bs = xm_block_space_clone(bs);
+	assert(bs);
+	assert(allocator);
+
+	if ((tensor = calloc(1, sizeof *tensor)) == NULL)
+		return NULL;
+	nblocks = xm_block_space_get_nblocks(bs);
+	tensor->blocks = calloc(xm_dim_dot(&nblocks), sizeof *tensor->blocks);
+	if (tensor->blocks == NULL) {
+		xm_tensor_free(tensor);
+		return NULL;
+	}
+	if ((tensor->bs = xm_block_space_clone(bs)) == NULL) {
+		xm_tensor_free(tensor);
+		return NULL;
+	}
 	tensor->allocator = allocator;
-	nblocks = xm_block_space_get_nblocks(tensor->bs);
-	tensor->blocks = xcalloc(xm_dim_dot(&nblocks), sizeof *tensor->blocks);
 	for (idx = xm_dim_zero(nblocks.n);
 	     xm_dim_ne(&idx, &nblocks);
 	     xm_dim_inc(&idx, &nblocks))
