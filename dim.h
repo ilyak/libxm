@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-/* Maximum number of tensor dimensions. */
+/* Maximum number of dimensions. */
 #define XM_MAX_DIM 8
 
 /* Multidimensional index. */
@@ -58,29 +58,31 @@ int xm_dim_ne(const xm_dim_t *a, const xm_dim_t *b);
 /* Return non-zero if an index is within zero and dim. */
 int xm_dim_less(const xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Return dot product of all indices of a dim. */
+/* Return product of all indices of a dim. */
 size_t xm_dim_dot(const xm_dim_t *dim);
 
 /* Return absolute offset of an index in a dim. */
 size_t xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Increment an index by one wrapping on dimensions. */
+/* Increment an index by one wrapping on dimensions. Can be used to iterate
+ * over all elements of a dim. */
 void xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
 
-/* Set to zero all indices of dim specified by mask. */
+/* Set to zero all indices of this dim specified by mask. */
 void xm_dim_zero_mask(xm_dim_t *dim, const xm_dim_t *mask);
 
-/* Set indices of dim a to b using masks to specify elements. */
+/* Set maska indices of "a" to maskb indices of "b". */
 void xm_dim_set_mask(xm_dim_t *a, const xm_dim_t *maska, const xm_dim_t *b,
     const xm_dim_t *maskb);
 
-/* Multiply indices specified by mask. */
+/* Return product of indices specified by mask. */
 size_t xm_dim_dot_mask(const xm_dim_t *dim, const xm_dim_t *mask);
 
-/* Increment indices specified by mask. */
+/* Increment an index. This is similar to xm_dim_inc, but affects only indices
+ * specified by mask. */
 void xm_dim_inc_mask(xm_dim_t *idx, const xm_dim_t *dim, const xm_dim_t *mask);
 
-/* Return an n-dimensional identity permutation. */
+/* Return n-dimensional identity permutation. */
 xm_dim_t xm_dim_identity_permutation(size_t ndim);
 
 /* Return a specific permutation of an index. */
