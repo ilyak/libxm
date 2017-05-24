@@ -72,11 +72,6 @@ xm_dim_t xm_tensor_get_nblocks(const xm_tensor_t *tensor);
  * Note: this function is relatively slow. */
 xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx);
 
-/* Get elements of a particular block. The storage pointed to by data should
- * be large enough to store all elements of a block. */
-void xm_tensor_get_block_elements(xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_scalar_t *data, size_t data_bytes);
-
 /* Return type of a block. This returns one of the XM_BLOCK_TYPE_ values. */
 int xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx);
 

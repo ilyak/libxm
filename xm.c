@@ -306,27 +306,20 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	return (ret);
 }
 
-void
-xm_tensor_get_block_elements(xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_scalar_t *data, size_t data_bytes)
-{
-	/*XXX*/
-}
-
 int
-xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t idx)
+xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx)
 {
 	struct xm_block *block;
 
-	block = xm_tensor_get_block(tensor, &idx);
+	block = xm_tensor_get_block(tensor, &blkidx);
 	return (block->type);
 }
 
 xm_dim_t
-xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t idx)
+xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t blkidx)
 {
 	assert(tensor);
-	return xm_block_space_get_block_dims(tensor->bs, idx);
+	return xm_block_space_get_block_dims(tensor->bs, blkidx);
 }
 
 uintptr_t
