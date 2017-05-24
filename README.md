@@ -1,18 +1,17 @@
 # libxm 2.0 (beta)
 
-Libxm is a library that provides routines for efficient contractions of very
-large (terabytes in size) disk-based block-tensors on multi-core CPUs, GPUs,
-and various floating point accelerators.
+Libxm is a C/C++ library that provides routines for efficient operations (e.g.,
+contractions) on very large (terabytes in size) disk-based block-tensors on
+multi-core CPUs, GPUs, and various floating point accelerators.
 
 With libxm tensors can be stored on hard disks which allow virtually unlimited
 data size. Data are asynchronously prefetched to main memory for fast access.
 Tensor contractions are reformulated as multiplications of big matrices done in
-batches. Tensor symmetry and sparsity is used to decrease storage and
-computational requirements. Computations can be efficiently accelerated using
-multiple GPUs or other accelerators like Intel Xeon Phi. For very large
-problems libxm shows considerable speedups compared to similar tensor
-contraction codes. Libxm supports single and double precision scalar and
-complex numbers.
+batches. Tensor block-level symmetry and sparsity is used to decrease storage
+and computational requirements. Computations can be accelerated using multiple
+GPUs or other accelerators like Intel Xeon Phi. For very large problems libxm
+shows considerable speedups compared to similar tensor contraction codes. Libxm
+supports single and double precision scalar and complex numbers.
 
 ### Reference
 
@@ -37,7 +36,7 @@ To compile libxm you need a POSIX environment, an efficient BLAS library, and
 an ANSI C complaint compiler. To use libxm in your project, include `xm.h` file
 and compile the code:
 
-    cc myprog.c xm.c alloc.c blockspace.c -lblas -lpthread -lm
+    cc myprog.c alloc.c blockspace.c dim.c xm.c -lblas -lpthread -lm
 
 Replace `-lblas` with appropriate accelerated libraries (e.g. `-lnvblas`) to
 get the benefits of corresponding hardware. Detailed documentation can be
@@ -54,12 +53,11 @@ Compiler and flags can be adjusted by modifying the Makefile.
 - xm.h - public API header with documentation
 - xm.c - libxm implementation code
 - alloc.c/alloc.h - disk-backed allocator for large tensors
-- gcalloc.c/alloc.h - experimental garbage-collecting disk-backed allocator
-- auxil.c/auxil.h - optional auxiliary functions for tensor creation
-- test.c - facilities for randomized testing
+- example.c - sample code with comments
+- test.c - testing facilities
 
 ### Users of libxm
 
-- libxm is integrated with Q-Chem package to accelerate high-level quantum
-  chemistry calculations
-- libxm is used by a C++ tensor library libtensor
+- libxm is integrated with [Q-Chem](http://www.q-chem.com) quantum chemistry
+  package to accelerate large electronic structure calculations
+- libxm is used as a backend in C++ tensor library libtensor
