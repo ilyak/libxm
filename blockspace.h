@@ -51,6 +51,11 @@ xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *bs,
 /* Return size in number of elements of the largest block in block-space. */
 size_t xm_block_space_get_largest_block_size(const xm_block_space_t *bs);
 
+/* Decompose an absolute index into index of a block and index of an element
+ * inside this block. */
+void xm_block_space_decompose_index(const xm_block_space_t *bs, xm_dim_t idx,
+    xm_dim_t *blkidx, xm_dim_t *elidx);
+
 /* Return non-zero if the block-spaces have same block structures. */
 int xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb);
 

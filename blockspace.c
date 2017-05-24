@@ -146,6 +146,25 @@ xm_block_space_get_largest_block_size(const xm_block_space_t *bs)
 	return blksize;
 }
 
+void
+xm_block_space_decompose_index(const xm_block_space_t *bs, xm_dim_t idx,
+    xm_dim_t *blkidx, xm_dim_t *elidx)
+{
+	size_t i, j;
+
+	assert(bs->dims.n == idx.n);
+
+	*blkidx = xm_dim_zero(bs->dims.n);
+	*elidx = xm_dim_zero(bs->dims.n);
+	for (i = 0; i < bs->dims.n; i++)
+		for (j = 1; j < bs->nblocks.i[i]+1; j++)
+			if (bs->splits[i][j] > idx.i[i]) {
+				blkidx->i[i] = j-1;
+				elidx->i[i] = idx.i[i] - bs->splits[i][j-1];
+				break;
+			}
+}
+
 int
 xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb)
 {
