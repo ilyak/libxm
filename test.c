@@ -87,7 +87,7 @@ fill_random(xm_tensor_t *t)
 }
 
 static void
-parse_idx(const char *str1, const char *str2, xm_dim_t *mask1, xm_dim_t *mask2)
+make_masks(const char *str1, const char *str2, xm_dim_t *mask1, xm_dim_t *mask2)
 {
 	size_t i, j, len1, len2;
 
@@ -113,9 +113,9 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	xm_scalar_t ref, ecc;
 	size_t k, nk;
 
-	parse_idx(idxa, idxb, &cidxa, &cidxb);
-	parse_idx(idxc, idxa, &cidxc, &aidxa);
-	parse_idx(idxc, idxb, &aidxc, &aidxb);
+	make_masks(idxa, idxb, &cidxa, &cidxb);
+	make_masks(idxc, idxa, &cidxc, &aidxa);
+	make_masks(idxc, idxb, &aidxc, &aidxb);
 	absdimsa = xm_tensor_get_abs_dims(a);
 	absdimsb = xm_tensor_get_abs_dims(b);
 	absdimsc = xm_tensor_get_abs_dims(c);
