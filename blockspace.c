@@ -157,10 +157,10 @@ xm_block_space_decompose_index(const xm_block_space_t *bs, xm_dim_t idx,
 	*blkidx = xm_dim_zero(bs->dims.n);
 	*elidx = xm_dim_zero(bs->dims.n);
 	for (i = 0; i < bs->dims.n; i++)
-		for (j = 1; j < bs->nblocks.i[i]+1; j++)
-			if (bs->splits[i][j] > idx.i[i]) {
-				blkidx->i[i] = j-1;
-				elidx->i[i] = idx.i[i] - bs->splits[i][j-1];
+		for (j = 0; j < bs->nblocks.i[i]; j++)
+			if (bs->splits[i][j+1] > idx.i[i]) {
+				blkidx->i[i] = j;
+				elidx->i[i] = idx.i[i] - bs->splits[i][j];
 				break;
 			}
 }
