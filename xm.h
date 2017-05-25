@@ -89,7 +89,7 @@ void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
  * for 4-index tensors).
  * The data_ptr argument must be allocated using the same allocator that was
  * used during tensor creation. Allocation must be large enough to hold block
- * data. */
+ * data. See also: xm_tensor_allocate_block_data. */
 void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     uintptr_t data_ptr);
 
@@ -127,10 +127,6 @@ void xm_tensor_free(xm_tensor_t *tensor);
 void xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
     const char *idxc);
-
-/* Compute y = alpha * x + y */
-void xm_axpy(xm_scalar_t alpha, xm_tensor_t *x, xm_tensor_t *y,
-    const char *xidx, const char *yidx);
 
 #ifdef __cplusplus
 } /* extern "C" */
