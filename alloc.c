@@ -68,7 +68,11 @@ tree_cmp(const struct block *a, const struct block *b)
 }
 
 #ifndef __unused
+#if defined(__GNUC__)
+#define __unused __attribute__((__unused__))
+#else
 #define __unused
+#endif
 #endif /* __unused */
 RB_GENERATE_STATIC(tree, block, entry, tree_cmp)
 
