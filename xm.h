@@ -78,6 +78,9 @@ int xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx);
 /* Return dimensions of a specific block. */
 xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
+/* Return size in number of elements of the specific tensor block. */
+size_t xm_tensor_get_block_size(const xm_tensor_t *tensor, xm_dim_t blkidx);
+
 /* Setup a zero-block (all elements of a block are zeros).
  * No actual data are stored. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
@@ -103,10 +106,17 @@ void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
  * associated allocator. */
 uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/* Return block data pointer. This will return XM_NULL_PTR for zero and
- * derivative blocks. */
+/* Return block data pointer. This will return XM_NULL_PTR for zero blocks. */
 uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
+
+void xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
+    xm_scalar_t *to, size_t stride);
+
+void xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
+    xm_scalar_t *to, size_t stride);
 
 /* Deallocate all block data associated with this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);

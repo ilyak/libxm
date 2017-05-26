@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct xm_block {
 	int type;
@@ -311,5 +312,110 @@ xm_tensor_free(xm_tensor_t *tensor)
 		xm_block_space_free(tensor->bs);
 		free(tensor->blocks);
 		free(tensor);
+	}
+}
+
+void
+xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
+    xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to, size_t stride)
+{
+	struct xm_block *block = tensor_get_block(tensor, blkidx);
+	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;
+	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
+	size_t block_size_i, block_size_j;
+	xm_scalar_t scalar = block->scalar;
+
+	assert(from);
+	assert(to);
+
+	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
+	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);
+	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);
+	permutation = block->permutation;
+	blkdimsp = xm_dim_permute(&blkdims, &permutation);
+	elidx = xm_dim_zero(blkdims.n);
+
+	inc = 1;
+	lead_ii_nel = 1;
+
+	if (mask_i.n > 0) {
+		lead_ii = mask_i.i[0];
+		for (kk = 0; kk < permutation.i[lead_ii]; kk++)
+			inc *= blkdimsp.i[kk];
+		for (ii = 0; ii < mask_i.n-1; ii++)
+			mask_i.i[ii] = mask_i.i[ii+1];
+		mask_i.n--;
+		lead_ii_nel = blkdims.i[lead_ii];
+	}
+	if (inc == 1) {
+		for (jj = 0; jj < block_size_j; jj++) {
+			xm_dim_zero_mask(&elidx, &mask_i);
+			for (ii = 0; ii < block_size_i;
+			    ii += lead_ii_nel) {
+				idx = xm_dim_permute(&elidx, &permutation);
+				offset = xm_dim_offset(&idx, &blkdimsp);
+				memcpy(&to[jj * stride + ii],
+				    from + offset,
+				    sizeof(xm_scalar_t) * lead_ii_nel);
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+			}
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
+		}
+	} else {
+		for (jj = 0; jj < block_size_j; jj++) {
+			xm_dim_zero_mask(&elidx, &mask_i);
+			for (ii = 0; ii < block_size_i;
+			    ii += lead_ii_nel) {
+				idx = xm_dim_permute(&elidx, &permutation);
+				offset = xm_dim_offset(&idx, &blkdimsp);
+				for (kk = 0; kk < lead_ii_nel; kk++) {
+					to[jj * stride + ii + kk] =
+					    from[offset];
+					offset += inc;
+				}
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+			}
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
+		}
+	}
+	for (jj = 0; jj < block_size_j; jj++)
+		for (ii = 0; ii < block_size_i; ii++)
+			to[jj * stride + ii] *= scalar;
+}
+
+void
+xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
+    xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to, size_t stride)
+{
+	struct xm_block *block = tensor_get_block(tensor, blkidx);
+	xm_dim_t blkdims, elidx;
+	size_t ii, jj, offset, block_size_i, block_size_j;
+
+	assert(from);
+	assert(to);
+	assert(block->type == XM_BLOCK_TYPE_CANONICAL);
+	assert(block->data_ptr != XM_NULL_PTR);
+
+	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
+	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);
+	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);
+	elidx = xm_dim_zero(blkdims.n);
+
+	assert(mask_i.n > 0);/*XXX*/
+	assert(mask_i.i[0] == 0);
+	for (ii = 0; ii < mask_i.n-1; ii++)
+		mask_i.i[ii] = mask_i.i[ii+1];
+	mask_i.n--;
+
+	for (jj = 0; jj < block_size_j; jj++) {
+		xm_dim_zero_mask(&elidx, &mask_i);
+		for (ii = 0; ii < block_size_i; ii += blkdims.i[0]) {
+			offset = xm_dim_offset(&elidx, &blkdims);
+			memcpy(to + offset,
+			    &from[jj * stride + ii],
+			    sizeof(xm_scalar_t) * blkdims.i[0]);
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+		}
+		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 	}
 }
