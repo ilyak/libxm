@@ -51,16 +51,16 @@ void xm_print_banner(void);
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
+/* Clone a tensor using a given allocator. If allocator argument is NULL, use
+ * one from tensor. */
+xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
+    xm_allocator_t *allocator);
+
 /* Return a block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 
 /* Return an allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
-
-/* Clone a tensor using a given allocator. If allocator argument is NULL, use
- * one from tensor. */
-xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
-    xm_allocator_t *allocator);
 
 /* Return absolute tensor dimensions in total number of elements. */
 xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
@@ -105,7 +105,8 @@ uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /* Return block data pointer. This will return XM_NULL_PTR for zero and
  * derivative blocks. */
-uintptr_t xm_tensor_get_block_data_ptr(xm_tensor_t *tensor, xm_dim_t blkidx);
+uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
 
 /* Deallocate all block data associated with this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);
