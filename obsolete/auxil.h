@@ -17,7 +17,7 @@
 #ifndef XM_AUXIL_H
 #define XM_AUXIL_H
 
-#include "xm.h"
+#include "../xm.h"
 
 #define XM_INIT_NONE    0  /* Do not initialize memory. */
 #define XM_INIT_ZERO    1  /* Initialize with zeros. */
