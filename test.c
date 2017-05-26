@@ -59,7 +59,7 @@ fill_random(xm_tensor_t *t)
 {
 	xm_allocator_t *allocator;
 	const xm_block_space_t *bs;
-	xm_dim_t blkdims, idx, nblocks;
+	xm_dim_t idx, nblocks;
 	xm_scalar_t *data;
 	size_t i, blksize, maxblksize;
 	uintptr_t ptr;
@@ -73,13 +73,12 @@ fill_random(xm_tensor_t *t)
 	for (idx = xm_dim_zero(nblocks.n);
 	     xm_dim_ne(&idx, &nblocks);
 	     xm_dim_inc(&idx, &nblocks)) {
-		ptr = xm_tensor_get_block_data_ptr(t, idx);
-		if (ptr == XM_NULL_PTR)
+		if (xm_tensor_get_block_type(t, idx) != XM_BLOCK_TYPE_CANONICAL)
 			continue;
-		blkdims = xm_tensor_get_block_dims(t, idx);
-		blksize = xm_dim_dot(&blkdims);
+		blksize = xm_tensor_get_block_size(t, idx);
 		for (i = 0; i < blksize; i++)
 			data[i] = random_scalar();
+		ptr = xm_tensor_get_block_data_ptr(t, idx);
 		xm_allocator_write(allocator, ptr, data,
 		    blksize * sizeof(xm_scalar_t));
 	}
