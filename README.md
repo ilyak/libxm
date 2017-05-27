@@ -51,12 +51,13 @@ Compiler and flags can be adjusted by modifying the Makefile.
 ### Source code overview
 
 - xm.h - public API header with documentation
-- xm.c - libxm implementation code
-- alloc.c/alloc.h - disk-backed allocator for large tensors
 - example.c - sample code with comments
+- alloc.c/alloc.h - disk-backed allocator for large tensors
+- blockspace.c/blockspace.h - operations on block-spaces
+- dim.c/dim.h - operations on multidimensional indices
 - test.c - testing facilities
 
-### Users of libxm
+### Libxm users
 
 - libxm is integrated with [Q-Chem](http://www.q-chem.com) quantum chemistry
   package to accelerate large electronic structure calculations
