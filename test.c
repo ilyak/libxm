@@ -63,6 +63,7 @@ fill_random(xm_tensor_t *t)
 	xm_scalar_t *data;
 	size_t i, blksize, maxblksize;
 	uintptr_t ptr;
+	int type;
 
 	allocator = xm_tensor_get_allocator(t);
 	bs = xm_tensor_get_block_space(t);
@@ -70,17 +71,18 @@ fill_random(xm_tensor_t *t)
 	data = malloc(maxblksize * sizeof(xm_scalar_t));
 	assert(data);
 	nblocks = xm_block_space_get_nblocks(bs);
-	for (idx = xm_dim_zero(nblocks.n);
-	     xm_dim_ne(&idx, &nblocks);
-	     xm_dim_inc(&idx, &nblocks)) {
-		if (xm_tensor_get_block_type(t, idx) != XM_BLOCK_TYPE_CANONICAL)
-			continue;
-		blksize = xm_tensor_get_block_size(t, idx);
-		for (i = 0; i < blksize; i++)
-			data[i] = random_scalar();
-		ptr = xm_tensor_get_block_data_ptr(t, idx);
-		xm_allocator_write(allocator, ptr, data,
-		    blksize * sizeof(xm_scalar_t));
+	idx = xm_dim_zero(nblocks.n);
+	while (xm_dim_ne(&idx, &nblocks)) {
+		type = xm_tensor_get_block_type(t, idx);
+		if (type == XM_BLOCK_TYPE_CANONICAL) {
+			blksize = xm_tensor_get_block_size(t, idx);
+			for (i = 0; i < blksize; i++)
+				data[i] = random_scalar();
+			ptr = xm_tensor_get_block_data_ptr(t, idx);
+			xm_allocator_write(allocator, ptr, data,
+			    blksize * sizeof(xm_scalar_t));
+		}
+		xm_dim_inc(&idx, &nblocks);
 	}
 	free(data);
 }
@@ -119,9 +121,8 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	absdimsb = xm_tensor_get_abs_dims(b);
 	absdimsc = xm_tensor_get_abs_dims(c);
 	nk = xm_dim_dot_mask(&absdimsa, &cidxa);
-	for (ic = xm_dim_zero(absdimsc.n);
-	     xm_dim_ne(&ic, &absdimsc);
-	     xm_dim_inc(&ic, &absdimsc)) {
+	ic = xm_dim_zero(absdimsc.n);
+	while (xm_dim_ne(&ic, &absdimsc)) {
 		ref = beta * xm_tensor_get_element(c, ic);
 		ia = xm_dim_zero(absdimsa.n);
 		ib = xm_dim_zero(absdimsb.n);
@@ -139,6 +140,7 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 			printf("result != ref\n");
 			abort();
 		}
+		xm_dim_inc(&ic, &absdimsc);
 	}
 }
 
