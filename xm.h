@@ -110,10 +110,15 @@ uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
 uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
+/* Unfold block into the matrix form. The sequences of unfolding indices are
+ * specified using the masks. The from parameter should point to the raw block
+ * data in memory. */
 void xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
 
+/* Fold block back from the matrix form. This is the inverse of
+ * xm_tensor_unfold_block. */
 void xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
