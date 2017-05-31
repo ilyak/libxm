@@ -1094,7 +1094,7 @@ main(void)
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
-		printf("xm_contract test %2zu... ", i+1);
+		printf("contract test %2zu... ", i+1);
 		fflush(stdout);
 		test_contract(&contract_tests[i], NULL, 0, 0);
 		test_contract(&contract_tests[i], NULL, 0, random_scalar());
