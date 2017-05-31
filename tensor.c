@@ -358,32 +358,56 @@ xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 {
 	struct xm_block *block;
 	xm_dim_t blkdims, elidx;
-	size_t ii, jj, offset, block_size_i, block_size_j;
+	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
+	size_t block_size_i, block_size_j;
 
 	assert(from);
 	assert(to);
 
 	block = tensor_get_block(tensor, blkidx);
+	if (block->type != XM_BLOCK_TYPE_CANONICAL)
+		fatal("can only fold canonical blocks");
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
 	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);
 	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);
 	elidx = xm_dim_zero(blkdims.n);
 
-	assert(mask_i.n > 0);/*XXX*/
-	assert(mask_i.i[0] == 0);
-	for (ii = 0; ii < mask_i.n-1; ii++)
-		mask_i.i[ii] = mask_i.i[ii+1];
-	mask_i.n--;
+	inc = 1;
+	lead_ii_nel = 1;
 
-	for (jj = 0; jj < block_size_j; jj++) {
-		xm_dim_zero_mask(&elidx, &mask_i);
-		for (ii = 0; ii < block_size_i; ii += blkdims.i[0]) {
-			offset = xm_dim_offset(&elidx, &blkdims);
-			memcpy(to + offset, &from[jj * stride + ii],
-			    sizeof(xm_scalar_t) * blkdims.i[0]);
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+	if (mask_i.n > 0) {
+		lead_ii = mask_i.i[0];
+		for (kk = 0; kk < lead_ii; kk++)
+			inc *= blkdims.i[kk];
+		for (ii = 0; ii < mask_i.n-1; ii++)
+			mask_i.i[ii] = mask_i.i[ii+1];
+		mask_i.n--;
+		lead_ii_nel = blkdims.i[lead_ii];
+	}
+	if (inc == 1) { /* use memcpy */
+		for (jj = 0; jj < block_size_j; jj++) {
+			xm_dim_zero_mask(&elidx, &mask_i);
+			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
+				offset = xm_dim_offset(&elidx, &blkdims);
+				memcpy(to + offset, &from[jj * stride + ii],
+				    sizeof(xm_scalar_t) * lead_ii_nel);
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+			}
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 		}
-		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
+	} else {
+		for (jj = 0; jj < block_size_j; jj++) {
+			xm_dim_zero_mask(&elidx, &mask_i);
+			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
+				offset = xm_dim_offset(&elidx, &blkdims);
+				for (kk = 0; kk < lead_ii_nel; kk++) {
+					to[offset] = from[jj*stride+ii+kk];
+					offset += inc;
+				}
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+			}
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
+		}
 	}
 }
 
