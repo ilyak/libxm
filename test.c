@@ -25,7 +25,7 @@
 typedef void (*make_abc_fn)(xm_allocator_t *, xm_tensor_t **, xm_tensor_t **,
     xm_tensor_t **);
 
-struct test {
+struct contract_test {
 	make_abc_fn make_abc;
 	const char *idxa, *idxb, *idxc;
 };
@@ -145,7 +145,7 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 }
 
 static void
-test_contract(struct test *test, const char *path, xm_scalar_t alpha,
+test_contract(struct contract_test *test, const char *path, xm_scalar_t alpha,
     xm_scalar_t beta)
 {
 	xm_allocator_t *allocator;
@@ -835,7 +835,7 @@ make_abc_11(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	*cc = xm_tensor_clone(b, NULL);
 }
 
-static struct test tests[] = {
+static struct contract_test contract_tests[] = {
 	{ make_abc_1, "ik", "kj", "ij" },
 	{ make_abc_1, "ik", "kj", "ji" },
 	{ make_abc_1, "ik", "jk", "ij" },
@@ -884,18 +884,18 @@ main(void)
 	const char *path = "xmpagefile";
 	size_t i;
 
-	for (i = 0; i < sizeof tests / sizeof *tests; i++) {
+	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
 		printf("xm_contract test %2zu... ", i+1);
 		fflush(stdout);
-		test_contract(&tests[i], NULL, 0, 0);
-		test_contract(&tests[i], NULL, 0, random_scalar());
-		test_contract(&tests[i], NULL, random_scalar(), 0);
-		test_contract(&tests[i], NULL, random_scalar(),
+		test_contract(&contract_tests[i], NULL, 0, 0);
+		test_contract(&contract_tests[i], NULL, 0, random_scalar());
+		test_contract(&contract_tests[i], NULL, random_scalar(), 0);
+		test_contract(&contract_tests[i], NULL, random_scalar(),
 		    random_scalar());
-		test_contract(&tests[i], path, 0, 0);
-		test_contract(&tests[i], path, 0, random_scalar());
-		test_contract(&tests[i], path, random_scalar(), 0);
-		test_contract(&tests[i], path, random_scalar(),
+		test_contract(&contract_tests[i], path, 0, 0);
+		test_contract(&contract_tests[i], path, 0, random_scalar());
+		test_contract(&contract_tests[i], path, random_scalar(), 0);
+		test_contract(&contract_tests[i], path, random_scalar(),
 		    random_scalar());
 		printf("success\n");
 	}
