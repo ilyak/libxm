@@ -319,7 +319,7 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 		mask_i.n--;
 		lead_ii_nel = blkdims.i[lead_ii];
 	}
-	if (inc == 1) {
+	if (inc == 1) { /* use memcpy */
 		for (jj = 0; jj < block_size_j; jj++) {
 			xm_dim_zero_mask(&elidx, &mask_i);
 			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
@@ -331,6 +331,9 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 			}
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 		}
+		for (jj = 0; jj < block_size_j; jj++)
+			for (ii = 0; ii < block_size_i; ii++)
+				to[jj * stride + ii] *= scalar;
 	} else {
 		for (jj = 0; jj < block_size_j; jj++) {
 			xm_dim_zero_mask(&elidx, &mask_i);
@@ -339,7 +342,7 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 				offset = xm_dim_offset(&idx, &blkdimsp);
 				for (kk = 0; kk < lead_ii_nel; kk++) {
 					to[jj * stride + ii + kk] =
-					    from[offset];
+					    from[offset] * scalar;
 					offset += inc;
 				}
 				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
@@ -347,9 +350,6 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 		}
 	}
-	for (jj = 0; jj < block_size_j; jj++)
-		for (ii = 0; ii < block_size_i; ii++)
-			to[jj * stride + ii] *= scalar;
 }
 
 void
