@@ -297,6 +297,7 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 
 	assert(from);
 	assert(to);
+	assert(from != to);
 
 	block = tensor_get_block(tensor, blkidx);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
@@ -363,6 +364,7 @@ xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 
 	assert(from);
 	assert(to);
+	assert(from != to);
 
 	block = tensor_get_block(tensor, blkidx);
 	if (block->type != XM_BLOCK_TYPE_CANONICAL)
