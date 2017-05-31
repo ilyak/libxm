@@ -112,13 +112,16 @@ uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
 
 /* Unfold block into the matrix form. The sequences of unfolding indices are
  * specified using the masks. The from parameter should point to the raw block
- * data in memory. */
+ * data in memory. The stride must be equal to or greater than the product of
+ * mask_i block dimensions. */
 void xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
 
-/* Fold block back from the matrix form. This is the inverse of
- * xm_tensor_unfold_block. */
+/* Fold block back from the matrix form. This is the inverse of the
+ * xm_tensor_unfold_block function. On return, "to" will contain raw block data
+ * that can be directly written to the data_ptr of the block. Only canonical
+ * blocks can be folded. */
 void xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
