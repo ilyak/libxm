@@ -930,7 +930,9 @@ unfold_test_1(const char *path)
 	u = xm_tensor_clone(t, allocator_u);
 	assert(u);
 	buf1 = malloc(5 * sizeof(xm_scalar_t));
+	assert(buf1);
 	buf2 = malloc(5 * sizeof(xm_scalar_t));
+	assert(buf2);
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_1(1));
 	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
 	xm_tensor_unfold_block(t, xm_dim_1(1), xm_dim_1(0), xm_dim_zero(0),
@@ -962,6 +964,115 @@ unfold_test_1(const char *path)
 static void
 unfold_test_2(const char *path)
 {
+	xm_allocator_t *allocator_t, *allocator_u;
+	xm_block_space_t *bs;
+	xm_tensor_t *t, *u;
+	xm_scalar_t *buf1, *buf2;
+	uintptr_t ptr;
+	size_t i;
+
+	allocator_t = xm_allocator_create(path);
+	assert(allocator_t);
+	bs = xm_block_space_create(xm_dim_2(5, 10));
+	assert(bs);
+	xm_block_space_split(bs, 1, 5);
+	t = xm_tensor_create(bs, allocator_t);
+	assert(t);
+	xm_block_space_free(bs);
+	bs = NULL;
+	ptr = xm_tensor_allocate_block_data(t, xm_dim_2(0, 0));
+	xm_tensor_set_canonical_block(t, xm_dim_2(0, 0), ptr);
+	xm_tensor_set_derivative_block(t, xm_dim_2(0, 1), xm_dim_2(0, 0),
+	    xm_dim_2(1, 0), -0.3);
+	fill_random(t);
+	allocator_u = xm_allocator_create(NULL);
+	assert(allocator_u);
+	u = xm_tensor_clone(t, allocator_u);
+	assert(u);
+	buf1 = malloc(25 * sizeof(xm_scalar_t));
+	assert(buf1);
+	buf2 = malloc(25 * sizeof(xm_scalar_t));
+	assert(buf2);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 1));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 1), xm_dim_1(1), xm_dim_1(0),
+	    buf1, buf2, 5);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	for (i = 0; i < 25; i++)
+		if (!scalar_eq(-0.3*buf1[i], buf2[i])) {
+			printf("%s: comparison failed\n", __func__);
+			abort();
+		}
+
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 0), xm_dim_2(0, 1),
+	    xm_dim_zero(0), buf1, buf2, 25);
+	xm_tensor_fold_block(t, xm_dim_2(0, 0), xm_dim_2(0, 1),
+	    xm_dim_zero(0), buf2, buf1, 25);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_write(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 0), xm_dim_2(1, 0),
+	    xm_dim_zero(0), buf1, buf2, 25);
+	xm_tensor_fold_block(t, xm_dim_2(0, 0), xm_dim_2(1, 0),
+	    xm_dim_zero(0), buf2, buf1, 25);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_write(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 0), xm_dim_1(0),
+	    xm_dim_1(1), buf1, buf2, 5);
+	xm_tensor_fold_block(t, xm_dim_2(0, 0), xm_dim_1(0),
+	    xm_dim_1(1), buf2, buf1, 5);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_write(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 0), xm_dim_1(1),
+	    xm_dim_1(0), buf1, buf2, 5);
+	xm_tensor_fold_block(t, xm_dim_2(0, 0), xm_dim_1(1),
+	    xm_dim_1(0), buf2, buf1, 5);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_write(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 0), xm_dim_zero(0),
+	    xm_dim_2(0, 1), buf1, buf2, 1);
+	xm_tensor_fold_block(t, xm_dim_2(0, 0), xm_dim_zero(0),
+	    xm_dim_2(0, 1), buf2, buf1, 1);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_write(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_2(0, 0), xm_dim_zero(0),
+	    xm_dim_2(1, 0), buf1, buf2, 1);
+	xm_tensor_fold_block(t, xm_dim_2(0, 0), xm_dim_zero(0),
+	    xm_dim_2(1, 0), buf2, buf1, 1);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
+	xm_allocator_write(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+
+	free(buf1);
+	free(buf2);
+	xm_tensor_free_block_data(t);
+	xm_tensor_free_block_data(u);
+	xm_tensor_free(t);
+	xm_tensor_free(u);
+	xm_allocator_destroy(allocator_t);
+	xm_allocator_destroy(allocator_u);
 }
 
 static unfold_test_fn unfold_tests[] = {
