@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef void (*unfold_test_fn)(const char *);
 typedef void (*make_abc_fn)(xm_allocator_t *, xm_tensor_t **, xm_tensor_t **,
     xm_tensor_t **);
 
@@ -85,6 +86,27 @@ fill_random(xm_tensor_t *t)
 		xm_dim_inc(&idx, &nblocks);
 	}
 	free(data);
+}
+
+static void
+compare_tensors(xm_tensor_t *t, xm_tensor_t *u)
+{
+	xm_dim_t idx, dimst, dimsu;
+
+	dimst = xm_tensor_get_abs_dims(t);
+	dimsu = xm_tensor_get_abs_dims(u);
+	assert(xm_dim_eq(&dimst, &dimsu));
+
+	idx = xm_dim_zero(dimst.n);
+	while (xm_dim_ne(&idx, &dimst)) {
+		xm_scalar_t et = xm_tensor_get_element(t, idx);
+		xm_scalar_t eu = xm_tensor_get_element(u, idx);
+		if (!scalar_eq(et, eu)) {
+			printf("%s: et != eu\n", __func__);
+			abort();
+		}
+		xm_dim_inc(&idx, &dimst);
+	}
 }
 
 static void
@@ -878,12 +900,88 @@ static struct contract_test contract_tests[] = {
 	{ make_abc_11, "abcd", "ijcd", "ijab" },
 };
 
+static void
+unfold_test_1(const char *path)
+{
+	xm_allocator_t *allocator_t, *allocator_u;
+	xm_block_space_t *bs;
+	xm_tensor_t *t, *u;
+	xm_scalar_t *buf1, *buf2;
+	uintptr_t ptr;
+	size_t i;
+
+	allocator_t = xm_allocator_create(path);
+	assert(allocator_t);
+	bs = xm_block_space_create(xm_dim_1(15));
+	assert(bs);
+	xm_block_space_split(bs, 0, 5);
+	xm_block_space_split(bs, 0, 10);
+	t = xm_tensor_create(bs, allocator_t);
+	assert(t);
+	xm_block_space_free(bs);
+	bs = NULL;
+	ptr = xm_tensor_allocate_block_data(t, xm_dim_1(0));
+	xm_tensor_set_canonical_block(t, xm_dim_1(0), ptr);
+	xm_tensor_set_derivative_block(t, xm_dim_1(1), xm_dim_1(0),
+	    xm_dim_identity_permutation(1), 0.5);
+	fill_random(t);
+	allocator_u = xm_allocator_create(NULL);
+	assert(allocator_u);
+	u = xm_tensor_clone(t, allocator_u);
+	assert(u);
+	buf1 = malloc(5 * sizeof(xm_scalar_t));
+	buf2 = malloc(5 * sizeof(xm_scalar_t));
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_1(1));
+	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
+	xm_tensor_unfold_block(t, xm_dim_1(1), xm_dim_1(0), xm_dim_zero(0),
+	    buf1, buf2, 5);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_1(0));
+	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
+	for (i = 0; i < 5; i++)
+		if (!scalar_eq(0.5*buf1[i], buf2[i])) {
+			printf("%s: comparison failed\n", __func__);
+			abort();
+		}
+	xm_tensor_unfold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
+	    buf1, buf2, 5);
+	xm_tensor_fold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
+	    buf2, buf1, 5);
+	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_1(0));
+	xm_allocator_write(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
+	compare_tensors(t, u);
+	free(buf1);
+	free(buf2);
+	xm_tensor_free_block_data(t);
+	xm_tensor_free_block_data(u);
+	xm_tensor_free(t);
+	xm_tensor_free(u);
+	xm_allocator_destroy(allocator_t);
+	xm_allocator_destroy(allocator_u);
+}
+
+static void
+unfold_test_2(const char *path)
+{
+}
+
+static unfold_test_fn unfold_tests[] = {
+	unfold_test_1,
+	unfold_test_2,
+};
+
 int
 main(void)
 {
 	const char *path = "xmpagefile";
 	size_t i;
 
+	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {
+		printf("unfold test %zu... ", i+1);
+		fflush(stdout);
+		unfold_tests[i](NULL);
+		unfold_tests[i](path);
+		printf("success\n");
+	}
 	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
 		printf("xm_contract test %2zu... ", i+1);
 		fflush(stdout);
