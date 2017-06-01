@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +31,17 @@ struct contract_test {
 	make_abc_fn make_abc;
 	const char *idxa, *idxb, *idxc;
 };
+
+static void
+fatal(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+	abort();
+}
 
 static int
 scalar_eq(xm_scalar_t a, xm_scalar_t b)
@@ -101,10 +113,8 @@ compare_tensors(xm_tensor_t *t, xm_tensor_t *u)
 	while (xm_dim_ne(&idx, &dimst)) {
 		xm_scalar_t et = xm_tensor_get_element(t, idx);
 		xm_scalar_t eu = xm_tensor_get_element(u, idx);
-		if (!scalar_eq(et, eu)) {
-			printf("%s: et != eu\n", __func__);
-			abort();
-		}
+		if (!scalar_eq(et, eu))
+			fatal("%s: et != eu\n", __func__);
 		xm_dim_inc(&idx, &dimst);
 	}
 }
@@ -158,10 +168,8 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 			xm_dim_inc_mask(&ib, &absdimsb, &cidxb);
 		}
 		ecc = xm_tensor_get_element(cc, ic);
-		if (!scalar_eq(ecc, ref)) {
-			printf("result != ref\n");
-			abort();
-		}
+		if (!scalar_eq(ecc, ref))
+			fatal("%s: result != ref\n", __func__);
 		xm_dim_inc(&ic, &absdimsc);
 	}
 }
@@ -245,7 +253,7 @@ make_abc_2(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	     xm_dim_ne(&idx, &nblocks);
 	     xm_dim_inc(&idx, &nblocks)) {
 		if (xm_tensor_get_block_type(a, idx) != XM_BLOCK_TYPE_ZERO)
-			abort();
+			fatal("%s: unexpected block type\n", __func__);
 		ptr = xm_tensor_allocate_block_data(a, idx);
 		xm_tensor_set_canonical_block(a, idx, ptr);
 		ptr = xm_tensor_allocate_block_data(b, idx);
@@ -452,7 +460,7 @@ make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 					  xm_dim_3(2, 1, 0) };
 			if (xm_dim_eq(&idx, &tt[0]) ||
 			    xm_dim_eq(&idx, &tt[1]))
-				abort();
+				fatal("%s: unexpected block type\n", __func__);
 			ptr = xm_tensor_allocate_block_data(a, idx);
 			xm_tensor_set_canonical_block(a, idx, ptr);
 		}
@@ -940,10 +948,8 @@ unfold_test_1(const char *path)
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_1(0));
 	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
 	for (i = 0; i < 5; i++)
-		if (!scalar_eq(0.5*buf1[i], buf2[i])) {
-			printf("%s: comparison failed\n", __func__);
-			abort();
-		}
+		if (!scalar_eq(0.5*buf1[i], buf2[i]))
+			fatal("%s: comparison failed\n", __func__);
 	xm_tensor_unfold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
 	    buf1, buf2, 5);
 	xm_tensor_fold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
@@ -1000,10 +1006,8 @@ unfold_test_2(const char *path)
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
 	for (i = 0; i < 25; i++)
-		if (!scalar_eq(-0.3*buf1[i], buf2[i])) {
-			printf("%s: comparison failed\n", __func__);
-			abort();
-		}
+		if (!scalar_eq(-0.3*buf1[i], buf2[i]))
+			fatal("%s: comparison failed\n", __func__);
 
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
