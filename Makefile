@@ -68,6 +68,6 @@ dist:
 
 clean:
 	rm -f $(XM_A) $(XM_O) $(EXAMPLE) $(EXAMPLE_O) $(TEST) $(TEST_O)
-	rm -f *.core xmpagefile xmpagefile.* libxm.tgz
+	rm -f *.core xmpagefile libxm.tgz
 
 .PHONY: all check clean dist
