@@ -40,6 +40,7 @@ fatal(const char *fmt, ...)
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
+	fprintf(stderr, "\n");
 	abort();
 }
 
@@ -114,7 +115,7 @@ compare_tensors(xm_tensor_t *t, xm_tensor_t *u)
 		xm_scalar_t et = xm_tensor_get_element(t, idx);
 		xm_scalar_t eu = xm_tensor_get_element(u, idx);
 		if (!scalar_eq(et, eu))
-			fatal("%s: et != eu\n", __func__);
+			fatal("%s: tensors do not match", __func__);
 		xm_dim_inc(&idx, &dimst);
 	}
 }
@@ -169,7 +170,7 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 		}
 		ecc = xm_tensor_get_element(cc, ic);
 		if (!scalar_eq(ecc, ref))
-			fatal("%s: result != ref\n", __func__);
+			fatal("%s: result != ref", __func__);
 		xm_dim_inc(&ic, &absdimsc);
 	}
 }
@@ -253,7 +254,7 @@ make_abc_2(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	     xm_dim_ne(&idx, &nblocks);
 	     xm_dim_inc(&idx, &nblocks)) {
 		if (xm_tensor_get_block_type(a, idx) != XM_BLOCK_TYPE_ZERO)
-			fatal("%s: unexpected block type\n", __func__);
+			fatal("%s: unexpected block type", __func__);
 		ptr = xm_tensor_allocate_block_data(a, idx);
 		xm_tensor_set_canonical_block(a, idx, ptr);
 		ptr = xm_tensor_allocate_block_data(b, idx);
@@ -460,7 +461,7 @@ make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 					  xm_dim_3(2, 1, 0) };
 			if (xm_dim_eq(&idx, &tt[0]) ||
 			    xm_dim_eq(&idx, &tt[1]))
-				fatal("%s: unexpected block type\n", __func__);
+				fatal("%s: unexpected block type", __func__);
 			ptr = xm_tensor_allocate_block_data(a, idx);
 			xm_tensor_set_canonical_block(a, idx, ptr);
 		}
@@ -949,7 +950,7 @@ unfold_test_1(const char *path)
 	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
 	for (i = 0; i < 5; i++)
 		if (!scalar_eq(0.5*buf1[i], buf2[i]))
-			fatal("%s: comparison failed\n", __func__);
+			fatal("%s: comparison failed", __func__);
 	xm_tensor_unfold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
 	    buf1, buf2, 5);
 	xm_tensor_fold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
@@ -1007,7 +1008,7 @@ unfold_test_2(const char *path)
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
 	for (i = 0; i < 25; i++)
 		if (!scalar_eq(-0.3*buf1[i], buf2[i]))
-			fatal("%s: comparison failed\n", __func__);
+			fatal("%s: comparison failed", __func__);
 
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
