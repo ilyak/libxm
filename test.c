@@ -1212,11 +1212,62 @@ static unfold_test_fn unfold_tests[] = {
 	unfold_test_3,
 };
 
+static void
+test_dim(void)
+{
+	xm_dim_t idx1, idx2, dim;
+	size_t i, offset;
+
+	dim = xm_dim_4(5, 6, 3, 1);
+	idx1 = xm_dim_zero(dim.n);
+	while (xm_dim_ne(&idx1, &dim)) {
+		offset = xm_dim_offset(&idx1, &dim);
+		idx2 = xm_dim_from_offset(offset, &dim);
+		if (xm_dim_ne(&idx1, &idx2))
+			fatal("%s: dims do not match", __func__);
+		xm_dim_inc(&idx1, &dim);
+	}
+
+	dim = xm_dim_3(1, 31, 16);
+	idx1 = xm_dim_zero(dim.n);
+	while (xm_dim_ne(&idx1, &dim)) {
+		offset = xm_dim_offset(&idx1, &dim);
+		idx2 = xm_dim_from_offset(offset, &dim);
+		if (xm_dim_ne(&idx1, &idx2))
+			fatal("%s: dims do not match", __func__);
+		xm_dim_inc(&idx1, &dim);
+	}
+
+	i = 0;
+	dim.n = 8;
+	dim.i[0] = 5;
+	dim.i[1] = 2;
+	dim.i[2] = 3;
+	dim.i[3] = 2;
+	dim.i[4] = 1;
+	dim.i[5] = 2;
+	dim.i[6] = 5;
+	dim.i[7] = 4;
+	idx1 = xm_dim_zero(dim.n);
+	while (xm_dim_ne(&idx1, &dim)) {
+		offset = xm_dim_offset(&idx1, &dim);
+		if (offset != i)
+			fatal("%s: dims are not sequential", __func__);
+		xm_dim_inc(&idx1, &dim);
+		i++;
+	}
+}
+
 int
 main(void)
 {
 	const char *path = "xmpagefile";
 	size_t i;
+
+	printf("dim test 1... ");
+	fflush(stdout);
+	test_dim();
+	printf("success\n");
 
 	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {
 		printf("unfold test %zu... ", i+1);
