@@ -152,6 +152,44 @@ xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim)
 	return (ret);
 }
 
+xm_dim_t
+xm_dim_from_offset(size_t offset, const xm_dim_t *dim)
+{
+	xm_dim_t ret;
+	size_t p;
+
+	ret.n = dim->n;
+
+	switch (ret.n) {
+	case 8: p = dim->i[6] * dim->i[5] * dim->i[4] * dim->i[3] *
+		    dim->i[2] * dim->i[1] * dim->i[0];
+		ret.i[7] = offset / p;
+		offset %= p;
+	case 7: p = dim->i[5] * dim->i[4] * dim->i[3] * dim->i[2] *
+		    dim->i[1] * dim->i[0];
+		ret.i[6] = offset / p;
+		offset %= p;
+	case 6: p = dim->i[4] * dim->i[3] * dim->i[2] * dim->i[1] *
+		    dim->i[0];
+		ret.i[5] = offset / p;
+		offset %= p;
+	case 5: p = dim->i[3] * dim->i[2] * dim->i[1] * dim->i[0];
+		ret.i[4] = offset / p;
+		offset %= p;
+	case 4: p = dim->i[2] * dim->i[1] * dim->i[0];
+		ret.i[3] = offset / p;
+		offset %= p;
+	case 3: p = dim->i[1] * dim->i[0];
+		ret.i[2] = offset / p;
+		offset %= p;
+	case 2: p = dim->i[0];
+		ret.i[1] = offset / p;
+		offset %= p;
+	case 1: ret.i[0] = offset;
+	}
+	return (ret);
+}
+
 void
 xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim)
 {

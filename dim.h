@@ -64,6 +64,9 @@ size_t xm_dim_dot(const xm_dim_t *dim);
 /* Return absolute offset of an index in a dim. */
 size_t xm_dim_offset(const xm_dim_t *idx, const xm_dim_t *dim);
 
+/* Compute an index from an offset in the specified dim. */
+xm_dim_t xm_dim_from_offset(size_t offset, const xm_dim_t *dim);
+
 /* Increment an index by one wrapping on dimensions. Can be used to iterate
  * over all elements of a dim. */
 void xm_dim_inc(xm_dim_t *idx, const xm_dim_t *dim);
