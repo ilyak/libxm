@@ -49,6 +49,22 @@ xm_dim_t xm_dim_3(size_t dim1, size_t dim2, size_t dim3);
 /* Initialize a 4-D dim. */
 xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
 
+/* Initialize a 5-D dim. */
+xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5);
+
+/* Initialize a 6-D dim. */
+xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6);
+
+/* Initialize a 7-D dim. */
+xm_dim_t xm_dim_7(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6, size_t dim7);
+
+/* Initialize a 8-D dim. */
+xm_dim_t xm_dim_8(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6, size_t dim7, size_t dim8);
+
 /* Return non-zero if two dims are equal. */
 int xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b);
 

@@ -1240,15 +1240,7 @@ test_dim(void)
 	}
 
 	i = 0;
-	dim.n = 8;
-	dim.i[0] = 5;
-	dim.i[1] = 2;
-	dim.i[2] = 3;
-	dim.i[3] = 2;
-	dim.i[4] = 1;
-	dim.i[5] = 2;
-	dim.i[6] = 5;
-	dim.i[7] = 4;
+	dim = xm_dim_8(5, 2, 3, 2, 1, 2, 5, 4);
 	idx1 = xm_dim_zero(dim.n);
 	while (xm_dim_ne(&idx1, &dim)) {
 		offset = xm_dim_offset(&idx1, &dim);

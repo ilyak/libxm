@@ -86,6 +86,76 @@ xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4)
 	return (dim);
 }
 
+xm_dim_t
+xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5)
+{
+	xm_dim_t dim;
+
+	dim.n = 5;
+	dim.i[0] = dim1;
+	dim.i[1] = dim2;
+	dim.i[2] = dim3;
+	dim.i[3] = dim4;
+	dim.i[4] = dim5;
+
+	return (dim);
+}
+
+xm_dim_t
+xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6)
+{
+	xm_dim_t dim;
+
+	dim.n = 6;
+	dim.i[0] = dim1;
+	dim.i[1] = dim2;
+	dim.i[2] = dim3;
+	dim.i[3] = dim4;
+	dim.i[4] = dim5;
+	dim.i[5] = dim6;
+
+	return (dim);
+}
+
+xm_dim_t
+xm_dim_7(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6, size_t dim7)
+{
+	xm_dim_t dim;
+
+	dim.n = 7;
+	dim.i[0] = dim1;
+	dim.i[1] = dim2;
+	dim.i[2] = dim3;
+	dim.i[3] = dim4;
+	dim.i[4] = dim5;
+	dim.i[5] = dim6;
+	dim.i[6] = dim7;
+
+	return (dim);
+}
+
+xm_dim_t
+xm_dim_8(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
+    size_t dim5, size_t dim6, size_t dim7, size_t dim8)
+{
+	xm_dim_t dim;
+
+	dim.n = 8;
+	dim.i[0] = dim1;
+	dim.i[1] = dim2;
+	dim.i[2] = dim3;
+	dim.i[3] = dim4;
+	dim.i[4] = dim5;
+	dim.i[5] = dim6;
+	dim.i[6] = dim7;
+	dim.i[7] = dim8;
+
+	return (dim);
+}
+
 int
 xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b)
 {
