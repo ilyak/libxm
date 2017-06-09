@@ -261,3 +261,11 @@ xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 }
 	free(canblks);
 }
+
+void
+xm_print_banner(void)
+{
+	printf("libxm (c) 2014-2017 Ilya Kaliman\n");
+	printf("Efficient operations on block tensors\n");
+	printf("https://github.com/ilyak/libxm\n");
+}

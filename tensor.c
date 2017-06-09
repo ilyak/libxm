@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "xm.h"
+#include "tensor.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -52,14 +52,6 @@ tensor_get_block(const xm_tensor_t *tensor, xm_dim_t blkidx)
 	offset = xm_dim_offset(&blkidx, &nblocks);
 
 	return (&tensor->blocks[offset]);
-}
-
-void
-xm_print_banner(void)
-{
-	printf("libxm (c) 2014-2017 Ilya Kaliman\n");
-	printf("Efficient operations on block tensors\n");
-	printf("https://github.com/ilyak/libxm\n");
 }
 
 xm_tensor_t *
