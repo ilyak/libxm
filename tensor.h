@@ -107,6 +107,14 @@ uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
 uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
+/* Return tensor block permutation. */
+xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
+
+/* Return tensor block scalar factor. */
+xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
+
 /* Unfold block into the matrix form. The sequences of unfolding indices are
  * specified using the masks. The from parameter should point to the raw block
  * data in memory. The stride must be equal to or greater than the product of

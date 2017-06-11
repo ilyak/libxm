@@ -55,10 +55,11 @@ Compiler and flags can be adjusted by modifying the Makefile.
 - alloc.c/alloc.h - disk-backed allocator for large tensors
 - blockspace.c/blockspace.h - operations on block-spaces
 - dim.c/dim.h - operations on multidimensional indices
+- tensor.c/tensor.h - block-tensor types
 - test.c - testing facilities
 
 ### Libxm users
 
-- libxm is integrated with [Q-Chem](http://www.q-chem.com) quantum chemistry
-  package to accelerate large electronic structure calculations
+- libxm is integrated with the [Q-Chem](http://www.q-chem.com) quantum
+  chemistry package to accelerate large electronic structure calculations
 - libxm is used as a backend in C++ tensor library libtensor

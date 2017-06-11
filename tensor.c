@@ -277,6 +277,18 @@ xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor, xm_dim_t blkidx)
 	return XM_NULL_PTR;
 }
 
+xm_dim_t
+xm_tensor_get_block_permutation(const xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	return tensor_get_block(tensor, blkidx)->permutation;
+}
+
+xm_scalar_t
+xm_tensor_get_block_scalar(const xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	return tensor_get_block(tensor, blkidx)->scalar;
+}
+
 void
 xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
     xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to, size_t stride)
