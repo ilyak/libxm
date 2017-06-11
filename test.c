@@ -597,19 +597,19 @@ make_abc_9(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 
 		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
 		perm = xm_dim_4(1, 0, 2, 3);
-		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+		if (xm_tensor_get_block_type(a, idx2) == XM_BLOCK_TYPE_ZERO) {
 			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
 			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
 		}
 		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
 		perm = xm_dim_4(0, 1, 3, 2);
-		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+		if (xm_tensor_get_block_type(a, idx2) == XM_BLOCK_TYPE_ZERO) {
 			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
 			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
 		}
 		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
 		perm = xm_dim_4(1, 0, 3, 2);
-		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+		if (xm_tensor_get_block_type(a, idx2) == XM_BLOCK_TYPE_ZERO) {
 			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
 			xm_tensor_set_derivative_block(c, idx2, idx, perm, 1);
 		}
@@ -636,27 +636,31 @@ make_abc_9(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 
 		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
 		perm = xm_dim_4(1, 0, 2, 3);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
 		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
 		perm = xm_dim_4(0, 1, 3, 2);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(1, 0, 3, 2);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
 		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[0], idx.i[1]);
 		perm = xm_dim_4(2, 3, 0, 1);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
 		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[0], idx.i[1]);
 		perm = xm_dim_4(3, 2, 0, 1);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
 		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[1], idx.i[0]);
 		perm = xm_dim_4(2, 3, 1, 0);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
 		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[1], idx.i[0]);
 		perm = xm_dim_4(3, 2, 1, 0);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
 	}
 	*aa = a;
@@ -699,19 +703,19 @@ make_abc_10(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 
 		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
 		perm = xm_dim_4(1, 0, 2, 3);
-		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+		if (xm_tensor_get_block_type(a, idx2) == XM_BLOCK_TYPE_ZERO) {
 			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
 			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
 		}
 		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
 		perm = xm_dim_4(0, 1, 3, 2);
-		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+		if (xm_tensor_get_block_type(a, idx2) == XM_BLOCK_TYPE_ZERO) {
 			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
 			xm_tensor_set_derivative_block(c, idx2, idx, perm, -1);
 		}
 		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
 		perm = xm_dim_4(1, 0, 3, 2);
-		if (xm_tensor_get_block_type(a, idx) == XM_BLOCK_TYPE_ZERO) {
+		if (xm_tensor_get_block_type(a, idx2) == XM_BLOCK_TYPE_ZERO) {
 			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
 			xm_tensor_set_derivative_block(c, idx2, idx, perm, 1);
 		}
@@ -740,27 +744,31 @@ make_abc_10(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 
 		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
 		perm = xm_dim_4(1, 0, 2, 3);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
 		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
 		perm = xm_dim_4(0, 1, 3, 2);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(1, 0, 3, 2);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
 		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[0], idx.i[1]);
 		perm = xm_dim_4(2, 3, 0, 1);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
 		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[0], idx.i[1]);
 		perm = xm_dim_4(3, 2, 0, 1);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
 		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[1], idx.i[0]);
 		perm = xm_dim_4(2, 3, 1, 0);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
 		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[1], idx.i[0]);
 		perm = xm_dim_4(3, 2, 1, 0);
-		if (xm_tensor_get_block_type(b, idx) == XM_BLOCK_TYPE_ZERO)
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO)
 			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
 	}
 	*aa = b; /* swap */
