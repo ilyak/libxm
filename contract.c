@@ -89,11 +89,16 @@ get_canonical_block_list(xm_tensor_t *tensor, size_t *ncanblksout)
 	return canblks;
 }
 
+struct blockpair {
+	xm_dim_t blkidxa, blkidxb;
+	xm_scalar_t alpha;
+};
+
 static void
 compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, xm_dim_t cidxa, xm_dim_t aidxa,
     xm_dim_t cidxb, xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc,
-    xm_dim_t blkidxc, xm_scalar_t *buf)
+    xm_dim_t blkidxc, struct blockpair *pairs, xm_scalar_t *buf)
 {
 	xm_allocator_t *alloca = xm_tensor_get_allocator(a);
 	xm_allocator_t *allocb = xm_tensor_get_allocator(b);
@@ -106,7 +111,7 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	size_t maxblocksizec = xm_block_space_get_largest_block_size(bsc);
 	xm_dim_t dims, blkidxa, blkidxb, nblocksa, nblocksb;
 	xm_scalar_t *bufa1, *bufa2, *bufb1, *bufb2, *bufc1, *bufc2;
-	size_t ii, jj, m, n, k, nblk_k, size;
+	size_t i, j, m, n, k, nblkk, size;
 	uintptr_t data_ptr;
 
 	bufa1 = buf;
@@ -116,51 +121,84 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	bufc1 = bufb2 + maxblocksizeb;
 	bufc2 = bufc1 + maxblocksizec;
 
-	blkidxa = xm_dim_zero(xm_block_space_get_ndims(bsa));
-	blkidxb = xm_dim_zero(xm_block_space_get_ndims(bsb));
-	xm_dim_set_mask(&blkidxa, &aidxa, &blkidxc, &cidxc);
-	xm_dim_set_mask(&blkidxb, &aidxb, &blkidxc, &aidxc);
 	nblocksa = xm_tensor_get_nblocks(a);
 	nblocksb = xm_tensor_get_nblocks(b);
-	nblk_k = xm_dim_dot_mask(&nblocksa, &cidxa);
+	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
 
 	dims = xm_tensor_get_block_dims(c, blkidxc);
 	m = xm_dim_dot_mask(&dims, &cidxc);
 	n = xm_dim_dot_mask(&dims, &aidxc);
-	size = xm_dim_dot(&dims);
+	size = xm_tensor_get_block_size(c, blkidxc);
 	data_ptr = xm_tensor_get_block_data_ptr(c, blkidxc);
 	xm_allocator_read(allocc, data_ptr, bufc2, size * sizeof(xm_scalar_t));
 	if (aidxc.n > 0 && aidxc.i[0] == 0) {
 		xm_tensor_unfold_block(c, blkidxc, aidxc, cidxc,
 		    bufc2, bufc1, n);
-		for (jj = 0; jj < m; jj++)
-			for (ii = 0; ii < n; ii++)
-				bufc1[jj * n + ii] *= beta;
 	} else {
 		xm_tensor_unfold_block(c, blkidxc, cidxc, aidxc,
 		    bufc2, bufc1, m);
-		for (jj = 0; jj < n; jj++)
-			for (ii = 0; ii < m; ii++)
-				bufc1[jj * m + ii] *= beta;
 	}
+	for (i = 0; i < size; i++)
+		bufc1[i] *= beta;
 	if (alpha == 0.0)
 		goto done;
-	for (ii = 0; ii < nblk_k; ii++) {
+	blkidxa = xm_dim_zero(xm_block_space_get_ndims(bsa));
+	blkidxb = xm_dim_zero(xm_block_space_get_ndims(bsb));
+	xm_dim_set_mask(&blkidxa, &aidxa, &blkidxc, &cidxc);
+	xm_dim_set_mask(&blkidxb, &aidxb, &blkidxc, &aidxc);
+	for (i = 0; i < nblkk; i++) {
 		int blktypea = xm_tensor_get_block_type(a, blkidxa);
 		int blktypeb = xm_tensor_get_block_type(b, blkidxb);
-		if (blktypea != XM_BLOCK_TYPE_ZERO &&
-		    blktypeb != XM_BLOCK_TYPE_ZERO) {
+		pairs[i].alpha = blktypea == XM_BLOCK_TYPE_ZERO ||
+				 blktypeb == XM_BLOCK_TYPE_ZERO ? 0.0 : 1.0;
+		pairs[i].blkidxa = blkidxa;
+		pairs[i].blkidxb = blkidxb;
+		xm_dim_inc_mask(&blkidxa, &nblocksa, &cidxa);
+		xm_dim_inc_mask(&blkidxb, &nblocksb, &cidxb);
+	}
+	for (i = 0; i < nblkk; i++) {
+		if (pairs[i].alpha == 0.0)
+			continue;
+		for (j = i+1; j < nblkk; j++) {
+			xm_dim_t dia, dja, dib, djb, pia, pja, pib, pjb;
+			if (pairs[j].alpha == 0.0)
+				continue;
+			dia = pairs[i].blkidxa;
+			dja = pairs[j].blkidxa;
+			dib = pairs[i].blkidxb;
+			djb = pairs[j].blkidxb;
+			if (xm_tensor_get_block_data_ptr(a, dia) !=
+			    xm_tensor_get_block_data_ptr(a, dja) ||
+			    xm_tensor_get_block_data_ptr(b, dib) !=
+			    xm_tensor_get_block_data_ptr(b, djb))
+				continue;
+			pia = xm_tensor_get_block_permutation(a, dia);
+			pja = xm_tensor_get_block_permutation(a, dja);
+			pib = xm_tensor_get_block_permutation(b, dib);
+			pjb = xm_tensor_get_block_permutation(b, djb);
+			if (xm_dim_ne(&pia, &pib) || xm_dim_ne(&pja, &pjb))
+				continue;
+			pairs[i].alpha += pairs[j].alpha *
+			    xm_tensor_get_block_scalar(a, dja) *
+			    xm_tensor_get_block_scalar(b, djb);
+			pairs[j].alpha = 0.0;
+		}
+	}
+	for (i = 0; i < nblkk; i++) {
+		if (pairs[i].alpha != 0.0) {
+			blkidxa = pairs[i].blkidxa;
+			blkidxb = pairs[i].blkidxb;
 			dims = xm_tensor_get_block_dims(a, blkidxa);
 			k = xm_dim_dot_mask(&dims, &cidxa);
-			size = xm_dim_dot(&dims);
+
+			size = xm_tensor_get_block_size(a, blkidxa);
 			data_ptr = xm_tensor_get_block_data_ptr(a, blkidxa);
 			xm_allocator_read(alloca, data_ptr, bufa1,
 			    size * sizeof(xm_scalar_t));
 			xm_tensor_unfold_block(a, blkidxa, cidxa,
 			    aidxa, bufa1, bufa2, k);
 
-			dims = xm_tensor_get_block_dims(b, blkidxb);
-			size = xm_dim_dot(&dims);
+			size = xm_tensor_get_block_size(b, blkidxb);
 			data_ptr = xm_tensor_get_block_data_ptr(b, blkidxb);
 			xm_allocator_read(allocb, data_ptr, bufb1,
 			    size * sizeof(xm_scalar_t));
@@ -169,16 +207,14 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 
 			if (aidxc.n > 0 && aidxc.i[0] == 0) {
 				xm_dgemm('T', 'N', (int)n, (int)m, (int)k,
-				    alpha, bufb2, (int)k, bufa2, (int)k, 1.0,
-				    bufc1, (int)n);
+				    alpha*pairs[i].alpha, bufb2, (int)k, bufa2,
+				    (int)k, 1.0, bufc1, (int)n);
 			} else {
 				xm_dgemm('T', 'N', (int)m, (int)n, (int)k,
-				    alpha, bufa2, (int)k, bufb2, (int)k, 1.0,
-				    bufc1, (int)m);
+				    alpha*pairs[i].alpha, bufa2, (int)k, bufb2,
+				    (int)k, 1.0, bufc1, (int)m);
 			}
 		}
-		xm_dim_inc_mask(&blkidxa, &nblocksa, &cidxa);
-		xm_dim_inc_mask(&blkidxb, &nblocksb, &cidxb);
 	}
 done:
 	if (aidxc.n > 0 && aidxc.i[0] == 0) {
@@ -188,8 +224,7 @@ done:
 		xm_tensor_fold_block(c, blkidxc, cidxc, aidxc,
 		    bufc1, bufc2, m);
 	}
-	dims = xm_tensor_get_block_dims(c, blkidxc);
-	size = xm_dim_dot(&dims);
+	size = xm_tensor_get_block_size(c, blkidxc);
 	data_ptr = xm_tensor_get_block_data_ptr(c, blkidxc);
 	xm_allocator_write(allocc, data_ptr, bufc2, size * sizeof(xm_scalar_t));
 }
@@ -200,8 +235,8 @@ xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
     const char *idxc)
 {
 	const xm_block_space_t *bsa, *bsb, *bsc;
-	xm_dim_t cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *canblks;
-	size_t i, size, ncanblks, maxblocksizea, maxblocksizeb, maxblocksizec;
+	xm_dim_t nblocksa, *canblks, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
+	size_t i, bufsize, ncanblks, nblkk;
 
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
@@ -238,26 +273,33 @@ xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 		if (!xm_block_space_eq1(bsc, aidxc.i[i], bsb, aidxb.i[i]))
 			fatal("inconsistent b and c tensor block spaces");
 
-	maxblocksizea = xm_block_space_get_largest_block_size(bsa);
-	maxblocksizeb = xm_block_space_get_largest_block_size(bsb);
-	maxblocksizec = xm_block_space_get_largest_block_size(bsc);
+	nblocksa = xm_tensor_get_nblocks(a);
+	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
+	bufsize = 0;
+	bufsize += 2 * xm_block_space_get_largest_block_size(bsa);
+	bufsize += 2 * xm_block_space_get_largest_block_size(bsb);
+	bufsize += 2 * xm_block_space_get_largest_block_size(bsc);
 	canblks = get_canonical_block_list(c, &ncanblks);
-	size = 2 * (maxblocksizea + maxblocksizeb + maxblocksizec);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
 {
-	xm_scalar_t *buf = malloc(size * sizeof(xm_scalar_t));
-	if (buf == NULL)
+	struct blockpair *pairs;
+	xm_scalar_t *buf;
+
+	if ((pairs = malloc(nblkk * sizeof *pairs)) == NULL)
+		fatal("out of memory");
+	if ((buf = malloc(bufsize * sizeof *buf)) == NULL)
 		fatal("out of memory");
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < ncanblks; i++) {
 		compute_block(alpha, a, b, beta, c, cidxa, aidxa, cidxb,
-		    aidxb, cidxc, aidxc, canblks[i], buf);
+		    aidxb, cidxc, aidxc, canblks[i], pairs, buf);
 	}
 	free(buf);
+	free(pairs);
 }
 	free(canblks);
 }
