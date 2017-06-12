@@ -200,6 +200,31 @@ xm_tensor_get_block_size(const xm_tensor_t *tensor, xm_dim_t blkidx)
 	return xm_block_space_get_block_size(tensor->bs, blkidx);
 }
 
+uintptr_t
+xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	struct xm_block *block;
+
+	block = tensor_get_block(tensor, blkidx);
+	if (block->type == XM_BLOCK_TYPE_CANONICAL)
+		return block->data_ptr;
+	if (block->type == XM_BLOCK_TYPE_DERIVATIVE)
+		return tensor->blocks[block->data_ptr].data_ptr;
+	return XM_NULL_PTR;
+}
+
+xm_dim_t
+xm_tensor_get_block_permutation(const xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	return tensor_get_block(tensor, blkidx)->permutation;
+}
+
+xm_scalar_t
+xm_tensor_get_block_scalar(const xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	return tensor_get_block(tensor, blkidx)->scalar;
+}
+
 void
 xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 {
@@ -250,43 +275,6 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 	block->permutation = permutation;
 	block->scalar = scalar;
 	block->data_ptr = (uintptr_t)xm_dim_offset(&source_blkidx, &nblocks);
-}
-
-uintptr_t
-xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx)
-{
-	xm_dim_t blkdims;
-	size_t size;
-
-	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
-	size = xm_dim_dot(&blkdims) * sizeof(xm_scalar_t);
-
-	return xm_allocator_allocate(tensor->allocator, size);
-}
-
-uintptr_t
-xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor, xm_dim_t blkidx)
-{
-	struct xm_block *block;
-
-	block = tensor_get_block(tensor, blkidx);
-	if (block->type == XM_BLOCK_TYPE_CANONICAL)
-		return block->data_ptr;
-	if (block->type == XM_BLOCK_TYPE_DERIVATIVE)
-		return tensor->blocks[block->data_ptr].data_ptr;
-	return XM_NULL_PTR;
-}
-
-xm_dim_t
-xm_tensor_get_block_permutation(const xm_tensor_t *tensor, xm_dim_t blkidx)
-{
-	return tensor_get_block(tensor, blkidx)->permutation;
-}
-
-xm_scalar_t
-xm_tensor_get_block_scalar(const xm_tensor_t *tensor, xm_dim_t blkidx)
-{
-	return tensor_get_block(tensor, blkidx)->scalar;
 }
 
 void
@@ -417,6 +405,18 @@ xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 		}
 	}
+}
+
+uintptr_t
+xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	xm_dim_t blkdims;
+	size_t size;
+
+	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
+	size = xm_dim_dot(&blkdims) * sizeof(xm_scalar_t);
+
+	return xm_allocator_allocate(tensor->allocator, size);
 }
 
 void

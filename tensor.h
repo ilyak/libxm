@@ -48,15 +48,15 @@ typedef struct xm_tensor xm_tensor_t;
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
-/* Clone a tensor using a given allocator. If allocator argument is NULL, use
- * one from tensor. */
+/* Clone a tensor and all its block-data using given allocator. If allocator
+ * argument is NULL, use the same allocator as the tensor being cloned. */
 xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
     xm_allocator_t *allocator);
 
-/* Return a block-space associated with this tensor. */
+/* Return block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 
-/* Return an allocator associated with this tensor. */
+/* Return allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
 
 /* Return absolute tensor dimensions in total number of elements. */
@@ -75,14 +75,26 @@ int xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx);
 /* Return dimensions of a specific block. */
 xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/* Return size in number of elements of the specific tensor block. */
+/* Return size in number of elements of a specific tensor block. */
 size_t xm_tensor_get_block_size(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/* Setup a zero-block (all elements of a block are zeros).
- * No actual data are stored. */
+/* Return block data pointer. This returns XM_NULL_PTR for zero blocks. */
+uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
+
+/* Return permutation of a specific tensor block. */
+xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
+
+/* Return scalar factor of a specific tensor block. */
+xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
+
+/* Set tensor block as zero-block (all elements of a block are zeros).
+ * No actual data are stored for zero-blocks. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/* Setup a canonical tensor block. Canonical blocks are the only ones that
+/* Set tensor block as canonical block. Canonical blocks are the only ones that
  * store actual data.
  * Note: if blocks are allocated using a disk-backed allocator they should be
  * at least several megabytes in size for best performance (e.g., 32^4 elements
@@ -93,27 +105,11 @@ void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     uintptr_t data_ptr);
 
-/* Setup a derivative block. A derivative block is a copy of some canonical
- * block with applied permutation and multiplication by a scalar factor.
- * No actual data are stored for derivative blocks. */
+/* Set tensor block as derivative block. A derivative block is a copy of some
+ * canonical block with applied permutation and multiplication by a scalar
+ * factor. No actual data are stored for derivative blocks. */
 void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t source_blkidx, xm_dim_t permutation, xm_scalar_t scalar);
-
-/* Allocate storage sufficient to hold data for a particular block using
- * associated allocator. */
-uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
-
-/* Return block data pointer. This will return XM_NULL_PTR for zero blocks. */
-uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
-    xm_dim_t blkidx);
-
-/* Return tensor block permutation. */
-xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
-    xm_dim_t blkidx);
-
-/* Return tensor block scalar factor. */
-xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
-    xm_dim_t blkidx);
 
 /* Unfold block into the matrix form. The sequences of unfolding indices are
  * specified using the masks. The from parameter should point to the raw block
@@ -131,11 +127,15 @@ void xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
 
-/* Deallocate all block data associated with this tensor. */
+/* Allocate storage sufficient to hold data for a particular block using
+ * associated allocator. */
+uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
+
+/* Deallocate associated data for all blocks of this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);
 
 /* Release resources associated with a tensor. The actual block data are not
- * freed by this function. */
+ * freed by this function. Use xm_tensor_free_block_data to do it. */
 void xm_tensor_free(xm_tensor_t *tensor);
 
 #ifdef __cplusplus
