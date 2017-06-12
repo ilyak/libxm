@@ -149,10 +149,15 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	for (i = 0; i < nblkk; i++) {
 		int blktypea = xm_tensor_get_block_type(a, blkidxa);
 		int blktypeb = xm_tensor_get_block_type(b, blkidxb);
-		pairs[i].alpha = blktypea == XM_BLOCK_TYPE_ZERO ||
-				 blktypeb == XM_BLOCK_TYPE_ZERO ? 0.0 : 1.0;
+		pairs[i].alpha = 0.0;
 		pairs[i].blkidxa = blkidxa;
 		pairs[i].blkidxb = blkidxb;
+		if (blktypea != XM_BLOCK_TYPE_ZERO &&
+		    blktypeb != XM_BLOCK_TYPE_ZERO) {
+			xm_scalar_t sa = xm_tensor_get_block_scalar(a, blkidxa);
+			xm_scalar_t sb = xm_tensor_get_block_scalar(b, blkidxb);
+			pairs[i].alpha = sa * sb;
+		}
 		xm_dim_inc_mask(&blkidxa, &nblocksa, &cidxa);
 		xm_dim_inc_mask(&blkidxb, &nblocksb, &cidxb);
 	}
@@ -178,9 +183,7 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 			pjb = xm_tensor_get_block_permutation(b, djb);
 			if (xm_dim_ne(&pia, &pib) || xm_dim_ne(&pja, &pjb))
 				continue;
-			pairs[i].alpha += pairs[j].alpha *
-			    xm_tensor_get_block_scalar(a, dja) *
-			    xm_tensor_get_block_scalar(b, djb);
+			pairs[i].alpha += pairs[j].alpha;
 			pairs[j].alpha = 0.0;
 		}
 	}
