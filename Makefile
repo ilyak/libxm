@@ -19,18 +19,6 @@ LIBS= -lblas -lpthread -lm
 #LDFLAGS=
 #LIBS= -lpthread -lm
 
-# Clang with Netlib BLAS on FreeBSD (debug build)
-#CC= clang
-#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-gnu-imaginary-constant -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
-#LDFLAGS= -L/usr/local/lib -L/usr/local/lib/gcc48
-#LIBS= -lblas -lgfortran -lpthread -lm
-
-# GNU gcc with Netlib BLAS on Linux (debug build)
-#CC= gcc
-#CFLAGS= -D$(SCALAR_TYPE) -Wall -Wextra -g
-#LDFLAGS=
-#LIBS= -lblas -lpthread -lm
-
 # Clang with Netlib BLAS on OpenBSD (debug build)
 #CC= clang
 #CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
