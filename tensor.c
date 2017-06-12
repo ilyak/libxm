@@ -208,7 +208,7 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 	block = tensor_get_block(tensor, blkidx);
 	block->type = XM_BLOCK_TYPE_ZERO;
 	block->permutation = xm_dim_identity_permutation(blkidx.n);
-	block->scalar = 1.0;
+	block->scalar = 0.0;
 	block->data_ptr = XM_NULL_PTR;
 }
 
