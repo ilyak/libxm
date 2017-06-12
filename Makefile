@@ -15,7 +15,7 @@ LIBS= -lblas -lpthread -lm
 
 # Intel Compiler with MKL on Linux (release build)
 #CC= icc
-#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -openmp -I./compat -mkl=sequential
+#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
 #LDFLAGS=
 #LIBS= -lpthread -lm
 
@@ -27,13 +27,13 @@ LIBS= -lblas -lpthread -lm
 
 # GNU gcc with Netlib BLAS on Linux (debug build)
 #CC= gcc
-#CFLAGS= -D$(SCALAR_TYPE) -Wall -Wextra -g -I./compat
+#CFLAGS= -D$(SCALAR_TYPE) -Wall -Wextra -g
 #LDFLAGS=
 #LIBS= -lblas -lpthread -lm
 
 # Clang with Netlib BLAS on OpenBSD (debug build)
 #CC= clang
-#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-source-uses-openmp -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
+#CFLAGS= -D$(SCALAR_TYPE) -Weverything -Wno-padded -Wno-used-but-marked-unused -Wno-missing-noreturn -Wno-format-nonliteral -fcolor-diagnostics -g -DHAVE_ARC4RANDOM -DHAVE_BITSTRING_H -DHAVE_TREE_H
 #LDFLAGS= -L/usr/local/lib
 #LIBS= -lblas -lg2c -lpthread -lm
 
