@@ -285,7 +285,6 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;
 	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
 	size_t block_size_i, block_size_j;
-	xm_scalar_t scalar;
 
 	assert(from);
 	assert(to);
@@ -299,7 +298,6 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 	permutation = block->permutation;
 	blkdimsp = xm_dim_permute(&blkdims, &permutation);
 	elidx = xm_dim_zero(blkdims.n);
-	scalar = block->scalar;
 
 	inc = 1;
 	lead_ii_nel = 1;
@@ -325,9 +323,6 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 			}
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 		}
-		for (jj = 0; jj < block_size_j; jj++)
-			for (ii = 0; ii < block_size_i; ii++)
-				to[jj * stride + ii] *= scalar;
 	} else {
 		for (jj = 0; jj < block_size_j; jj++) {
 			xm_dim_zero_mask(&elidx, &mask_i);
@@ -336,7 +331,7 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 				offset = xm_dim_offset(&idx, &blkdimsp);
 				for (kk = 0; kk < lead_ii_nel; kk++) {
 					to[jj * stride + ii + kk] =
-					    from[offset] * scalar;
+					    from[offset];
 					offset += inc;
 				}
 				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);

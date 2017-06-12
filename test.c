@@ -957,7 +957,7 @@ unfold_test_1(const char *path)
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_1(0));
 	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
 	for (i = 0; i < 5; i++)
-		if (!scalar_eq(0.5*buf1[i], buf2[i]))
+		if (!scalar_eq(buf1[i], buf2[i]))
 			fatal("%s: comparison failed", __func__);
 	xm_tensor_unfold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
 	    buf1, buf2, 5);
@@ -1015,7 +1015,7 @@ unfold_test_2(const char *path)
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
 	for (i = 0; i < 25; i++)
-		if (!scalar_eq(-0.3*buf1[i], buf2[i]))
+		if (!scalar_eq(buf1[i], buf2[i]))
 			fatal("%s: comparison failed", __func__);
 
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
