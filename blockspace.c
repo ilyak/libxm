@@ -112,6 +112,15 @@ xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x)
 	bs->nblocks.i[dim]++;
 }
 
+size_t
+xm_block_space_get_split(xm_block_space_t *bs, size_t dim, size_t i)
+{
+	assert(dim < bs->nblocks.n);
+	assert(i <= bs->nblocks.i[dim]);
+
+	return bs->splits[dim][i];
+}
+
 xm_dim_t
 xm_block_space_get_block_dims(const xm_block_space_t *bs, xm_dim_t blkidx)
 {
