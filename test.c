@@ -874,6 +874,113 @@ make_abc_11(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	*cc = xm_tensor_clone(b, NULL);
 }
 
+static void
+make_abc_12(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
+    xm_tensor_t **cc)
+{
+	xm_dim_t idx, idx2, perm, nblocks;
+	xm_block_space_t *bsa, *bsc;
+	xm_tensor_t *a, *b, *c;
+	uintptr_t ptr;
+	const size_t v = 11;
+
+	bsa = xm_block_space_create(xm_dim_4(v, v, v, v));
+	xm_block_space_split(bsa, 0, 2);
+	xm_block_space_split(bsa, 1, 2);
+	xm_block_space_split(bsa, 2, 2);
+	xm_block_space_split(bsa, 3, 2);
+	xm_block_space_split(bsa, 0, 7);
+	xm_block_space_split(bsa, 1, 7);
+	xm_block_space_split(bsa, 2, 7);
+	xm_block_space_split(bsa, 3, 7);
+	xm_block_space_split(bsa, 0, 8);
+	xm_block_space_split(bsa, 1, 8);
+	xm_block_space_split(bsa, 2, 8);
+	xm_block_space_split(bsa, 3, 8);
+	a = xm_tensor_create(bsa, allocator);
+	b = xm_tensor_create(bsa, allocator);
+	xm_block_space_free(bsa);
+
+	bsc = xm_block_space_create(xm_dim_2(v, v));
+	xm_block_space_split(bsc, 0, 2);
+	xm_block_space_split(bsc, 1, 2);
+	xm_block_space_split(bsc, 0, 7);
+	xm_block_space_split(bsc, 1, 7);
+	xm_block_space_split(bsc, 0, 8);
+	xm_block_space_split(bsc, 1, 8);
+	c = xm_tensor_create(bsc, allocator);
+	xm_block_space_free(bsc);
+
+	idx = xm_dim_zero(4);
+	nblocks = xm_tensor_get_nblocks(b);
+	for (idx.i[0] = 0; idx.i[0] < nblocks.i[0]; idx.i[0]++)
+	for (idx.i[1] = 0; idx.i[1] < nblocks.i[1]; idx.i[1]++)
+	for (idx.i[2] = 0; idx.i[2] < nblocks.i[2]; idx.i[2]++)
+	for (idx.i[3] = 0; idx.i[3] < nblocks.i[3]; idx.i[3]++) {
+		if (xm_tensor_get_block_type(b, idx) != XM_BLOCK_TYPE_ZERO)
+			continue;
+		ptr = xm_tensor_allocate_block_data(a, idx);
+		xm_tensor_set_canonical_block(a, idx, ptr);
+		ptr = xm_tensor_allocate_block_data(b, idx);
+		xm_tensor_set_canonical_block(b, idx, ptr);
+
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[2], idx.i[3]);
+		perm = xm_dim_4(1, 0, 2, 3);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[0], idx.i[1], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(0, 1, 3, 2);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[1], idx.i[0], idx.i[3], idx.i[2]);
+		perm = xm_dim_4(1, 0, 3, 2);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+		}
+		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[0], idx.i[1]);
+		perm = xm_dim_4(2, 3, 0, 1);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+		}
+		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[0], idx.i[1]);
+		perm = xm_dim_4(3, 2, 0, 1);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[2], idx.i[3], idx.i[1], idx.i[0]);
+		perm = xm_dim_4(2, 3, 1, 0);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, -1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, -1);
+		}
+		idx2 = xm_dim_4(idx.i[3], idx.i[2], idx.i[1], idx.i[0]);
+		perm = xm_dim_4(3, 2, 1, 0);
+		if (xm_tensor_get_block_type(b, idx2) == XM_BLOCK_TYPE_ZERO) {
+			xm_tensor_set_derivative_block(a, idx2, idx, perm, 1);
+			xm_tensor_set_derivative_block(b, idx2, idx, perm, 1);
+		}
+	}
+
+	idx = xm_dim_zero(2);
+	nblocks = xm_tensor_get_nblocks(c);
+	for (idx.i[0] = 0; idx.i[0] < nblocks.i[0]; idx.i[0]++)
+	for (idx.i[1] = 0; idx.i[1] < nblocks.i[1]; idx.i[1]++) {
+		ptr = xm_tensor_allocate_block_data(c, idx);
+		xm_tensor_set_canonical_block(c, idx, ptr);
+	}
+
+	*aa = a;
+	*bb = b;
+	*cc = c;
+}
+
 static struct contract_test contract_tests[] = {
 	{ make_abc_1, "ik", "kj", "ij" },
 	{ make_abc_1, "ik", "kj", "ji" },
@@ -915,6 +1022,12 @@ static struct contract_test contract_tests[] = {
 	{ make_abc_10, "abcd", "ijab", "ijcd" },
 	{ make_abc_10, "cdab", "ijab", "ijcd" },
 	{ make_abc_11, "abcd", "ijcd", "ijab" },
+	{ make_abc_12, "abcf", "abce", "ef" },
+	{ make_abc_12, "abfc", "abce", "ef" },
+	{ make_abc_12, "fabc", "bace", "ef" },
+	{ make_abc_12, "abcf", "acbe", "fe" },
+	{ make_abc_12, "afbc", "eabc", "fe" },
+	{ make_abc_12, "afcb", "bace", "fe" },
 };
 
 static void
