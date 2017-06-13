@@ -1,17 +1,14 @@
 # libxm 2.0 (beta)
 
 Libxm is a C/C++ library that provides routines for efficient operations (e.g.,
-contractions) on very large (terabytes in size) disk-based block-tensors on
-multi-core CPUs, GPUs, and various floating point accelerators.
+contractions) on very large (terabytes in size) disk-based block-tensors.
 
-With libxm tensors can be stored on hard disks which allow virtually unlimited
-data size. Data are asynchronously prefetched to main memory for fast access.
-Tensor contractions are reformulated as multiplications of big matrices done in
-batches. Tensor block-level symmetry and sparsity is used to decrease storage
-and computational requirements. Computations can be accelerated using multiple
-GPUs or other accelerators like Intel Xeon Phi. For very large problems libxm
-shows considerable speedups compared to similar tensor contraction codes. Libxm
-supports single and double precision scalar and complex numbers.
+With libxm tensors can be stored on hard disks which allows for virtually
+unlimited data size. Data are asynchronously prefetched to main memory for fast
+access. Tensor contractions are reformulated as multiplications of matrices
+done in batches. Tensor block-level symmetry and sparsity is used to decrease
+storage and computational requirements. Libxm supports single and double
+precision scalar and complex numbers.
 
 ### Reference
 
@@ -33,20 +30,19 @@ This will preform the following contraction of two 4-index tensors A and B:
 ### Compilation
 
 To compile libxm you need a POSIX environment, an efficient BLAS library, and
-an ANSI C complaint compiler. To use libxm in your project, include `xm.h` file
+an ANSI C complaint compiler. Issue `make` in the directory with libxm source
+code to compile the library. To use libxm in your project, include `xm.h` file
 and compile the code:
 
-    cc myprog.c alloc.c blockspace.c dim.c xm.c -lblas -lpthread -lm
+    cc -openmp myprog.c xm.a -lblas -lm
 
-Replace `-lblas` with appropriate accelerated libraries (e.g. `-lnvblas`) to
-get the benefits of corresponding hardware. Detailed documentation can be
-found in `xm.h` file. The tests can be run by issuing the following commands
-in the directory with the source code.
+Detailed documentation can be found in `xm.h` and other header files. The tests
+can be executed by issuing the following command in the directory with the
+source code:
 
-    make
     make check
 
-Compiler and flags can be adjusted by modifying the Makefile.
+Compiler and flags can be adjusted by modifying libxm Makefile.
 
 ### Source code overview
 
