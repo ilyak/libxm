@@ -166,6 +166,7 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 			continue;
 		for (j = i+1; j < nblkk; j++) {
 			xm_dim_t dia, dja, dib, djb, pia, pja, pib, pjb;
+			size_t ii, good = 1;
 			if (pairs[j].alpha == 0.0)
 				continue;
 			dia = pairs[i].blkidxa;
@@ -181,10 +182,18 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 			pja = xm_tensor_get_block_permutation(a, dja);
 			pib = xm_tensor_get_block_permutation(b, dib);
 			pjb = xm_tensor_get_block_permutation(b, djb);
-			if (xm_dim_ne(&pia, &pib) || xm_dim_ne(&pja, &pjb))
-				continue;
-			pairs[i].alpha += pairs[j].alpha;
-			pairs[j].alpha = 0.0;
+			for (ii = 0; ii < aidxa.n && good; ii++) {
+				if (pia.i[aidxa.i[ii]] != pja.i[aidxa.i[ii]])
+					good = 0;
+			}
+			for (ii = 0; ii < aidxb.n && good; ii++) {
+				if (pib.i[aidxb.i[ii]] != pjb.i[aidxb.i[ii]])
+					good = 0;
+			}
+			if (good) {
+				pairs[i].alpha += pairs[j].alpha;
+				pairs[j].alpha = 0.0;
+			}
 		}
 	}
 	for (i = 0; i < nblkk; i++) {
