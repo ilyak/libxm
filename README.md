@@ -34,7 +34,7 @@ an ANSI C complaint compiler. Issue `make` in the directory with libxm source
 code to compile the library. To use libxm in your project, include `xm.h` file
 and compile the code:
 
-    cc -openmp myprog.c xm.a -lblas -lm
+    cc myprog.c xm.a -lblas -lm
 
 Detailed documentation can be found in `xm.h` and other header files. The tests
 can be executed by issuing the following command in the directory with the
@@ -47,11 +47,11 @@ Compiler and flags can be adjusted by modifying libxm Makefile.
 ### Source code overview
 
 - xm.h - public API header with documentation
-- example.c - sample code with comments
 - alloc.c/alloc.h - disk-backed allocator for large tensors
 - blockspace.c/blockspace.h - operations on block-spaces
 - dim.c/dim.h - operations on multidimensional indices
 - tensor.c/tensor.h - block-tensor types
+- example.c - sample code with comments
 - test.c - testing facilities
 
 ### Libxm users
