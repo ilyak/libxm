@@ -11,7 +11,7 @@ print_tensor(const xm_tensor_t *t)
 		for (idx.i[1] = 0; idx.i[1] < absdims.i[1]; idx.i[1]++) {
 			xm_scalar_t el;
 			el = xm_tensor_get_element(t, idx);
-			printf(" % 6.2lf", el);
+			printf(" % 6.2lf", (double)el);
 		}
 		printf("\n");
 	}
