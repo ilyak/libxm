@@ -1379,7 +1379,7 @@ test_scale(const char *path)
 	xm_tensor_t *a, *b;
 	xm_block_space_t *bs;
 	xm_dim_t dims, idx, nblocks;
-	const xm_scalar_t s = 0.63445;
+	const xm_scalar_t s = random_scalar();
 
 	allocator = xm_allocator_create(path);
 	dims = xm_dim_7(3, 4, 1, 7, 3, 5, 9);
