@@ -129,7 +129,7 @@ void
 xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
 {
 	xm_dim_t nblocks;
-	size_t i, blockcount, maxblksize;
+	size_t blockcount, maxblksize;
 
 	if (!xm_block_space_eq(src->bs, dst->bs))
 		fatal("%s: block spaces do not match", __func__);
@@ -137,10 +137,12 @@ xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
 	nblocks = xm_tensor_get_nblocks(dst);
 	blockcount = xm_dim_dot(&nblocks);
 #ifdef _OPENMP
-#pragma omp parallel private(i)
+#pragma omp parallel
 #endif
 {
+	xm_dim_t idx;
 	xm_scalar_t *buf;
+	size_t i, blksize;
 
 	if ((buf = malloc(maxblksize * sizeof(xm_scalar_t))) == NULL)
 		fatal("%s: out of memory", __func__);
@@ -149,13 +151,53 @@ xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
 #endif
 	for (i = 0; i < blockcount; i++) {
 		if (dst->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
-			xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
-			size_t blksize = xm_tensor_get_block_size(dst, idx);
+			idx = xm_dim_from_offset(i, &nblocks);
+			blksize = xm_tensor_get_block_size(dst, idx);
 			xm_allocator_read(src->allocator,
 			    src->blocks[i].data_ptr, buf,
 			    blksize * sizeof(xm_scalar_t));
 			xm_allocator_write(dst->allocator,
 			    dst->blocks[i].data_ptr, buf,
+			    blksize * sizeof(xm_scalar_t));
+		}
+	}
+	free(buf);
+}
+}
+
+void
+xm_tensor_scale(xm_tensor_t *tensor, xm_scalar_t s)
+{
+	xm_dim_t nblocks;
+	size_t blockcount, maxblksize;
+
+	maxblksize = xm_block_space_get_largest_block_size(tensor->bs);
+	nblocks = xm_tensor_get_nblocks(tensor);
+	blockcount = xm_dim_dot(&nblocks);
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+{
+	xm_dim_t idx;
+	xm_scalar_t *buf;
+	size_t i, j, blksize;
+
+	if ((buf = malloc(maxblksize * sizeof(xm_scalar_t))) == NULL)
+		fatal("%s: out of memory", __func__);
+#ifdef _OPENMP
+#pragma omp for schedule(dynamic)
+#endif
+	for (i = 0; i < blockcount; i++) {
+		if (tensor->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
+			idx = xm_dim_from_offset(i, &nblocks);
+			blksize = xm_tensor_get_block_size(tensor, idx);
+			xm_allocator_read(tensor->allocator,
+			    tensor->blocks[i].data_ptr, buf,
+			    blksize * sizeof(xm_scalar_t));
+			for (j = 0; j < blksize; j++)
+				buf[j] *= s;
+			xm_allocator_write(tensor->allocator,
+			    tensor->blocks[i].data_ptr, buf,
 			    blksize * sizeof(xm_scalar_t));
 		}
 	}

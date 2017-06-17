@@ -57,6 +57,9 @@ xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
  * block-structures. */
 void xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src);
 
+/* Scale the tensor. */
+void xm_tensor_scale(xm_tensor_t *tensor, xm_scalar_t s);
+
 /* Return block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 
