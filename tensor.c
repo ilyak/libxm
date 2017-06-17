@@ -90,18 +90,12 @@ xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
-	xm_scalar_t *buf;
-	size_t blkbytes, maxblksize;
+	size_t blkbytes;
 
 	if (allocator == NULL)
 		allocator = tensor->allocator;
 	if ((ret = xm_tensor_create(tensor->bs, allocator)) == NULL)
 		return NULL;
-	maxblksize = xm_block_space_get_largest_block_size(ret->bs);
-	if ((buf = malloc(maxblksize * sizeof(xm_scalar_t))) == NULL) {
-		xm_tensor_free(ret);
-		return NULL;
-	}
 	nblocks = xm_tensor_get_nblocks(ret);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
@@ -115,18 +109,42 @@ xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 			if (ret->blocks[i].data_ptr == XM_NULL_PTR) {
 				xm_tensor_free_block_data(ret);
 				xm_tensor_free(ret);
-				free(buf);
 				return NULL;
 			}
-			xm_allocator_read(tensor->allocator,
-			    tensor->blocks[i].data_ptr, buf, blkbytes);
-			xm_allocator_write(ret->allocator,
-			    ret->blocks[i].data_ptr, buf, blkbytes);
+		}
+		xm_dim_inc(&idx, &nblocks);
+	}
+	xm_tensor_copy(ret, tensor);
+	return ret;
+}
+
+void
+xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
+{
+	xm_dim_t idx, nblocks;
+	xm_scalar_t *buf;
+	size_t blkbytes, maxblksize;
+
+	if (!xm_block_space_eq(src->bs, dst->bs))
+		fatal("block spaces do not match");
+	maxblksize = xm_block_space_get_largest_block_size(dst->bs);
+	if ((buf = malloc(maxblksize * sizeof(xm_scalar_t))) == NULL)
+		fatal("out of memory");
+	nblocks = xm_tensor_get_nblocks(dst);
+	idx = xm_dim_zero(nblocks.n);
+	while (xm_dim_ne(&idx, &nblocks)) {
+		size_t i = xm_dim_offset(&idx, &nblocks);
+		if (dst->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
+			blkbytes = xm_tensor_get_block_size(dst, idx) *
+			    sizeof(xm_scalar_t);
+			xm_allocator_read(src->allocator,
+			    src->blocks[i].data_ptr, buf, blkbytes);
+			xm_allocator_write(dst->allocator,
+			    dst->blocks[i].data_ptr, buf, blkbytes);
 		}
 		xm_dim_inc(&idx, &nblocks);
 	}
 	free(buf);
-	return ret;
 }
 
 const xm_block_space_t *

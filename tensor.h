@@ -53,6 +53,10 @@ xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
 xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
     xm_allocator_t *allocator);
 
+/* Copy tensor block data from src to dst. Tensors must have identical
+ * block-structures. */
+void xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src);
+
 /* Return block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 
