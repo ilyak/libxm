@@ -128,30 +128,39 @@ xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 void
 xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
 {
-	xm_dim_t idx, nblocks;
-	xm_scalar_t *buf;
-	size_t blkbytes, maxblksize;
+	xm_dim_t nblocks;
+	size_t i, blockcount, blksize, maxblksize;
 
 	if (!xm_block_space_eq(src->bs, dst->bs))
 		fatal("%s: block spaces do not match", __func__);
 	maxblksize = xm_block_space_get_largest_block_size(dst->bs);
+	nblocks = xm_tensor_get_nblocks(dst);
+	blockcount = xm_dim_dot(&nblocks);
+#ifdef _OPENMP
+#pragma omp parallel private(i)
+#endif
+{
+	xm_scalar_t *buf;
+
 	if ((buf = malloc(maxblksize * sizeof(xm_scalar_t))) == NULL)
 		fatal("%s: out of memory", __func__);
-	nblocks = xm_tensor_get_nblocks(dst);
-	idx = xm_dim_zero(nblocks.n);
-	while (xm_dim_ne(&idx, &nblocks)) {
-		size_t i = xm_dim_offset(&idx, &nblocks);
+#ifdef _OPENMP
+#pragma omp for schedule(dynamic)
+#endif
+	for (i = 0; i < blockcount; i++) {
 		if (dst->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
-			blkbytes = xm_tensor_get_block_size(dst, idx) *
-			    sizeof(xm_scalar_t);
+			xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
+			blksize = xm_tensor_get_block_size(dst, idx);
 			xm_allocator_read(src->allocator,
-			    src->blocks[i].data_ptr, buf, blkbytes);
+			    src->blocks[i].data_ptr, buf,
+			    blksize * sizeof(xm_scalar_t));
 			xm_allocator_write(dst->allocator,
-			    dst->blocks[i].data_ptr, buf, blkbytes);
+			    dst->blocks[i].data_ptr, buf,
+			    blksize * sizeof(xm_scalar_t));
 		}
-		xm_dim_inc(&idx, &nblocks);
 	}
 	free(buf);
+}
 }
 
 const xm_block_space_t *
