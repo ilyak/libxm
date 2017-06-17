@@ -129,7 +129,7 @@ void
 xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
 {
 	xm_dim_t nblocks;
-	size_t i, blockcount, blksize, maxblksize;
+	size_t i, blockcount, maxblksize;
 
 	if (!xm_block_space_eq(src->bs, dst->bs))
 		fatal("%s: block spaces do not match", __func__);
@@ -150,7 +150,7 @@ xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src)
 	for (i = 0; i < blockcount; i++) {
 		if (dst->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
 			xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
-			blksize = xm_tensor_get_block_size(dst, idx);
+			size_t blksize = xm_tensor_get_block_size(dst, idx);
 			xm_allocator_read(src->allocator,
 			    src->blocks[i].data_ptr, buf,
 			    blksize * sizeof(xm_scalar_t));
