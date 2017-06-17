@@ -1372,6 +1372,47 @@ test_dim(void)
 	}
 }
 
+static void
+test_scale(const char *path)
+{
+	xm_allocator_t *allocator;
+	xm_tensor_t *a, *b;
+	xm_block_space_t *bs;
+	xm_dim_t dims, idx, nblocks;
+	const xm_scalar_t s = 0.63445;
+
+	allocator = xm_allocator_create(path);
+	dims = xm_dim_7(3, 4, 1, 7, 3, 5, 9);
+	bs = xm_block_space_create(dims);
+	assert(bs);
+	xm_block_space_split(bs, 0, 1);
+	xm_block_space_split(bs, 3, 2);
+	xm_block_space_split(bs, 3, 4);
+	xm_block_space_split(bs, 4, 2);
+	xm_block_space_split(bs, 5, 3);
+	xm_block_space_split(bs, 6, 2);
+	xm_block_space_split(bs, 6, 6);
+	a = xm_tensor_create(bs, allocator);
+	assert(a);
+	b = xm_tensor_clone(a, NULL);
+	assert(b);
+	xm_tensor_scale(a, s);
+	nblocks = xm_tensor_get_nblocks(a);
+	idx = xm_dim_zero(nblocks.n);
+	while (xm_dim_ne(&idx, &nblocks)) {
+		xm_scalar_t aa = xm_tensor_get_element(a, idx);
+		xm_scalar_t bb = xm_tensor_get_element(b, idx);
+		if (!scalar_eq(aa, bb*s))
+			fatal("%s: tensors do not match", __func__);
+		xm_dim_inc(&idx, &nblocks);
+	}
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_allocator_destroy(allocator);
+}
+
 int
 main(void)
 {
@@ -1381,6 +1422,12 @@ main(void)
 	printf("dim test 1... ");
 	fflush(stdout);
 	test_dim();
+	printf("success\n");
+
+	printf("scale test 1... ");
+	fflush(stdout);
+	test_scale(NULL);
+	test_scale(path);
 	printf("success\n");
 
 	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {
