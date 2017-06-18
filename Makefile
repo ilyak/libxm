@@ -25,7 +25,7 @@ TEST= test
 TEST_O= test.o
 
 XM_A= xm.a
-XM_O= alloc.o blockspace.o contract.o dim.o tensor.o
+XM_O= alloc.o blockspace.o contract.o copy.o dim.o tensor.o
 
 AR= ar rc
 RANLIB= ranlib

@@ -114,56 +114,6 @@ xm_tensor_create_structure(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 	return ret;
 }
 
-void
-xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src, xm_scalar_t s)
-{
-	xm_dim_t nblocks;
-	size_t blockcount, maxblksize;
-
-	if (!xm_block_space_eq(src->bs, dst->bs))
-		fatal("%s: block spaces do not match", __func__);
-	maxblksize = xm_block_space_get_largest_block_size(dst->bs);
-	nblocks = xm_tensor_get_nblocks(dst);
-	blockcount = xm_dim_dot(&nblocks);
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-{
-	xm_dim_t idx;
-	xm_scalar_t *buf;
-	size_t i, j, blksize;
-
-	if ((buf = malloc(maxblksize * sizeof(xm_scalar_t))) == NULL)
-		fatal("%s: out of memory", __func__);
-#ifdef _OPENMP
-#pragma omp for schedule(dynamic)
-#endif
-	for (i = 0; i < blockcount; i++) {
-		if (dst->blocks[i].type != src->blocks[i].type)
-			fatal("%s: block structures do not match", __func__);
-		if (dst->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
-			idx = xm_dim_from_offset(i, &nblocks);
-			blksize = xm_tensor_get_block_size(dst, idx);
-			xm_allocator_read(src->allocator,
-			    src->blocks[i].data_ptr, buf,
-			    blksize * sizeof(xm_scalar_t));
-			for (j = 0; j < blksize; j++)
-				buf[j] *= s;
-			xm_allocator_write(dst->allocator,
-			    dst->blocks[i].data_ptr, buf,
-			    blksize * sizeof(xm_scalar_t));
-		}
-	}
-	free(buf);
-}
-}
-
-void
-xm_tensor_scale(xm_tensor_t *tensor, xm_scalar_t s)
-{
-	xm_tensor_copy(tensor, tensor, s);
-}
-
 const xm_block_space_t *
 xm_tensor_get_block_space(const xm_tensor_t *tensor)
 {
@@ -171,7 +121,7 @@ xm_tensor_get_block_space(const xm_tensor_t *tensor)
 }
 
 xm_allocator_t *
-xm_tensor_get_allocator(xm_tensor_t *tensor)
+xm_tensor_get_allocator(const xm_tensor_t *tensor)
 {
 	return tensor->allocator;
 }
@@ -313,8 +263,9 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 }
 
 void
-xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
-    xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to, size_t stride)
+xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to,
+    size_t stride)
 {
 	struct xm_block *block;
 	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;
@@ -377,8 +328,9 @@ xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
 }
 
 void
-xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_dim_t mask_i,
-    xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to, size_t stride)
+xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to,
+    size_t stride)
 {
 	struct xm_block *block;
 	xm_dim_t blkdims, elidx;

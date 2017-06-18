@@ -54,18 +54,11 @@ xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
 xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor,
     xm_allocator_t *allocator);
 
-/* Copy tensor block data while multiplying by a scaling factor. Tensors must
- * have identical block-structures. */
-void xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src, xm_scalar_t s);
-
-/* Scale the tensor. */
-void xm_tensor_scale(xm_tensor_t *tensor, xm_scalar_t s);
-
 /* Return block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 
 /* Return allocator associated with this tensor. */
-xm_allocator_t *xm_tensor_get_allocator(xm_tensor_t *tensor);
+xm_allocator_t *xm_tensor_get_allocator(const xm_tensor_t *tensor);
 
 /* Return absolute tensor dimensions in total number of elements. */
 xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
@@ -123,7 +116,7 @@ void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
  * specified using the masks. The from parameter should point to the raw block
  * data in memory. The stride must be equal to or greater than the product of
  * mask_i block dimensions. */
-void xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+void xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
 
@@ -131,7 +124,7 @@ void xm_tensor_unfold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
  * xm_tensor_unfold_block function. On return, "to" will contain raw block data
  * that can be directly written to the data_ptr of the block. Only canonical
  * blocks can be folded. */
-void xm_tensor_fold_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+void xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
 

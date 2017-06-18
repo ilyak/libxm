@@ -192,7 +192,7 @@ test_contract(struct contract_test *test, const char *path, xm_scalar_t alpha,
 	fill_random(b);
 	fill_random(c);
 	cc = xm_tensor_create_structure(c, allocator);
-	xm_tensor_copy(cc, c, 1);
+	xm_copy(cc, c, 1);
 	xm_contract(alpha, a, b, beta, cc, test->idxa, test->idxb, test->idxc);
 	check_result(cc, alpha, a, b, beta, c, test->idxa, test->idxb,
 	    test->idxc);
@@ -872,7 +872,7 @@ make_abc_11(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	*aa = a;
 	*bb = b;
 	*cc = xm_tensor_create_structure(b, NULL);
-	xm_tensor_copy(*cc, b, 1);
+	xm_copy(*cc, b, 1);
 }
 
 static void
@@ -1059,7 +1059,7 @@ unfold_test_1(const char *path)
 	allocator_u = xm_allocator_create(NULL);
 	assert(allocator_u);
 	u = xm_tensor_create_structure(t, allocator_u);
-	xm_tensor_copy(u, t, 1);
+	xm_copy(u, t, 1);
 	buf1 = malloc(5 * sizeof(xm_scalar_t));
 	assert(buf1);
 	buf2 = malloc(5 * sizeof(xm_scalar_t));
@@ -1117,7 +1117,7 @@ unfold_test_2(const char *path)
 	allocator_u = xm_allocator_create(NULL);
 	assert(allocator_u);
 	u = xm_tensor_create_structure(t, allocator_u);
-	xm_tensor_copy(u, t, 1);
+	xm_copy(u, t, 1);
 	buf1 = malloc(25 * sizeof(xm_scalar_t));
 	assert(buf1);
 	buf2 = malloc(25 * sizeof(xm_scalar_t));
@@ -1225,7 +1225,7 @@ unfold_test_3(const char *path)
 	allocator_u = xm_allocator_create(NULL);
 	assert(allocator_u);
 	u = xm_tensor_create_structure(t, allocator_u);
-	xm_tensor_copy(u, t, 1);
+	xm_copy(u, t, 1);
 	buf1 = malloc(3*4*5*6*sizeof(xm_scalar_t));
 	assert(buf1);
 	buf2 = malloc(3*4*5*6*sizeof(xm_scalar_t));
@@ -1374,15 +1374,16 @@ test_dim(void)
 }
 
 static void
-test_scale(const char *path)
+test_copy(const char *path)
 {
-	xm_allocator_t *allocator;
+	xm_allocator_t *allocatora, *allocatorc;
 	xm_tensor_t *a, *b, *c;
 	xm_block_space_t *bs;
 	xm_dim_t dims, idx, nblocks;
 	const xm_scalar_t s = random_scalar();
 
-	allocator = xm_allocator_create(path);
+	allocatora = xm_allocator_create(path);
+	allocatorc = xm_allocator_create(NULL);
 	dims = xm_dim_7(3, 4, 1, 7, 3, 5, 9);
 	bs = xm_block_space_create(dims);
 	assert(bs);
@@ -1393,12 +1394,11 @@ test_scale(const char *path)
 	xm_block_space_split(bs, 5, 3);
 	xm_block_space_split(bs, 6, 2);
 	xm_block_space_split(bs, 6, 6);
-	a = xm_tensor_create(bs, allocator);
+	a = xm_tensor_create(bs, allocatora);
 	b = xm_tensor_create_structure(a, NULL);
-	xm_tensor_copy(b, a, s);
-	c = xm_tensor_create_structure(a, NULL);
-	xm_tensor_copy(c, a, 1);
-	xm_tensor_scale(c, s);
+	xm_copy(b, a, s);
+	c = xm_tensor_create_structure(a, allocatorc);
+	xm_copy(c, a, 1);
 	nblocks = xm_tensor_get_nblocks(a);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
@@ -1407,7 +1407,7 @@ test_scale(const char *path)
 		xm_scalar_t cc = xm_tensor_get_element(c, idx);
 		if (!scalar_eq(aa*s, bb))
 			fatal("%s: tensors do not match", __func__);
-		if (!scalar_eq(aa*s, cc))
+		if (!scalar_eq(aa, cc))
 			fatal("%s: tensors do not match", __func__);
 		xm_dim_inc(&idx, &nblocks);
 	}
@@ -1417,7 +1417,8 @@ test_scale(const char *path)
 	xm_tensor_free(a);
 	xm_tensor_free(b);
 	xm_tensor_free(c);
-	xm_allocator_destroy(allocator);
+	xm_allocator_destroy(allocatora);
+	xm_allocator_destroy(allocatorc);
 }
 
 int
@@ -1431,10 +1432,10 @@ main(void)
 	test_dim();
 	printf("success\n");
 
-	printf("scale test 1... ");
+	printf("copy test 1... ");
 	fflush(stdout);
-	test_scale(NULL);
-	test_scale(path);
+	test_copy(NULL);
+	test_copy(path);
 	printf("success\n");
 
 	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {

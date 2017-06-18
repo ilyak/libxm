@@ -36,9 +36,13 @@ void xm_print_banner(void);
  *
  * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
  */
-void xm_contract(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
+void xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
     const char *idxc);
+
+/* Copy tensor block data from b to a while multiplying by a scaling factor.
+ * Tensors must have identical block-structures. */
+void xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s);
 
 #ifdef __cplusplus
 } /* extern "C" */
