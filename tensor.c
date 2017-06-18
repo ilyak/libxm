@@ -111,7 +111,7 @@ xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 		}
 		xm_dim_inc(&idx, &nblocks);
 	}
-	xm_tensor_copy(ret, tensor, 1.0);
+	xm_tensor_copy(ret, tensor, 1);
 	return ret;
 }
 
@@ -235,7 +235,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
 	block = tensor_get_block(tensor, blkidx);
 	if (block->type == XM_BLOCK_TYPE_ZERO)
-		return 0.0;
+		return 0;
 	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
 	assert(data_ptr != XM_NULL_PTR);
 	blksize = xm_tensor_get_block_size(tensor, blkidx);
@@ -303,7 +303,7 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 	block = tensor_get_block(tensor, blkidx);
 	block->type = XM_BLOCK_TYPE_ZERO;
 	block->permutation = xm_dim_identity_permutation(blkidx.n);
-	block->scalar = 0.0;
+	block->scalar = 0;
 	block->data_ptr = XM_NULL_PTR;
 }
 
@@ -318,7 +318,7 @@ xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 	block = tensor_get_block(tensor, blkidx);
 	block->type = XM_BLOCK_TYPE_CANONICAL;
 	block->permutation = xm_dim_identity_permutation(blkidx.n);
-	block->scalar = 1.0;
+	block->scalar = 1;
 	block->data_ptr = data_ptr;
 }
 

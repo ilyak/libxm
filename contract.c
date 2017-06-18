@@ -140,7 +140,7 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	}
 	for (i = 0; i < size; i++)
 		bufc1[i] *= beta;
-	if (alpha == 0.0)
+	if (alpha == 0)
 		goto done;
 	blkidxa = xm_dim_zero(xm_block_space_get_ndims(bsa));
 	blkidxb = xm_dim_zero(xm_block_space_get_ndims(bsb));
@@ -149,7 +149,7 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 	for (i = 0; i < nblkk; i++) {
 		int blktypea = xm_tensor_get_block_type(a, blkidxa);
 		int blktypeb = xm_tensor_get_block_type(b, blkidxb);
-		pairs[i].alpha = 0.0;
+		pairs[i].alpha = 0;
 		pairs[i].blkidxa = blkidxa;
 		pairs[i].blkidxb = blkidxb;
 		if (blktypea != XM_BLOCK_TYPE_ZERO &&
@@ -162,12 +162,12 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 		xm_dim_inc_mask(&blkidxb, &nblocksb, &cidxb);
 	}
 	for (i = 0; i < nblkk; i++) {
-		if (pairs[i].alpha == 0.0)
+		if (pairs[i].alpha == 0)
 			continue;
 		for (j = i+1; j < nblkk; j++) {
 			xm_dim_t dia, dja, dib, djb, pia, pja, pib, pjb;
 			size_t ii, good = 1;
-			if (pairs[j].alpha == 0.0)
+			if (pairs[j].alpha == 0)
 				continue;
 			dia = pairs[i].blkidxa;
 			dja = pairs[j].blkidxa;
@@ -192,12 +192,12 @@ compute_block(xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 			}
 			if (good) {
 				pairs[i].alpha += pairs[j].alpha;
-				pairs[j].alpha = 0.0;
+				pairs[j].alpha = 0;
 			}
 		}
 	}
 	for (i = 0; i < nblkk; i++) {
-		if (pairs[i].alpha != 0.0) {
+		if (pairs[i].alpha != 0) {
 			blkidxa = pairs[i].blkidxa;
 			blkidxb = pairs[i].blkidxb;
 			dims = xm_tensor_get_block_dims(a, blkidxa);
