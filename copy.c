@@ -14,24 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "xm.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-static void
-fatal(const char *fmt, ...)
-{
-	va_list ap;
-
-	fprintf(stderr, "libxm: ");
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-	abort();
-}
+#include "xm.h"
+#include "util.h"
 
 void
 xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s)
@@ -44,7 +33,7 @@ xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s)
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
 	if (!xm_block_space_eq(bsa, bsb))
-		fatal("%s: block spaces do not match", __func__);
+		xm_fatal("%s: block spaces do not match", __func__);
 	alloca = xm_tensor_get_allocator(a);
 	allocb = xm_tensor_get_allocator(b);
 	maxblksize = xm_block_space_get_largest_block_size(bsa);
@@ -59,7 +48,7 @@ xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s)
 	uintptr_t data_ptr;
 
 	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
@@ -68,7 +57,7 @@ xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s)
 		int typea = xm_tensor_get_block_type(a, idx);
 		int typeb = xm_tensor_get_block_type(b, idx);
 		if (typea != typeb)
-			fatal("%s: block structures do not match", __func__);
+			xm_fatal("%s: block structures do not match", __func__);
 		if (typea == XM_BLOCK_TYPE_CANONICAL) {
 			blksize = xm_tensor_get_block_size(a, idx);
 			data_ptr = xm_tensor_get_block_data_ptr(b, idx);

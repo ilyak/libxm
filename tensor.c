@@ -14,13 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "tensor.h"
-
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tensor.h"
+#include "util.h"
 
 struct xm_block {
 	int type;
@@ -35,19 +36,6 @@ struct xm_tensor {
 	xm_allocator_t *allocator;
 	struct xm_block *blocks;
 };
-
-static void
-fatal(const char *fmt, ...)
-{
-	va_list ap;
-
-	fprintf(stderr, "libxm: ");
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-	abort();
-}
 
 static struct xm_block *
 tensor_get_block(const xm_tensor_t *tensor, xm_dim_t blkidx)
@@ -71,14 +59,14 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 	assert(allocator);
 
 	if ((ret = calloc(1, sizeof *ret)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 	if ((ret->bs = xm_block_space_clone(bs)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 	ret->allocator = allocator;
 	nblocks = xm_block_space_get_nblocks(bs);
 	if ((ret->blocks = calloc(xm_dim_dot(&nblocks),
 	    sizeof *ret->blocks)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
 		xm_tensor_set_zero_block(ret, idx);
@@ -107,7 +95,8 @@ xm_tensor_create_structure(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 			ret->blocks[i].data_ptr = xm_allocator_allocate(
 			    ret->allocator, blksize * sizeof(xm_scalar_t));
 			if (ret->blocks[i].data_ptr == XM_NULL_PTR)
-				fatal("%s: unable to allocate data", __func__);
+				xm_fatal("%s: unable to allocate data",
+				    __func__);
 		}
 		xm_dim_inc(&idx, &nblocks);
 	}
@@ -155,7 +144,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	assert(data_ptr != XM_NULL_PTR);
 	blksize = xm_tensor_get_block_size(tensor, blkidx);
 	if ((buf = malloc(blksize * sizeof *buf)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 	xm_allocator_read(tensor->allocator, data_ptr, buf,
 	    blksize * sizeof(xm_scalar_t));
 	elidx = xm_dim_permute(&elidx, &block->permutation);
@@ -247,13 +236,13 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 
 	type = xm_tensor_get_block_type(tensor, source_blkidx);
 	if (type != XM_BLOCK_TYPE_CANONICAL)
-		fatal("%s: derivative blocks must have canonical "
+		xm_fatal("%s: derivative blocks must have canonical "
 		    "source blocks", __func__);
 	blkdims1 = xm_block_space_get_block_dims(tensor->bs, blkidx);
 	blkdims1 = xm_dim_permute(&blkdims1, &permutation);
 	blkdims2 = xm_block_space_get_block_dims(tensor->bs, source_blkidx);
 	if (xm_dim_ne(&blkdims1, &blkdims2))
-		fatal("%s: invalid block permutation", __func__);
+		xm_fatal("%s: invalid block permutation", __func__);
 	nblocks = xm_tensor_get_nblocks(tensor);
 	block = tensor_get_block(tensor, blkidx);
 	block->type = XM_BLOCK_TYPE_DERIVATIVE;
@@ -344,7 +333,7 @@ xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 
 	block = tensor_get_block(tensor, blkidx);
 	if (block->type != XM_BLOCK_TYPE_CANONICAL)
-		fatal("%s: can only fold canonical blocks", __func__);
+		xm_fatal("%s: can only fold canonical blocks", __func__);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
 	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);
 	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);

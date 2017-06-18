@@ -14,12 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "xm.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "xm.h"
+#include "util.h"
 
 #if defined(XM_SCALAR_FLOAT)
 #define dgemm_ sgemm_
@@ -42,36 +43,6 @@ xm_dgemm(char transa, char transb, long int m, long int n, long int k,
 	    &beta, c, &ldc);
 }
 
-static void
-fatal(const char *fmt, ...)
-{
-	va_list ap;
-
-	fprintf(stderr, "libxm: ");
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-	abort();
-}
-
-static void
-make_masks(const char *str1, const char *str2, xm_dim_t *mask1, xm_dim_t *mask2)
-{
-	size_t i, j, len1, len2;
-
-	mask1->n = 0;
-	mask2->n = 0;
-	len1 = strlen(str1);
-	len2 = strlen(str2);
-	for (i = 0; i < len1; i++)
-		for (j = 0; j < len2; j++)
-			if (str1[i] == str2[j]) {
-				mask1->i[mask1->n++] = i;
-				mask2->i[mask2->n++] = j;
-			}
-}
-
 static xm_dim_t *
 get_canonical_block_list(xm_tensor_t *tensor, size_t *ncanblksout)
 {
@@ -87,7 +58,7 @@ get_canonical_block_list(xm_tensor_t *tensor, size_t *ncanblksout)
 			ncanblks++;
 			canblks = realloc(canblks, ncanblks * sizeof *canblks);
 			if (canblks == NULL)
-				fatal("%s: out of memory", __func__);
+				xm_fatal("%s: out of memory", __func__);
 			canblks[ncanblks-1] = idx;
 		}
 		xm_dim_inc(&idx, &nblocks);
@@ -262,37 +233,37 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	bsc = xm_tensor_get_block_space(c);
 
 	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 	if (strlen(idxc) != xm_block_space_get_ndims(bsc))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 
-	make_masks(idxa, idxb, &cidxa, &cidxb);
-	make_masks(idxc, idxa, &cidxc, &aidxa);
-	make_masks(idxc, idxb, &aidxc, &aidxb);
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	xm_make_masks(idxc, idxa, &cidxc, &aidxa);
+	xm_make_masks(idxc, idxb, &aidxc, &aidxb);
 
 	if (aidxa.n + cidxa.n != xm_block_space_get_ndims(bsa))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 	if (aidxb.n + cidxb.n != xm_block_space_get_ndims(bsb))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 	if (aidxc.n + cidxc.n != xm_block_space_get_ndims(bsc))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 	if (!(aidxc.n > 0 && aidxc.i[0] == 0) &&
 	    !(cidxc.n > 0 && cidxc.i[0] == 0))
-		fatal("%s: bad contraction indices", __func__);
+		xm_fatal("%s: bad contraction indices", __func__);
 
 	for (i = 0; i < cidxa.n; i++)
 		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
-			fatal("%s: inconsistent a and b tensor block "
+			xm_fatal("%s: inconsistent a and b tensor block "
 			    "spaces", __func__);
 	for (i = 0; i < cidxc.n; i++)
 		if (!xm_block_space_eq1(bsc, cidxc.i[i], bsa, aidxa.i[i]))
-			fatal("%s: inconsistent a and c tensor block "
+			xm_fatal("%s: inconsistent a and c tensor block "
 			    "spaces", __func__);
 	for (i = 0; i < aidxc.n; i++)
 		if (!xm_block_space_eq1(bsc, aidxc.i[i], bsb, aidxb.i[i]))
-			fatal("%s: inconsistent b and c tensor block "
+			xm_fatal("%s: inconsistent b and c tensor block "
 			    "spaces", __func__);
 
 	nblocksa = xm_tensor_get_nblocks(a);
@@ -310,9 +281,9 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	xm_scalar_t *buf;
 
 	if ((pairs = malloc(nblkk * sizeof *pairs)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 	if ((buf = malloc(bufsize * sizeof *buf)) == NULL)
-		fatal("%s: out of memory", __func__);
+		xm_fatal("%s: out of memory", __func__);
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
