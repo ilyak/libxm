@@ -40,8 +40,9 @@ void xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
     const char *idxc);
 
-/* Copy tensor block data from b to a while multiplying by a scaling factor.
- * Tensors must have identical block-structures. */
+/* Copy tensor block data from B to A while multiplying by a scaling factor.
+ * Tensors must have identical block-structures. A and B can refer to the
+ * same tensor. */
 void xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s);
 
 #ifdef __cplusplus

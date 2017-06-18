@@ -1372,6 +1372,7 @@ test_copy(const char *path)
 	xm_copy(b, a, sb);
 	c = xm_tensor_create_structure(a, allocatorc);
 	xm_copy(c, a, sc);
+	xm_copy(c, c, sb);
 	nblocks = xm_tensor_get_nblocks(a);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
@@ -1380,7 +1381,7 @@ test_copy(const char *path)
 		xm_scalar_t cc = xm_tensor_get_element(c, idx);
 		if (!scalar_eq(aa*sb, bb))
 			xm_fatal("%s: tensors do not match", __func__);
-		if (!scalar_eq(aa*sc, cc))
+		if (!scalar_eq(aa*sb*sc, cc))
 			xm_fatal("%s: tensors do not match", __func__);
 		xm_dim_inc(&idx, &nblocks);
 	}
