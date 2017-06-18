@@ -55,7 +55,7 @@ xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
 
 /* Copy tensor block data from src to dst. Tensors must have identical
  * block-structures. */
-void xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src);
+void xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src, xm_scalar_t s);
 
 /* Scale the tensor. */
 void xm_tensor_scale(xm_tensor_t *tensor, xm_scalar_t s);
