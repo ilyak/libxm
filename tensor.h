@@ -44,17 +44,18 @@ typedef double xm_scalar_t;
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
-/* Create a block-tensor. */
+/* Create new block-tensor. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
-/* Clone a tensor and all its block-data using given allocator. If allocator
- * argument is NULL, use the same allocator as the tensor being cloned. */
-xm_tensor_t *xm_tensor_clone(const xm_tensor_t *tensor,
+/* Create new block-tensor using block structure from "tensor". If allocator
+ * argument is NULL, use the same allocator as the tensor being cloned. This
+ * does not copy actual data. Use xm_tensor_copy to copy the data. */
+xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor,
     xm_allocator_t *allocator);
 
-/* Copy tensor block data from src to dst. Tensors must have identical
- * block-structures. */
+/* Copy tensor block data while multiplying by a scaling factor. Tensors must
+ * have identical block-structures. */
 void xm_tensor_copy(xm_tensor_t *dst, const xm_tensor_t *src, xm_scalar_t s);
 
 /* Scale the tensor. */

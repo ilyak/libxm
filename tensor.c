@@ -88,7 +88,7 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 }
 
 xm_tensor_t *
-xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
+xm_tensor_create_structure(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
@@ -111,7 +111,6 @@ xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 		}
 		xm_dim_inc(&idx, &nblocks);
 	}
-	xm_tensor_copy(ret, tensor, 1);
 	return ret;
 }
 
