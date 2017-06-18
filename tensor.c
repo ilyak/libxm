@@ -71,19 +71,14 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 	assert(allocator);
 
 	if ((ret = calloc(1, sizeof *ret)) == NULL)
-		return NULL;
-	if ((ret->bs = xm_block_space_clone(bs)) == NULL) {
-		free(ret);
-		return NULL;
-	}
+		fatal("%s: out of memory", __func__);
+	if ((ret->bs = xm_block_space_clone(bs)) == NULL)
+		fatal("%s: out of memory", __func__);
 	ret->allocator = allocator;
 	nblocks = xm_block_space_get_nblocks(bs);
 	if ((ret->blocks = calloc(xm_dim_dot(&nblocks),
-	    sizeof *ret->blocks)) == NULL) {
-		xm_block_space_free(ret->bs);
-		free(ret);
-		return NULL;
-	}
+	    sizeof *ret->blocks)) == NULL)
+		fatal("%s: out of memory", __func__);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
 		xm_tensor_set_zero_block(ret, idx);
@@ -97,27 +92,22 @@ xm_tensor_clone(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
-	size_t blkbytes;
+	size_t blksize;
 
 	if (allocator == NULL)
 		allocator = tensor->allocator;
-	if ((ret = xm_tensor_create(tensor->bs, allocator)) == NULL)
-		return NULL;
+	ret = xm_tensor_create(tensor->bs, allocator);
 	nblocks = xm_tensor_get_nblocks(ret);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
 		size_t i = xm_dim_offset(&idx, &nblocks);
 		ret->blocks[i] = tensor->blocks[i];
 		if (ret->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
-			blkbytes = xm_tensor_get_block_size(ret, idx) *
-			    sizeof(xm_scalar_t);
+			blksize = xm_tensor_get_block_size(ret, idx);
 			ret->blocks[i].data_ptr = xm_allocator_allocate(
-			    ret->allocator, blkbytes);
-			if (ret->blocks[i].data_ptr == XM_NULL_PTR) {
-				xm_tensor_free_block_data(ret);
-				xm_tensor_free(ret);
-				return NULL;
-			}
+			    ret->allocator, blksize * sizeof(xm_scalar_t));
+			if (ret->blocks[i].data_ptr == XM_NULL_PTR)
+				fatal("%s: unable to allocate data", __func__);
 		}
 		xm_dim_inc(&idx, &nblocks);
 	}
@@ -239,7 +229,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	struct xm_block *block;
 	xm_dim_t blkidx, blkdims, elidx;
 	xm_scalar_t *buf, ret;
-	size_t blkbytes, eloff;
+	size_t blksize, eloff;
 	uintptr_t data_ptr;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
@@ -248,11 +238,11 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 		return 0.0;
 	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
 	assert(data_ptr != XM_NULL_PTR);
-	blkbytes = xm_tensor_get_block_size(tensor, blkidx) *
-	    sizeof(xm_scalar_t);
-	if ((buf = malloc(blkbytes)) == NULL)
+	blksize = xm_tensor_get_block_size(tensor, blkidx);
+	if ((buf = malloc(blksize * sizeof *buf)) == NULL)
 		fatal("%s: out of memory", __func__);
-	xm_allocator_read(tensor->allocator, data_ptr, buf, blkbytes);
+	xm_allocator_read(tensor->allocator, data_ptr, buf,
+	    blksize * sizeof(xm_scalar_t));
 	elidx = xm_dim_permute(&elidx, &block->permutation);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
 	blkdims = xm_dim_permute(&blkdims, &block->permutation);
