@@ -1380,7 +1380,8 @@ test_copy(const char *path)
 	xm_tensor_t *a, *b, *c;
 	xm_block_space_t *bs;
 	xm_dim_t dims, idx, nblocks;
-	const xm_scalar_t s = random_scalar();
+	const xm_scalar_t sb = random_scalar();
+	const xm_scalar_t sc = random_scalar();
 
 	allocatora = xm_allocator_create(path);
 	allocatorc = xm_allocator_create(NULL);
@@ -1396,18 +1397,18 @@ test_copy(const char *path)
 	xm_block_space_split(bs, 6, 6);
 	a = xm_tensor_create(bs, allocatora);
 	b = xm_tensor_create_structure(a, NULL);
-	xm_copy(b, a, s);
+	xm_copy(b, a, sb);
 	c = xm_tensor_create_structure(a, allocatorc);
-	xm_copy(c, a, 1);
+	xm_copy(c, a, sc);
 	nblocks = xm_tensor_get_nblocks(a);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
 		xm_scalar_t aa = xm_tensor_get_element(a, idx);
 		xm_scalar_t bb = xm_tensor_get_element(b, idx);
 		xm_scalar_t cc = xm_tensor_get_element(c, idx);
-		if (!scalar_eq(aa*s, bb))
+		if (!scalar_eq(aa*sb, bb))
 			fatal("%s: tensors do not match", __func__);
-		if (!scalar_eq(aa, cc))
+		if (!scalar_eq(aa*sc, cc))
 			fatal("%s: tensors do not match", __func__);
 		xm_dim_inc(&idx, &nblocks);
 	}
