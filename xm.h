@@ -45,6 +45,9 @@ void xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
  * same tensor. */
 void xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s);
 
+/* Set all non-zero block elements of tensor A to value X. */
+void xm_set(xm_tensor_t *a, xm_scalar_t x);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
