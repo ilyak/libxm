@@ -76,6 +76,30 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 }
 
 xm_tensor_t *
+xm_tensor_create_canonical(const xm_block_space_t *bs,
+    xm_allocator_t *allocator)
+{
+	xm_tensor_t *ret;
+	xm_dim_t idx, nblocks;
+	size_t blksize;
+	uintptr_t data_ptr;
+
+	ret = xm_tensor_create(bs, allocator);
+	nblocks = xm_block_space_get_nblocks(bs);
+	idx = xm_dim_zero(nblocks.n);
+	while (xm_dim_ne(&idx, &nblocks)) {
+		blksize = xm_tensor_get_block_size(ret, idx);
+		data_ptr = xm_allocator_allocate(allocator,
+		    blksize * sizeof(xm_scalar_t));
+		if (data_ptr == XM_NULL_PTR)
+			xm_fatal("%s: unable to allocate block data", __func__);
+		xm_tensor_set_canonical_block(ret, idx, data_ptr);
+		xm_dim_inc(&idx, &nblocks);
+	}
+	return ret;
+}
+
+xm_tensor_t *
 xm_tensor_create_structure(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
@@ -95,7 +119,7 @@ xm_tensor_create_structure(const xm_tensor_t *tensor, xm_allocator_t *allocator)
 			ret->blocks[i].data_ptr = xm_allocator_allocate(
 			    ret->allocator, blksize * sizeof(xm_scalar_t));
 			if (ret->blocks[i].data_ptr == XM_NULL_PTR)
-				xm_fatal("%s: unable to allocate data",
+				xm_fatal("%s: unable to allocate block data",
 				    __func__);
 		}
 		xm_dim_inc(&idx, &nblocks);

@@ -44,8 +44,13 @@ typedef double xm_scalar_t;
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
-/* Create new block-tensor. */
+/* Create new block-tensor with all blocks set to zero-blocks. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
+    xm_allocator_t *allocator);
+
+/* Create new block-tensor with all blocks set to newly allocated canonical
+ * blocks. */
+xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
 /* Create new block-tensor using block structure from "tensor". If allocator
