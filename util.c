@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dim.h"
 #include "util.h"
 
 void

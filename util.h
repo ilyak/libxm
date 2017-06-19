@@ -14,6 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-void xm_fatal(const char *fmt, ...);
-void xm_make_masks(const char *str1, const char *str2,
-    xm_dim_t *mask1, xm_dim_t *mask2);
+#ifndef UTIL_H_INCLUDED
+#define UTIL_H_INCLUDED
+
+#include "dim.h"
+
+void xm_fatal(const char *, ...);
+void xm_make_masks(const char *, const char *, xm_dim_t *, xm_dim_t *);
+
+#endif /* UTIL_H_INCLUDED */
