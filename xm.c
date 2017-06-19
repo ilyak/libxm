@@ -70,3 +70,53 @@ xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s)
 	free(buf);
 }
 }
+
+void
+xm_set(xm_tensor_t *a, xm_scalar_t x)
+{
+	xm_allocator_t *alloc;
+	const xm_block_space_t *bs;
+	xm_dim_t nblocks;
+	size_t i, blockcount, maxblksize;
+	xm_scalar_t *buf;
+
+	alloc = xm_tensor_get_allocator(a);
+	bs = xm_tensor_get_block_space(a);
+	maxblksize = xm_block_space_get_largest_block_size(bs);
+	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
+		xm_fatal("%s: out of memory", __func__);
+	for (i = 0; i < maxblksize; i++)
+		buf[i] = x;
+	nblocks = xm_tensor_get_nblocks(a);
+	blockcount = xm_dim_dot(&nblocks);
+#ifdef _OPENMP
+#pragma omp parallel private(i)
+#endif
+{
+	size_t blksize;
+	uintptr_t data_ptr;
+
+#ifdef _OPENMP
+#pragma omp for schedule(dynamic)
+#endif
+	for (i = 0; i < blockcount; i++) {
+		xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
+		int type = xm_tensor_get_block_type(a, idx);
+		if (type == XM_BLOCK_TYPE_CANONICAL) {
+			blksize = xm_tensor_get_block_size(a, idx);
+			data_ptr = xm_tensor_get_block_data_ptr(a, idx);
+			xm_allocator_write(alloc, data_ptr, buf,
+			    blksize * sizeof(xm_scalar_t));
+		}
+	}
+}
+	free(buf);
+}
+
+void
+xm_print_banner(void)
+{
+	printf("libxm (c) 2014-2017 Ilya Kaliman\n");
+	printf("Efficient operations on block tensors\n");
+	printf("https://github.com/ilyak/libxm\n");
+}

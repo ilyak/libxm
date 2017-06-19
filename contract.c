@@ -21,6 +21,11 @@
 #include "xm.h"
 #include "util.h"
 
+struct blockpair {
+	xm_dim_t blkidxa, blkidxb;
+	xm_scalar_t alpha;
+};
+
 #if defined(XM_SCALAR_FLOAT)
 #define dgemm_ sgemm_
 #elif defined(XM_SCALAR_DOUBLE_COMPLEX)
@@ -65,11 +70,6 @@ get_canonical_block_list(xm_tensor_t *tensor, size_t *ncanblksout)
 	*ncanblksout = ncanblks;
 	return canblks;
 }
-
-struct blockpair {
-	xm_dim_t blkidxa, blkidxb;
-	xm_scalar_t alpha;
-};
 
 static void
 compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
@@ -294,12 +294,4 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	free(pairs);
 }
 	free(canblks);
-}
-
-void
-xm_print_banner(void)
-{
-	printf("libxm (c) 2014-2017 Ilya Kaliman\n");
-	printf("Efficient operations on block tensors\n");
-	printf("https://github.com/ilyak/libxm\n");
 }
