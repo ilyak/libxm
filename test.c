@@ -1351,7 +1351,7 @@ test_copy(const char *path)
 	xm_allocator_t *allocatora, *allocatorc;
 	xm_tensor_t *a, *b, *c;
 	xm_block_space_t *bs;
-	xm_dim_t dims, idx, nblocks;
+	xm_dim_t dims, idx;
 	const xm_scalar_t sb = random_scalar();
 	const xm_scalar_t sc = random_scalar();
 
@@ -1367,15 +1367,14 @@ test_copy(const char *path)
 	xm_block_space_split(bs, 5, 3);
 	xm_block_space_split(bs, 6, 2);
 	xm_block_space_split(bs, 6, 6);
-	a = xm_tensor_create(bs, allocatora);
+	a = xm_tensor_create_canonical(bs, allocatora);
 	b = xm_tensor_create_structure(a, NULL);
 	xm_copy(b, a, sb);
 	c = xm_tensor_create_structure(a, allocatorc);
 	xm_copy(c, a, sc);
 	xm_copy(c, c, sb);
-	nblocks = xm_tensor_get_nblocks(a);
-	idx = xm_dim_zero(nblocks.n);
-	while (xm_dim_ne(&idx, &nblocks)) {
+	idx = xm_dim_zero(dims.n);
+	while (xm_dim_ne(&idx, &dims)) {
 		xm_scalar_t aa = xm_tensor_get_element(a, idx);
 		xm_scalar_t bb = xm_tensor_get_element(b, idx);
 		xm_scalar_t cc = xm_tensor_get_element(c, idx);
@@ -1383,7 +1382,7 @@ test_copy(const char *path)
 			xm_fatal("%s: tensors do not match", __func__);
 		if (!scalar_eq(aa*sb*sc, cc))
 			xm_fatal("%s: tensors do not match", __func__);
-		xm_dim_inc(&idx, &nblocks);
+		xm_dim_inc(&idx, &dims);
 	}
 	xm_tensor_free_block_data(a);
 	xm_tensor_free_block_data(b);
@@ -1393,6 +1392,43 @@ test_copy(const char *path)
 	xm_tensor_free(c);
 	xm_allocator_destroy(allocatora);
 	xm_allocator_destroy(allocatorc);
+}
+
+static void
+test_set(const char *path)
+{
+	xm_allocator_t *alloc;
+	xm_block_space_t *bs;
+	xm_tensor_t *a;
+	xm_dim_t dims, idx;
+	const xm_scalar_t x = random_scalar();
+
+	alloc = xm_allocator_create(path);
+	assert(alloc);
+	dims = xm_dim_8(3, 5, 1, 6, 3, 6, 9, 4);
+	bs = xm_block_space_create(dims);
+	assert(bs);
+	xm_block_space_split(bs, 0, 1);
+	xm_block_space_split(bs, 1, 1);
+	xm_block_space_split(bs, 1, 2);
+	xm_block_space_split(bs, 3, 3);
+	xm_block_space_split(bs, 0, 1);
+	xm_block_space_split(bs, 5, 4);
+	xm_block_space_split(bs, 6, 3);
+	xm_block_space_split(bs, 6, 7);
+	a = xm_tensor_create_canonical(bs, alloc);
+	xm_block_space_free(bs);
+	xm_set(a, x);
+	idx = xm_dim_zero(dims.n);
+	while (xm_dim_ne(&idx, &dims)) {
+		xm_scalar_t aa = xm_tensor_get_element(a, idx);
+		if (!scalar_eq(aa, x))
+			xm_fatal("%s: elements are not equal", __func__);
+		xm_dim_inc(&idx, &dims);
+	}
+	xm_tensor_free_block_data(a);
+	xm_tensor_free(a);
+	xm_allocator_destroy(alloc);
 }
 
 int
@@ -1410,6 +1446,12 @@ main(void)
 	fflush(stdout);
 	test_copy(NULL);
 	test_copy(path);
+	printf("success\n");
+
+	printf("set test 1... ");
+	fflush(stdout);
+	test_set(NULL);
+	test_set(path);
 	printf("success\n");
 
 	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {
