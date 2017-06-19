@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "xm.h"
 #include "util.h"
@@ -1436,6 +1437,8 @@ main(void)
 {
 	const char *path = "xmpagefile";
 	size_t i;
+
+	srand48(time(NULL));
 
 	printf("dim test 1... ");
 	fflush(stdout);
