@@ -276,6 +276,41 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 }
 
 void
+xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_scalar_t *buf)
+{
+	xm_dim_t nblocks;
+	size_t i, blksize;
+	uintptr_t dataptr;
+
+	nblocks = xm_tensor_get_nblocks(tensor);
+	i = xm_dim_offset(&blkidx, &nblocks);
+	if (tensor->blocks[i].type == XM_BLOCK_TYPE_ZERO)
+		xm_fatal("%s: cannot read data from zero-blocks", __func__);
+	blksize = xm_tensor_get_block_size(tensor, blkidx);
+	dataptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
+	xm_allocator_read(tensor->allocator, dataptr, buf,
+	    blksize * sizeof(xm_scalar_t));
+}
+
+void
+xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_scalar_t *buf)
+{
+	xm_dim_t nblocks;
+	size_t i, blksize;
+	uintptr_t dataptr;
+
+	nblocks = xm_tensor_get_nblocks(tensor);
+	i = xm_dim_offset(&blkidx, &nblocks);
+	if (tensor->blocks[i].type != XM_BLOCK_TYPE_CANONICAL)
+		xm_fatal("%s: can only write to canonical blocks", __func__);
+	blksize = xm_tensor_get_block_size(tensor, blkidx);
+	dataptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
+	xm_allocator_write(tensor->allocator, dataptr, buf,
+	    blksize * sizeof(xm_scalar_t));
+}
+
+void
 xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to,
     size_t stride)

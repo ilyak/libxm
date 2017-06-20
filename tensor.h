@@ -117,6 +117,15 @@ void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t source_blkidx, xm_dim_t permutation, xm_scalar_t scalar);
 
+/* Read tensor block data into memory buffer. The buffer has to be large enough
+ * to hold the data. */
+void xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_scalar_t *buf);
+
+/* Write tensor block data from memory buffer. */
+void xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+    xm_scalar_t *buf);
+
 /* Unfold block into the matrix form. The sequences of unfolding indices are
  * specified using the masks. The from parameter should point to the raw block
  * data in memory. The stride must be equal to or greater than the product of
