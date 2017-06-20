@@ -38,7 +38,7 @@ void dgemm_(char *, char *, long int *, long int *, long int *, xm_scalar_t *,
     xm_scalar_t *, long int *);
 
 static void
-xm_dgemm(char transa, char transb, long int m, long int n, long int k,
+xgemm(char transa, char transb, long int m, long int n, long int k,
     xm_scalar_t alpha, xm_scalar_t *a, long int lda, xm_scalar_t *b,
     long int ldb, xm_scalar_t beta, xm_scalar_t *c, long int ldc)
 {
@@ -194,11 +194,11 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			    aidxb, bufb1, bufb2, k);
 
 			if (aidxc.n > 0 && aidxc.i[0] == 0) {
-				xm_dgemm('T', 'N', (int)n, (int)m, (int)k,
+				xgemm('T', 'N', (int)n, (int)m, (int)k,
 				    alpha*pairs[i].alpha, bufb2, (int)k, bufa2,
 				    (int)k, 1.0, bufc1, (int)n);
 			} else {
-				xm_dgemm('T', 'N', (int)m, (int)n, (int)k,
+				xgemm('T', 'N', (int)m, (int)n, (int)k,
 				    alpha*pairs[i].alpha, bufa2, (int)k, bufb2,
 				    (int)k, 1.0, bufc1, (int)m);
 			}
