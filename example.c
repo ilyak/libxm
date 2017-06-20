@@ -42,11 +42,12 @@ main(void)
 	/* block-space c - 2 blocks */
 	xm_block_space_split(bsc, 0, 2);
 
-	/* Create tensors a, b, c. Tensors are initialized with all
+	/* Create tensors a and b. Tensors are initialized with all
 	 * zero-blocks by default. */
 	xm_tensor_t *a = xm_tensor_create(bsa, allocator);
 	xm_tensor_t *b = xm_tensor_create(bsb, allocator);
-	xm_tensor_t *c = xm_tensor_create(bsc, allocator);
+	/* Tensor c has only canonical blocks. */
+	xm_tensor_t *c = xm_tensor_create_canonical(bsc, allocator);
 
 	/* Block-spaces can be deallocated now. */
 	xm_block_space_free(bsa);
@@ -61,8 +62,8 @@ main(void)
 	xm_scalar_t blka[] = { 1, 2, 3, 4 };
 	ii = xm_dim_2(0, 0);
 	data_ptr = xm_tensor_allocate_block_data(a, ii);
-	xm_allocator_write(allocator, data_ptr, blka, sizeof blka);
 	xm_tensor_set_canonical_block(a, ii, data_ptr);
+	xm_tensor_write_block(a, ii, blka);
 	/* second block is transposed and negated first one */
 	jj = xm_dim_2(1, 2);
 	xm_tensor_set_derivative_block(a, jj, ii, xm_dim_2(1, 0), -1.0);
@@ -72,20 +73,12 @@ main(void)
 	xm_scalar_t blkb[] = { 6, 5, -4, 3, 2, -1 };
 	ii = xm_dim_2(0, 0);
 	data_ptr = xm_tensor_allocate_block_data(b, ii);
-	xm_allocator_write(allocator, data_ptr, blkb, sizeof blkb);
 	xm_tensor_set_canonical_block(b, ii, data_ptr);
+	xm_tensor_write_block(b, ii, blkb);
 	/* second block is a copy of the first one multiplied by -0.5 */
 	jj = xm_dim_2(2, 0);
 	xm_tensor_set_derivative_block(b, jj, ii, xm_dim_2(0, 1), -0.5);
 	/* other blocks stay zero */
-
-	/* The result "c" must be allocated explicitly. */
-	ii = xm_dim_2(0, 0);
-	data_ptr = xm_tensor_allocate_block_data(c, ii);
-	xm_tensor_set_canonical_block(c, ii, data_ptr);
-	jj = xm_dim_2(1, 0);
-	data_ptr = xm_tensor_allocate_block_data(c, jj);
-	xm_tensor_set_canonical_block(c, jj, data_ptr);
 
 	/* Compute c = 2*a*b */
 	xm_contract(2.0, a, b, 0.0, c, "ik", "kj", "ij");
