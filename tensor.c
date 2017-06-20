@@ -294,7 +294,8 @@ xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 }
 
 void
-xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, xm_scalar_t *buf)
+xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+    const xm_scalar_t *buf)
 {
 	xm_dim_t nblocks;
 	size_t i, blksize;
