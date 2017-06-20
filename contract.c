@@ -76,9 +76,6 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_dim_t cidxb, xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc,
     xm_dim_t blkidxc, struct blockpair *pairs, xm_scalar_t *buf)
 {
-	xm_allocator_t *alloca = xm_tensor_get_allocator(a);
-	xm_allocator_t *allocb = xm_tensor_get_allocator(b);
-	xm_allocator_t *allocc = xm_tensor_get_allocator(c);
 	const xm_block_space_t *bsa = xm_tensor_get_block_space(a);
 	const xm_block_space_t *bsb = xm_tensor_get_block_space(b);
 	const xm_block_space_t *bsc = xm_tensor_get_block_space(c);
@@ -87,8 +84,7 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	size_t maxblocksizec = xm_block_space_get_largest_block_size(bsc);
 	xm_dim_t dims, blkidxa, blkidxb, nblocksa, nblocksb;
 	xm_scalar_t *bufa1, *bufa2, *bufb1, *bufb2, *bufc1, *bufc2;
-	size_t i, j, m, n, k, nblkk, size;
-	uintptr_t data_ptr;
+	size_t i, j, m, n, k, nblkk, blksize;
 
 	bufa1 = buf;
 	bufa2 = bufa1 + maxblocksizea;
@@ -104,9 +100,7 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	dims = xm_tensor_get_block_dims(c, blkidxc);
 	m = xm_dim_dot_mask(&dims, &cidxc);
 	n = xm_dim_dot_mask(&dims, &aidxc);
-	size = xm_tensor_get_block_size(c, blkidxc);
-	data_ptr = xm_tensor_get_block_data_ptr(c, blkidxc);
-	xm_allocator_read(allocc, data_ptr, bufc2, size * sizeof(xm_scalar_t));
+	xm_tensor_read_block(c, blkidxc, bufc2);
 	if (aidxc.n > 0 && aidxc.i[0] == 0) {
 		xm_tensor_unfold_block(c, blkidxc, aidxc, cidxc,
 		    bufc2, bufc1, n);
@@ -114,7 +108,8 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 		xm_tensor_unfold_block(c, blkidxc, cidxc, aidxc,
 		    bufc2, bufc1, m);
 	}
-	for (i = 0; i < size; i++)
+	blksize = xm_tensor_get_block_size(c, blkidxc);
+	for (i = 0; i < blksize; i++)
 		bufc1[i] *= beta;
 	if (alpha == 0)
 		goto done;
@@ -179,17 +174,10 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			dims = xm_tensor_get_block_dims(a, blkidxa);
 			k = xm_dim_dot_mask(&dims, &cidxa);
 
-			size = xm_tensor_get_block_size(a, blkidxa);
-			data_ptr = xm_tensor_get_block_data_ptr(a, blkidxa);
-			xm_allocator_read(alloca, data_ptr, bufa1,
-			    size * sizeof(xm_scalar_t));
+			xm_tensor_read_block(a, blkidxa, bufa1);
 			xm_tensor_unfold_block(a, blkidxa, cidxa,
 			    aidxa, bufa1, bufa2, k);
-
-			size = xm_tensor_get_block_size(b, blkidxb);
-			data_ptr = xm_tensor_get_block_data_ptr(b, blkidxb);
-			xm_allocator_read(allocb, data_ptr, bufb1,
-			    size * sizeof(xm_scalar_t));
+			xm_tensor_read_block(b, blkidxb, bufb1);
 			xm_tensor_unfold_block(b, blkidxb, cidxb,
 			    aidxb, bufb1, bufb2, k);
 
@@ -212,9 +200,7 @@ done:
 		xm_tensor_fold_block(c, blkidxc, cidxc, aidxc,
 		    bufc1, bufc2, m);
 	}
-	size = xm_tensor_get_block_size(c, blkidxc);
-	data_ptr = xm_tensor_get_block_data_ptr(c, blkidxc);
-	xm_allocator_write(allocc, data_ptr, bufc2, size * sizeof(xm_scalar_t));
+	xm_tensor_write_block(c, blkidxc, bufc2);
 }
 
 void
