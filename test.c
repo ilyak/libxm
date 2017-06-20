@@ -1369,6 +1369,8 @@ test_copy(const char *path)
 	xm_block_space_split(bs, 6, 2);
 	xm_block_space_split(bs, 6, 6);
 	a = xm_tensor_create_canonical(bs, allocatora);
+	xm_block_space_free(bs);
+	fill_random(a);
 	b = xm_tensor_create_structure(a, NULL);
 	xm_copy(b, a, sb);
 	c = xm_tensor_create_structure(a, allocatorc);
