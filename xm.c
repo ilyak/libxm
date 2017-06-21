@@ -16,51 +16,73 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "xm.h"
 #include "util.h"
 
 void
-xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s)
+xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
+    const char *idxb)
 {
 	const xm_block_space_t *bsa, *bsb;
-	xm_dim_t nblocks;
-	size_t blockcount, maxblksize;
+	xm_dim_t cidxa, cidxb, zero, nblocksa;
+	size_t i, blockcount, maxblksize;
 
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
-	if (!xm_block_space_eq(bsa, bsb))
-		xm_fatal("%s: block spaces do not match", __func__);
+	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
+		xm_fatal("%s: bad indices for a", __func__);
+	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
+		xm_fatal("%s: bad indices for b", __func__);
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	if (cidxa.n != xm_block_space_get_ndims(bsa) ||
+	    cidxb.n != xm_block_space_get_ndims(bsb))
+		xm_fatal("%s: index spaces do not match", __func__);
+	for (i = 0; i < cidxa.n; i++)
+		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
+			xm_fatal("%s: inconsistent block spaces", __func__);
+
+	zero = xm_dim_zero(0);
 	maxblksize = xm_block_space_get_largest_block_size(bsa);
-	nblocks = xm_tensor_get_nblocks(a);
-	blockcount = xm_dim_dot(&nblocks);
+	nblocksa = xm_tensor_get_nblocks(a);
+	blockcount = xm_dim_dot(&nblocksa);
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel private(i)
 #endif
 {
-	xm_scalar_t *buf;
-	size_t i, j, blksize;
+	xm_dim_t ia, ib;
+	xm_scalar_t *buf1, *buf2;
+	size_t j, blksize;
+	int typea, typeb;
 
-	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
+	if ((buf1 = malloc(2 * maxblksize * sizeof *buf1)) == NULL)
 		xm_fatal("%s: out of memory", __func__);
+	buf2 = buf1 + maxblksize;
+	ib = xm_dim_zero(cidxb.n);
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < blockcount; i++) {
-		xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
-		int typea = xm_tensor_get_block_type(a, idx);
-		int typeb = xm_tensor_get_block_type(b, idx);
+		ia = xm_dim_from_offset(i, &nblocksa);
+		xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
+		typea = xm_tensor_get_block_type(a, ia);
+		typeb = xm_tensor_get_block_type(b, ib);
 		if (typea != typeb)
 			xm_fatal("%s: block structures do not match", __func__);
 		if (typea == XM_BLOCK_TYPE_CANONICAL) {
-			xm_tensor_read_block(b, idx, buf);
-			blksize = xm_tensor_get_block_size(b, idx);
+			xm_tensor_read_block(b, ib, buf1);
+			blksize = xm_tensor_get_block_size(b, ib);
+			xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
+			    buf2, blksize);
 			for (j = 0; j < blksize; j++)
-				buf[j] *= s;
-			xm_tensor_write_block(a, idx, buf);
+				buf2[j] *= s;
+			xm_tensor_fold_block(a, ia, cidxa, zero, buf2,
+			    buf1, blksize);
+			xm_tensor_write_block(a, ia, buf1);
 		}
 	}
-	free(buf);
+	free(buf1);
 }
 }
 
