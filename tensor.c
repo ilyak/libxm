@@ -279,13 +279,12 @@ void
 xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_scalar_t *buf)
 {
-	xm_dim_t nblocks;
-	size_t i, blksize;
+	size_t blksize;
 	uintptr_t dataptr;
+	int type;
 
-	nblocks = xm_tensor_get_nblocks(tensor);
-	i = xm_dim_offset(&blkidx, &nblocks);
-	if (tensor->blocks[i].type == XM_BLOCK_TYPE_ZERO)
+	type = xm_tensor_get_block_type(tensor, blkidx);
+	if (type == XM_BLOCK_TYPE_ZERO)
 		xm_fatal("%s: cannot read data from zero-blocks", __func__);
 	blksize = xm_tensor_get_block_size(tensor, blkidx);
 	dataptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
@@ -297,13 +296,12 @@ void
 xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     const xm_scalar_t *buf)
 {
-	xm_dim_t nblocks;
-	size_t i, blksize;
+	size_t blksize;
 	uintptr_t dataptr;
+	int type;
 
-	nblocks = xm_tensor_get_nblocks(tensor);
-	i = xm_dim_offset(&blkidx, &nblocks);
-	if (tensor->blocks[i].type != XM_BLOCK_TYPE_CANONICAL)
+	type = xm_tensor_get_block_type(tensor, blkidx);
+	if (type != XM_BLOCK_TYPE_CANONICAL)
 		xm_fatal("%s: can only write to canonical blocks", __func__);
 	blksize = xm_tensor_get_block_size(tensor, blkidx);
 	dataptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
