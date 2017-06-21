@@ -26,27 +26,27 @@ extern "C" {
 /* Print libxm banner to the standard output. */
 void xm_print_banner(void);
 
-/* Contract two tensors (c = alpha * a * b + beta * c) over contraction indices
- * specified by strings idxa and idxb. Permutation of tensor c is specified by
+/* Set all canonical block elements of tensor "a" to value "x". */
+void xm_set(xm_tensor_t *a, xm_scalar_t x);
+
+/* Copy tensor block data from "b" to "a" while multiplying by a scaling
+ * factor. Tensors must have identical block-structures. "a" and "b" can refer
+ * to the same tensor. */
+void xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s);
+
+/* Contract two tensors over contraction indices specified by strings idxa and
+ * idxb (c = alpha * a * b + beta * c). Permutation of tensor c is specified by
  * idxc. The routine will perform optimal contraction using symmetry and
- * sparsity information obtained from tensors' block structures. It is the
+ * sparsity information obtained from tensors' block-structures. It is the
  * user's responsibility to setup all tensors so that they have correct
- * symmetries. This function does not change the original symmetry of the
- * resulting tensor c.
+ * symmetries. This function does not change the original block-structure of
+ * tensor c.
  *
  * Example: xm_contract(1.0, vvvv, oovv, 0.0, t2, "abcd", "ijcd", "ijab");
  */
 void xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
     const char *idxc);
-
-/* Copy tensor block data from B to A while multiplying by a scaling factor.
- * Tensors must have identical block-structures. A and B can refer to the
- * same tensor. */
-void xm_copy(xm_tensor_t *a, const xm_tensor_t *b, xm_scalar_t s);
-
-/* Set all non-zero block elements of tensor A to value X. */
-void xm_set(xm_tensor_t *a, xm_scalar_t x);
 
 #ifdef __cplusplus
 } /* extern "C" */
