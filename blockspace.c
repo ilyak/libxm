@@ -70,6 +70,30 @@ xm_block_space_clone(const xm_block_space_t *bs)
 	return ret;
 }
 
+xm_block_space_t *
+xm_block_space_clone1(const xm_block_space_t *bs, xm_dim_t permutation)
+{
+	xm_block_space_t *ret;
+	size_t i, j;
+
+	if ((ret = calloc(1, sizeof *ret)) == NULL)
+		return NULL;
+	ret->dims = xm_dim_permute(&bs->dims, &permutation);
+	ret->nblocks = xm_dim_permute(&bs->nblocks, &permutation);
+	for (j = 0; j < ret->dims.n; j++) {
+		i = permutation.i[j];
+		assert(ret->nblocks.i[i] == bs->nblocks.i[j]);
+		ret->splits[i] = malloc((ret->nblocks.i[i]+1)*sizeof(size_t));
+		if (ret->splits[i] == NULL) {
+			xm_block_space_free(ret);
+			return NULL;
+		}
+		memcpy(ret->splits[i], bs->splits[j],
+		    (ret->nblocks.i[i]+1)*sizeof(size_t));
+	}
+	return ret;
+}
+
 size_t
 xm_block_space_get_ndims(const xm_block_space_t *bs)
 {
