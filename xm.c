@@ -65,9 +65,9 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 #endif
 	for (i = 0; i < blockcount; i++) {
 		ia = xm_dim_from_offset(i, &nblocksa);
-		xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
 		typea = xm_tensor_get_block_type(a, ia);
 		if (typea == XM_BLOCK_TYPE_CANONICAL) {
+			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
 			typeb = xm_tensor_get_block_type(b, ib);
 			blksize = xm_tensor_get_block_size(b, ib);
 			if (typeb == XM_BLOCK_TYPE_ZERO) {
