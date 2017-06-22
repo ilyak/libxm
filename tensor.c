@@ -81,19 +81,12 @@ xm_tensor_create_canonical(const xm_block_space_t *bs,
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
-	size_t blksize;
-	uintptr_t data_ptr;
 
 	ret = xm_tensor_create(bs, allocator);
 	nblocks = xm_block_space_get_nblocks(bs);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
-		blksize = xm_tensor_get_block_size(ret, idx);
-		data_ptr = xm_allocator_allocate(allocator,
-		    blksize * sizeof(xm_scalar_t));
-		if (data_ptr == XM_NULL_PTR)
-			xm_fatal("%s: unable to allocate block data", __func__);
-		xm_tensor_set_canonical_block(ret, idx, data_ptr);
+		xm_tensor_set_canonical_block(ret, idx);
 		xm_dim_inc(&idx, &nblocks);
 	}
 	return ret;
@@ -236,13 +229,27 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 }
 
 void
-xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	size_t blksize;
+	uintptr_t data_ptr;
+
+	blksize = xm_tensor_get_block_size(tensor, blkidx);
+	data_ptr = xm_allocator_allocate(tensor->allocator,
+	    blksize * sizeof(xm_scalar_t));
+	if (data_ptr == XM_NULL_PTR)
+		xm_fatal("%s: unable to allocate block data", __func__);
+	xm_tensor_set_canonical_block_raw(tensor, blkidx, data_ptr);
+}
+
+void
+xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
     uintptr_t data_ptr)
 {
 	struct xm_block *block;
 
-	assert(data_ptr != XM_NULL_PTR);
-
+	if (data_ptr == XM_NULL_PTR)
+		xm_fatal("%s: unexpected null data pointer", __func__);
 	block = tensor_get_block(tensor, blkidx);
 	block->type = XM_BLOCK_TYPE_CANONICAL;
 	block->permutation = xm_dim_identity_permutation(blkidx.n);
@@ -434,18 +441,6 @@ xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
 		}
 	}
-}
-
-uintptr_t
-xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx)
-{
-	xm_dim_t blkdims;
-	size_t size;
-
-	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
-	size = xm_dim_dot(&blkdims) * sizeof(xm_scalar_t);
-
-	return xm_allocator_allocate(tensor->allocator, size);
 }
 
 void

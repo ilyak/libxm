@@ -100,15 +100,19 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
  * No actual data are stored for zero-blocks. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/* Set tensor block as canonical block. Canonical blocks are the only ones that
- * store actual data.
- * Note: if blocks are allocated using a disk-backed allocator they should be
+/* Set tensor block as canonical block allocating necessary data for storage.
+ * Canonical blocks are the only ones that store actual data.
+ * Note: if blocks are allocated using disk-backed allocator they should be
  * at least several megabytes in size for best performance (e.g., 32^4 elements
- * for 4-index tensors).
+ * for 4-index tensors). */
+void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx);
+
+/* Same as xm_tensor_set_canonical_block with the ability to specify
+ * preallocated data pointer for storage.
  * The data_ptr argument must be allocated using the same allocator that was
  * used during tensor creation. Allocation must be large enough to hold block
- * data. See also: xm_tensor_allocate_block_data. */
-void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx,
+ * data. */
+void xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
     uintptr_t data_ptr);
 
 /* Set tensor block as derivative block. A derivative block is a copy of some
@@ -141,10 +145,6 @@ void xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 void xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
-
-/* Allocate storage sufficient to hold data for a particular block using
- * associated allocator. */
-uintptr_t xm_tensor_allocate_block_data(xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /* Deallocate associated data for all blocks of this tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);
