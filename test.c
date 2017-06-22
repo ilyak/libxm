@@ -99,7 +99,7 @@ compare_tensors(xm_tensor_t *t, xm_tensor_t *u)
 		xm_scalar_t et = xm_tensor_get_element(t, idx);
 		xm_scalar_t eu = xm_tensor_get_element(u, idx);
 		if (!scalar_eq(et, eu))
-			xm_fatal("%s: tensors do not match", __func__);
+			fatal("tensors do not match");
 		xm_dim_inc(&idx, &dimst);
 	}
 }
@@ -137,7 +137,7 @@ check_result(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a, xm_tensor_t *b,
 		}
 		ecc = xm_tensor_get_element(cc, ic);
 		if (!scalar_eq(ecc, ref))
-			xm_fatal("%s: result != ref", __func__);
+			fatal("result != ref");
 		xm_dim_inc(&ic, &absdimsc);
 	}
 }
@@ -216,7 +216,7 @@ make_abc_2(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	     xm_dim_ne(&idx, &nblocks);
 	     xm_dim_inc(&idx, &nblocks)) {
 		if (xm_tensor_get_block_type(a, idx) != XM_BLOCK_TYPE_ZERO)
-			xm_fatal("%s: unexpected block type", __func__);
+			fatal("unexpected block type");
 		xm_tensor_set_canonical_block(a, idx);
 		xm_tensor_set_canonical_block(b, idx);
 		xm_tensor_set_canonical_block(c, idx);
@@ -379,7 +379,7 @@ make_abc_7(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 					  xm_dim_3(2, 1, 0) };
 			if (xm_dim_eq(&idx, &tt[0]) ||
 			    xm_dim_eq(&idx, &tt[1]))
-				xm_fatal("%s: unexpected block type", __func__);
+				fatal("unexpected block type");
 			xm_tensor_set_canonical_block(a, idx);
 		}
 	}
@@ -955,7 +955,7 @@ unfold_test_1(const char *path)
 	xm_allocator_read(allocator_t, ptr, buf1, 5 * sizeof(xm_scalar_t));
 	for (i = 0; i < 5; i++)
 		if (!scalar_eq(buf1[i], buf2[i]))
-			xm_fatal("%s: comparison failed", __func__);
+			fatal("comparison failed");
 	xm_tensor_unfold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
 	    buf1, buf2, 5);
 	xm_tensor_fold_block(t, xm_dim_1(0), xm_dim_1(0), xm_dim_zero(0),
@@ -1012,7 +1012,7 @@ unfold_test_2(const char *path)
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
 	for (i = 0; i < 25; i++)
 		if (!scalar_eq(buf1[i], buf2[i]))
-			xm_fatal("%s: comparison failed", __func__);
+			fatal("comparison failed");
 
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_2(0, 0));
 	xm_allocator_read(allocator_t, ptr, buf1, 25 * sizeof(xm_scalar_t));
@@ -1229,7 +1229,7 @@ test_dim(void)
 		offset = xm_dim_offset(&idx1, &dim);
 		idx2 = xm_dim_from_offset(offset, &dim);
 		if (xm_dim_ne(&idx1, &idx2))
-			xm_fatal("%s: dims do not match", __func__);
+			fatal("dims do not match");
 		xm_dim_inc(&idx1, &dim);
 	}
 
@@ -1239,7 +1239,7 @@ test_dim(void)
 		offset = xm_dim_offset(&idx1, &dim);
 		idx2 = xm_dim_from_offset(offset, &dim);
 		if (xm_dim_ne(&idx1, &idx2))
-			xm_fatal("%s: dims do not match", __func__);
+			fatal("dims do not match");
 		xm_dim_inc(&idx1, &dim);
 	}
 
@@ -1249,7 +1249,7 @@ test_dim(void)
 	while (xm_dim_ne(&idx1, &dim)) {
 		offset = xm_dim_offset(&idx1, &dim);
 		if (offset != i)
-			xm_fatal("%s: dims are not sequential", __func__);
+			fatal("dims are not sequential");
 		xm_dim_inc(&idx1, &dim);
 		i++;
 	}
@@ -1291,9 +1291,9 @@ test_copy_1(const char *path)
 		xm_scalar_t bb = xm_tensor_get_element(b, idx);
 		xm_scalar_t cc = xm_tensor_get_element(c, idx);
 		if (!scalar_eq(aa*sb, bb))
-			xm_fatal("%s: tensors do not match", __func__);
+			fatal("tensors do not match");
 		if (!scalar_eq(aa*sb*sc, cc))
-			xm_fatal("%s: tensors do not match", __func__);
+			fatal("tensors do not match");
 		xm_dim_inc(&idx, &dims);
 	}
 	xm_tensor_free_block_data(a);
@@ -1341,7 +1341,7 @@ test_copy_2(const char *path)
 		aa = xm_tensor_get_element(a, ia);
 		bb = xm_tensor_get_element(b, ib);
 		if (!scalar_eq(aa*s, bb))
-			xm_fatal("%s: tensors do not match", __func__);
+			fatal("tensors do not match");
 		xm_dim_inc(&ia, &dims);
 	}
 	xm_tensor_free_block_data(a);
@@ -1392,7 +1392,7 @@ test_copy_3(const char *path)
 		aa = xm_tensor_get_element(a, ia);
 		bb = xm_tensor_get_element(b, ib);
 		if (!scalar_eq(aa*s, bb))
-			xm_fatal("%s: tensors do not match", __func__);
+			fatal("tensors do not match");
 		xm_dim_inc(&ia, &dims);
 	}
 	xm_tensor_free_block_data(a);
@@ -1437,7 +1437,7 @@ test_set(const char *path)
 	while (xm_dim_ne(&idx, &dims)) {
 		xm_scalar_t aa = xm_tensor_get_element(a, idx);
 		if (!scalar_eq(aa, x))
-			xm_fatal("%s: elements are not equal", __func__);
+			fatal("elements are not equal");
 		xm_dim_inc(&idx, &dims);
 	}
 	xm_tensor_free_block_data(a);

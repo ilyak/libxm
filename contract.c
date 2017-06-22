@@ -61,7 +61,7 @@ get_canonical_block_list(xm_tensor_t *tensor, size_t *ncanblksout)
 			ncanblks++;
 			canblks = realloc(canblks, ncanblks * sizeof *canblks);
 			if (canblks == NULL)
-				xm_fatal("%s: out of memory", __func__);
+				fatal("out of memory");
 			canblks[ncanblks-1] = idx;
 		}
 		xm_dim_inc(&idx, &nblocks);
@@ -217,38 +217,35 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	bsc = xm_tensor_get_block_space(c);
 
 	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 	if (strlen(idxc) != xm_block_space_get_ndims(bsc))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 
 	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
 	xm_make_masks(idxc, idxa, &cidxc, &aidxa);
 	xm_make_masks(idxc, idxb, &aidxc, &aidxb);
 
 	if (aidxa.n + cidxa.n != xm_block_space_get_ndims(bsa))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 	if (aidxb.n + cidxb.n != xm_block_space_get_ndims(bsb))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 	if (aidxc.n + cidxc.n != xm_block_space_get_ndims(bsc))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 	if (!(aidxc.n > 0 && aidxc.i[0] == 0) &&
 	    !(cidxc.n > 0 && cidxc.i[0] == 0))
-		xm_fatal("%s: bad contraction indices", __func__);
+		fatal("bad contraction indices");
 
 	for (i = 0; i < cidxa.n; i++)
 		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
-			xm_fatal("%s: inconsistent a and b tensor block "
-			    "spaces", __func__);
+			fatal("inconsistent a and b tensor block spaces");
 	for (i = 0; i < cidxc.n; i++)
 		if (!xm_block_space_eq1(bsc, cidxc.i[i], bsa, aidxa.i[i]))
-			xm_fatal("%s: inconsistent a and c tensor block "
-			    "spaces", __func__);
+			fatal("inconsistent a and c tensor block spaces");
 	for (i = 0; i < aidxc.n; i++)
 		if (!xm_block_space_eq1(bsc, aidxc.i[i], bsb, aidxb.i[i]))
-			xm_fatal("%s: inconsistent b and c tensor block "
-			    "spaces", __func__);
+			fatal("inconsistent b and c tensor block spaces");
 
 	nblocksa = xm_tensor_get_nblocks(a);
 	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
@@ -265,9 +262,9 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	xm_scalar_t *buf;
 
 	if ((pairs = malloc(nblkk * sizeof *pairs)) == NULL)
-		xm_fatal("%s: out of memory", __func__);
+		fatal("out of memory");
 	if ((buf = malloc(bufsize * sizeof *buf)) == NULL)
-		xm_fatal("%s: out of memory", __func__);
+		fatal("out of memory");
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif

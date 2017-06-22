@@ -19,6 +19,8 @@
 
 #include "dim.h"
 
+#define fatal(x) xm_fatal("%s: %s", __func__, (x))
+
 void xm_fatal(const char *, ...);
 void xm_make_masks(const char *, const char *, xm_dim_t *, xm_dim_t *);
 

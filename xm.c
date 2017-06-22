@@ -32,16 +32,16 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
 	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
-		xm_fatal("%s: bad indices for a", __func__);
+		fatal("bad indices for a");
 	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
-		xm_fatal("%s: bad indices for b", __func__);
+		fatal("bad indices for b");
 	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
 	if (cidxa.n != xm_block_space_get_ndims(bsa) ||
 	    cidxb.n != xm_block_space_get_ndims(bsb))
-		xm_fatal("%s: index spaces do not match", __func__);
+		fatal("index spaces do not match");
 	for (i = 0; i < cidxa.n; i++)
 		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
-			xm_fatal("%s: inconsistent block spaces", __func__);
+			fatal("inconsistent block spaces");
 
 	zero = xm_dim_zero(0);
 	maxblksize = xm_block_space_get_largest_block_size(bsa);
@@ -57,7 +57,7 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 	int typea, typeb;
 
 	if ((buf1 = malloc(2 * maxblksize * sizeof *buf1)) == NULL)
-		xm_fatal("%s: out of memory", __func__);
+		fatal("out of memory");
 	buf2 = buf1 + maxblksize;
 	ib = xm_dim_zero(cidxb.n);
 #ifdef _OPENMP
@@ -69,7 +69,7 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 		typea = xm_tensor_get_block_type(a, ia);
 		typeb = xm_tensor_get_block_type(b, ib);
 		if (typea != typeb)
-			xm_fatal("%s: block structures do not match", __func__);
+			fatal("block structures do not match");
 		if (typea == XM_BLOCK_TYPE_CANONICAL) {
 			xm_tensor_read_block(b, ib, buf1);
 			blksize = xm_tensor_get_block_size(b, ib);
@@ -97,7 +97,7 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 	bs = xm_tensor_get_block_space(a);
 	maxblksize = xm_block_space_get_largest_block_size(bs);
 	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
-		xm_fatal("%s: out of memory", __func__);
+		fatal("out of memory");
 	for (i = 0; i < maxblksize; i++)
 		buf[i] = x;
 	nblocks = xm_tensor_get_nblocks(a);
