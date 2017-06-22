@@ -1365,10 +1365,60 @@ test_copy_3(const char *path)
 	xm_allocator_destroy(allocator);
 }
 
+static void
+test_copy_4(const char *path)
+{
+	xm_allocator_t *allocator;
+	xm_block_space_t *bsa, *bsb;
+	xm_tensor_t *a, *b;
+	xm_dim_t idx, absdims;
+
+	allocator = xm_allocator_create(path);
+	bsa = xm_block_space_create(xm_dim_3(2, 9, 11));
+	xm_block_space_split(bsa, 0, 1);
+	xm_block_space_split(bsa, 1, 2);
+	xm_block_space_split(bsa, 1, 4);
+	xm_block_space_split(bsa, 2, 8);
+	xm_block_space_split(bsa, 2, 4);
+	xm_block_space_split(bsa, 2, 3);
+	bsb = xm_block_space_clone1(bsa, xm_dim_3(2, 0, 1));
+	a = xm_tensor_create(bsa, allocator);
+	b = xm_tensor_create_canonical(bsb, allocator);
+	xm_block_space_free(bsa);
+	xm_block_space_free(bsb);
+
+	xm_tensor_set_canonical_block(a, xm_dim_3(0, 0, 0));
+	xm_tensor_set_derivative_block(a, xm_dim_3(1, 1, 3), xm_dim_3(0, 0, 0),
+	    xm_dim_3(0, 1, 2), -7);
+	xm_tensor_set_canonical_block(a, xm_dim_3(0, 1, 1));
+	xm_tensor_set_canonical_block(a, xm_dim_3(1, 2, 0));
+	xm_tensor_set_canonical_block(a, xm_dim_3(1, 2, 2));
+
+	xm_set(a, 0);
+	fill_random(b);
+	xm_copy(b, random_scalar(), a, "ijk", "kij");
+
+	absdims = xm_tensor_get_abs_dims(b);
+	idx = xm_dim_zero(absdims.n);
+	while (xm_dim_ne(&idx, &absdims)) {
+		xm_scalar_t e = xm_tensor_get_element(b, idx);
+		if (!scalar_eq(e, 0))
+			fatal("all elements must be zero");
+		xm_dim_inc(&idx, &absdims);
+	}
+
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_allocator_destroy(allocator);
+}
+
 static const test_fn copy_tests[] = {
 	test_copy_1,
 	test_copy_2,
 	test_copy_3,
+	test_copy_4,
 };
 
 static void

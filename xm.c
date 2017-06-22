@@ -67,18 +67,20 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 		ia = xm_dim_from_offset(i, &nblocksa);
 		xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
 		typea = xm_tensor_get_block_type(a, ia);
-		typeb = xm_tensor_get_block_type(b, ib);
-		if (typea != typeb)
-			fatal("block structures do not match");
 		if (typea == XM_BLOCK_TYPE_CANONICAL) {
-			xm_tensor_read_block(b, ib, buf1);
+			typeb = xm_tensor_get_block_type(b, ib);
 			blksize = xm_tensor_get_block_size(b, ib);
-			xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
-			    buf2, blksize);
-			for (j = 0; j < blksize; j++)
-				buf2[j] *= s;
-			xm_tensor_fold_block(a, ia, cidxa, zero, buf2,
-			    buf1, blksize);
+			if (typeb == XM_BLOCK_TYPE_ZERO) {
+				memset(buf1, 0, blksize * sizeof *buf1);
+			} else {
+				xm_tensor_read_block(b, ib, buf1);
+				xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
+				    buf2, blksize);
+				for (j = 0; j < blksize; j++)
+					buf2[j] *= s;
+				xm_tensor_fold_block(a, ia, cidxa, zero, buf2,
+				    buf1, blksize);
+			}
 			xm_tensor_write_block(a, ia, buf1);
 		}
 	}
