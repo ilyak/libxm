@@ -74,12 +74,12 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 				memset(buf1, 0, blksize * sizeof *buf1);
 			} else {
 				xm_scalar_t scalar;
-				scalar = xm_tensor_get_block_scalar(b, ib);
+				scalar = xm_tensor_get_block_scalar(b, ib) * s;
 				xm_tensor_read_block(b, ib, buf1);
 				xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
 				    buf2, blksize);
 				for (j = 0; j < blksize; j++)
-					buf2[j] *= s * scalar;
+					buf2[j] *= scalar;
 				xm_tensor_fold_block(a, ia, cidxa, zero, buf2,
 				    buf1, blksize);
 			}
