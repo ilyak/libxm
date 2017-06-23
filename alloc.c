@@ -15,7 +15,6 @@
  */
 
 #include <assert.h>
-#include <err.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -39,6 +38,7 @@
 #endif
 
 #include "alloc.h"
+#include "util.h"
 
 #define XM_PAGE_SIZE (512ULL * 1024)
 #define XM_GROW_SIZE (256ULL * 1024 * 1024 * 1024)
@@ -219,7 +219,7 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 	}
 
 	if (pthread_mutex_lock(&allocator->mutex))
-		perror("pthread_mutex_lock");
+		fatal("pthread_mutex_lock");
 
 	if (allocator->path) {
 		if ((block->data_ptr = allocate_pages(allocator,
@@ -237,11 +237,11 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 	RB_INSERT(tree, &allocator->blocks, block);
 
 	if (pthread_mutex_unlock(&allocator->mutex))
-		perror("pthread_mutex_unlock");
+		fatal("pthread_mutex_unlock");
 	return (block->data_ptr);
 fail:
 	if (pthread_mutex_unlock(&allocator->mutex))
-		perror("pthread_mutex_unlock");
+		fatal("pthread_mutex_unlock");
 	free(block);
 	return (XM_NULL_PTR);
 }
@@ -269,12 +269,12 @@ xm_allocator_memset(xm_allocator_t *allocator, uintptr_t data_ptr,
 	     offset += sizeof buf) {
 		written = pwrite(allocator->fd, buf, sizeof buf, offset);
 		if (written != (ssize_t)(sizeof buf))
-			err(1, "pwrite");
+			fatal("pwrite");
 		write_bytes += sizeof buf;
 	}
 	written = pwrite(allocator->fd, buf, size_bytes - write_bytes, offset);
 	if (written != (ssize_t)(size_bytes - write_bytes))
-		err(1, "pwrite");
+		fatal("pwrite");
 }
 
 void
@@ -294,7 +294,7 @@ xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
 	offset = (off_t)data_ptr;
 	read_bytes = pread(allocator->fd, mem, size_bytes, offset);
 	if (read_bytes != (ssize_t)size_bytes)
-		err(1, "pread");
+		fatal("pread");
 }
 
 void
@@ -314,7 +314,7 @@ xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
 	offset = (off_t)data_ptr;
 	write_bytes = pwrite(allocator->fd, mem, size_bytes, offset);
 	if (write_bytes != (ssize_t)size_bytes)
-		err(1, "pwrite");
+		fatal("pwrite");
 }
 
 void
@@ -325,7 +325,7 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 	if (data_ptr == XM_NULL_PTR)
 		return;
 	if (pthread_mutex_lock(&allocator->mutex))
-		perror("pthread_mutex_lock");
+		fatal("pthread_mutex_lock");
 
 	block = find_block(&allocator->blocks, data_ptr);
 	assert(block);
@@ -344,7 +344,7 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 	free(block);
 
 	if (pthread_mutex_unlock(&allocator->mutex))
-		perror("pthread_mutex_unlock");
+		fatal("pthread_mutex_unlock");
 }
 
 void
