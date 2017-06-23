@@ -32,9 +32,9 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
 	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
-		fatal("bad indices for a");
+		fatal("idxa does not match tensor dimensions");
 	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
-		fatal("bad indices for b");
+		fatal("idxb does not match tensor dimensions");
 	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
 	if (cidxa.n != xm_block_space_get_ndims(bsa) ||
 	    cidxb.n != xm_block_space_get_ndims(bsb))
@@ -73,11 +73,13 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 			if (typeb == XM_BLOCK_TYPE_ZERO) {
 				memset(buf1, 0, blksize * sizeof *buf1);
 			} else {
+				xm_scalar_t scalar;
+				scalar = xm_tensor_get_block_scalar(b, ib);
 				xm_tensor_read_block(b, ib, buf1);
 				xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
 				    buf2, blksize);
 				for (j = 0; j < blksize; j++)
-					buf2[j] *= s;
+					buf2[j] *= s * scalar;
 				xm_tensor_fold_block(a, ia, cidxa, zero, buf2,
 				    buf1, blksize);
 			}
