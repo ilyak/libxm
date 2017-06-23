@@ -829,57 +829,8 @@ make_abc_12(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	*cc = c;
 }
 
-static const struct contract_test contract_tests[] = {
-	{ make_abc_1, "ik", "kj", "ij" },
-	{ make_abc_1, "ik", "kj", "ji" },
-	{ make_abc_1, "ik", "jk", "ij" },
-	{ make_abc_1, "ik", "jk", "ji" },
-	{ make_abc_1, "ki", "kj", "ij" },
-	{ make_abc_1, "ki", "kj", "ji" },
-	{ make_abc_1, "ki", "jk", "ij" },
-	{ make_abc_1, "ki", "jk", "ji" },
-	{ make_abc_2, "ik", "kj", "ij" },
-	{ make_abc_2, "ik", "kj", "ji" },
-	{ make_abc_2, "ik", "jk", "ij" },
-	{ make_abc_2, "ik", "jk", "ji" },
-	{ make_abc_2, "ki", "kj", "ij" },
-	{ make_abc_2, "ki", "kj", "ji" },
-	{ make_abc_2, "ki", "jk", "ij" },
-	{ make_abc_2, "ki", "jk", "ji" },
-	{ make_abc_3, "abcdefgh", "abcdefgi", "ih" },
-	{ make_abc_3, "abcdefgi", "abcdefgh", "ih" },
-	{ make_abc_3, "abcdxfgh", "abcdyfgh", "xy" },
-	{ make_abc_3, "abcdefgh", "obcdefgh", "ao" },
-	{ make_abc_3, "abcdefgh", "obcdefgh", "oa" },
-	{ make_abc_4, "abcdef", "abcijk", "ijkdef" },
-	{ make_abc_4, "abcdef", "aibjck", "ijkdef" },
-	{ make_abc_4, "badcfe", "xyzdef", "xyzabc" },
-	{ make_abc_5, "ik", "kj", "ij" },
-	{ make_abc_5, "ik", "kj", "ji" },
-	{ make_abc_5, "ik", "jk", "ij" },
-	{ make_abc_5, "ik", "jk", "ji" },
-	{ make_abc_5, "ki", "kj", "ij" },
-	{ make_abc_5, "ki", "kj", "ji" },
-	{ make_abc_5, "ki", "jk", "ij" },
-	{ make_abc_5, "ki", "jk", "ji" },
-	{ make_abc_6, "y", "xz", "xyz" },
-	{ make_abc_7, "abc", "abd", "dc" },
-	{ make_abc_8, "ab", "b", "a" },
-	{ make_abc_9, "ijab", "abcd", "ijcd" },
-	{ make_abc_9, "ijcd", "abcd", "ijab" },
-	{ make_abc_10, "abcd", "ijab", "ijcd" },
-	{ make_abc_10, "cdab", "ijab", "ijcd" },
-	{ make_abc_11, "abcd", "ijcd", "ijab" },
-	{ make_abc_12, "abcf", "abce", "ef" },
-	{ make_abc_12, "abfc", "abce", "ef" },
-	{ make_abc_12, "fabc", "bace", "ef" },
-	{ make_abc_12, "abcf", "acbe", "fe" },
-	{ make_abc_12, "afbc", "eabc", "fe" },
-	{ make_abc_12, "afcb", "bace", "fe" },
-};
-
 static void
-unfold_test_1(const char *path)
+test_unfold_1(const char *path)
 {
 	xm_allocator_t *allocator_t, *allocator_u;
 	xm_block_space_t *bs;
@@ -937,7 +888,7 @@ unfold_test_1(const char *path)
 }
 
 static void
-unfold_test_2(const char *path)
+test_unfold_2(const char *path)
 {
 	xm_allocator_t *allocator_t, *allocator_u;
 	xm_block_space_t *bs;
@@ -1048,7 +999,7 @@ unfold_test_2(const char *path)
 }
 
 static void
-unfold_test_3(const char *path)
+test_unfold_3(const char *path)
 {
 	xm_allocator_t *allocator_t, *allocator_u;
 	xm_block_space_t *bs;
@@ -1172,50 +1123,6 @@ unfold_test_3(const char *path)
 	xm_tensor_free(u);
 	xm_allocator_destroy(allocator_t);
 	xm_allocator_destroy(allocator_u);
-}
-
-static const test_fn unfold_tests[] = {
-	unfold_test_1,
-	unfold_test_2,
-	unfold_test_3,
-};
-
-static void
-test_dim(void)
-{
-	xm_dim_t idx1, idx2, dim;
-	size_t i, offset;
-
-	dim = xm_dim_4(5, 6, 3, 1);
-	idx1 = xm_dim_zero(dim.n);
-	while (xm_dim_ne(&idx1, &dim)) {
-		offset = xm_dim_offset(&idx1, &dim);
-		idx2 = xm_dim_from_offset(offset, &dim);
-		if (xm_dim_ne(&idx1, &idx2))
-			fatal("dims do not match");
-		xm_dim_inc(&idx1, &dim);
-	}
-
-	dim = xm_dim_3(1, 31, 16);
-	idx1 = xm_dim_zero(dim.n);
-	while (xm_dim_ne(&idx1, &dim)) {
-		offset = xm_dim_offset(&idx1, &dim);
-		idx2 = xm_dim_from_offset(offset, &dim);
-		if (xm_dim_ne(&idx1, &idx2))
-			fatal("dims do not match");
-		xm_dim_inc(&idx1, &dim);
-	}
-
-	i = 0;
-	dim = xm_dim_8(5, 2, 3, 2, 1, 2, 5, 4);
-	idx1 = xm_dim_zero(dim.n);
-	while (xm_dim_ne(&idx1, &dim)) {
-		offset = xm_dim_offset(&idx1, &dim);
-		if (offset != i)
-			fatal("dims are not sequential");
-		xm_dim_inc(&idx1, &dim);
-		i++;
-	}
 }
 
 static void
@@ -1414,12 +1321,83 @@ test_copy_4(const char *path)
 	xm_allocator_destroy(allocator);
 }
 
-static const test_fn copy_tests[] = {
-	test_copy_1,
-	test_copy_2,
-	test_copy_3,
-	test_copy_4,
-};
+static void
+test_copy_5(const char *path)
+{
+	xm_allocator_t *allocatora, *allocatorb;
+	xm_block_space_t *bsa;
+	xm_tensor_t *a, *b;
+
+	allocatora = xm_allocator_create(path);
+	allocatorb = xm_allocator_create(NULL);
+	bsa = xm_block_space_create(xm_dim_4(2, 9, 11, 3));
+	xm_block_space_split(bsa, 0, 1);
+	xm_block_space_split(bsa, 1, 2);
+	xm_block_space_split(bsa, 1, 4);
+	xm_block_space_split(bsa, 2, 8);
+	xm_block_space_split(bsa, 2, 4);
+	xm_block_space_split(bsa, 2, 3);
+	a = xm_tensor_create(bsa, allocatora);
+	b = xm_tensor_create_canonical(bsa, allocatorb);
+	xm_block_space_free(bsa);
+
+	xm_tensor_set_canonical_block(a, xm_dim_4(0, 0, 0, 0));
+	xm_tensor_set_derivative_block(a, xm_dim_4(1, 1, 3, 0),
+	    xm_dim_4(0, 0, 0, 0), xm_dim_4(0, 1, 2, 3), -3);
+	xm_tensor_set_canonical_block(a, xm_dim_4(0, 1, 1, 0));
+	xm_tensor_set_canonical_block(a, xm_dim_4(1, 2, 0, 0));
+	xm_tensor_set_canonical_block(a, xm_dim_4(1, 2, 2, 0));
+
+	fill_random(a);
+	fill_random(b);
+	xm_copy(b, 1, a, "abcd", "abcd");
+	compare_tensors(a, b);
+
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_allocator_destroy(allocatora);
+	xm_allocator_destroy(allocatorb);
+}
+
+static void
+test_dim(void)
+{
+	xm_dim_t idx1, idx2, dim;
+	size_t i, offset;
+
+	dim = xm_dim_4(5, 6, 3, 1);
+	idx1 = xm_dim_zero(dim.n);
+	while (xm_dim_ne(&idx1, &dim)) {
+		offset = xm_dim_offset(&idx1, &dim);
+		idx2 = xm_dim_from_offset(offset, &dim);
+		if (xm_dim_ne(&idx1, &idx2))
+			fatal("dims do not match");
+		xm_dim_inc(&idx1, &dim);
+	}
+
+	dim = xm_dim_3(1, 31, 16);
+	idx1 = xm_dim_zero(dim.n);
+	while (xm_dim_ne(&idx1, &dim)) {
+		offset = xm_dim_offset(&idx1, &dim);
+		idx2 = xm_dim_from_offset(offset, &dim);
+		if (xm_dim_ne(&idx1, &idx2))
+			fatal("dims do not match");
+		xm_dim_inc(&idx1, &dim);
+	}
+
+	i = 0;
+	dim = xm_dim_8(5, 2, 3, 2, 1, 2, 5, 4);
+	idx1 = xm_dim_zero(dim.n);
+	while (xm_dim_ne(&idx1, &dim)) {
+		offset = xm_dim_offset(&idx1, &dim);
+		if (offset != i)
+			fatal("dims are not sequential");
+		xm_dim_inc(&idx1, &dim);
+		i++;
+	}
+}
 
 static void
 test_set(const char *path)
@@ -1458,6 +1436,69 @@ test_set(const char *path)
 	xm_allocator_destroy(alloc);
 }
 
+static const test_fn unfold_tests[] = {
+	test_unfold_1,
+	test_unfold_2,
+	test_unfold_3,
+};
+
+static const test_fn copy_tests[] = {
+	test_copy_1,
+	test_copy_2,
+	test_copy_3,
+	test_copy_4,
+	test_copy_5,
+};
+
+static const struct contract_test contract_tests[] = {
+	{ make_abc_1, "ik", "kj", "ij" },
+	{ make_abc_1, "ik", "kj", "ji" },
+	{ make_abc_1, "ik", "jk", "ij" },
+	{ make_abc_1, "ik", "jk", "ji" },
+	{ make_abc_1, "ki", "kj", "ij" },
+	{ make_abc_1, "ki", "kj", "ji" },
+	{ make_abc_1, "ki", "jk", "ij" },
+	{ make_abc_1, "ki", "jk", "ji" },
+	{ make_abc_2, "ik", "kj", "ij" },
+	{ make_abc_2, "ik", "kj", "ji" },
+	{ make_abc_2, "ik", "jk", "ij" },
+	{ make_abc_2, "ik", "jk", "ji" },
+	{ make_abc_2, "ki", "kj", "ij" },
+	{ make_abc_2, "ki", "kj", "ji" },
+	{ make_abc_2, "ki", "jk", "ij" },
+	{ make_abc_2, "ki", "jk", "ji" },
+	{ make_abc_3, "abcdefgh", "abcdefgi", "ih" },
+	{ make_abc_3, "abcdefgi", "abcdefgh", "ih" },
+	{ make_abc_3, "abcdxfgh", "abcdyfgh", "xy" },
+	{ make_abc_3, "abcdefgh", "obcdefgh", "ao" },
+	{ make_abc_3, "abcdefgh", "obcdefgh", "oa" },
+	{ make_abc_4, "abcdef", "abcijk", "ijkdef" },
+	{ make_abc_4, "abcdef", "aibjck", "ijkdef" },
+	{ make_abc_4, "badcfe", "xyzdef", "xyzabc" },
+	{ make_abc_5, "ik", "kj", "ij" },
+	{ make_abc_5, "ik", "kj", "ji" },
+	{ make_abc_5, "ik", "jk", "ij" },
+	{ make_abc_5, "ik", "jk", "ji" },
+	{ make_abc_5, "ki", "kj", "ij" },
+	{ make_abc_5, "ki", "kj", "ji" },
+	{ make_abc_5, "ki", "jk", "ij" },
+	{ make_abc_5, "ki", "jk", "ji" },
+	{ make_abc_6, "y", "xz", "xyz" },
+	{ make_abc_7, "abc", "abd", "dc" },
+	{ make_abc_8, "ab", "b", "a" },
+	{ make_abc_9, "ijab", "abcd", "ijcd" },
+	{ make_abc_9, "ijcd", "abcd", "ijab" },
+	{ make_abc_10, "abcd", "ijab", "ijcd" },
+	{ make_abc_10, "cdab", "ijab", "ijcd" },
+	{ make_abc_11, "abcd", "ijcd", "ijab" },
+	{ make_abc_12, "abcf", "abce", "ef" },
+	{ make_abc_12, "abfc", "abce", "ef" },
+	{ make_abc_12, "fabc", "bace", "ef" },
+	{ make_abc_12, "abcf", "acbe", "fe" },
+	{ make_abc_12, "afbc", "eabc", "fe" },
+	{ make_abc_12, "afcb", "bace", "fe" },
+};
+
 int
 main(void)
 {
@@ -1477,18 +1518,18 @@ main(void)
 	test_set(path);
 	printf("success\n");
 
-	for (i = 0; i < sizeof copy_tests / sizeof *copy_tests; i++) {
-		printf("copy test %zu... ", i+1);
-		fflush(stdout);
-		copy_tests[i](NULL);
-		copy_tests[i](path);
-		printf("success\n");
-	}
 	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {
 		printf("unfold test %zu... ", i+1);
 		fflush(stdout);
 		unfold_tests[i](NULL);
 		unfold_tests[i](path);
+		printf("success\n");
+	}
+	for (i = 0; i < sizeof copy_tests / sizeof *copy_tests; i++) {
+		printf("copy test %zu... ", i+1);
+		fflush(stdout);
+		copy_tests[i](NULL);
+		copy_tests[i](path);
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
