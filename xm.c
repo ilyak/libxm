@@ -22,8 +22,48 @@
 #include "util.h"
 
 void
+xm_set(xm_tensor_t *a, xm_scalar_t x)
+{
+	const xm_block_space_t *bs;
+	xm_dim_t nblocks;
+	size_t i, blockcount, maxblksize;
+	xm_scalar_t *buf;
+
+	bs = xm_tensor_get_block_space(a);
+	maxblksize = xm_block_space_get_largest_block_size(bs);
+	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
+		fatal("out of memory");
+	for (i = 0; i < maxblksize; i++)
+		buf[i] = x;
+	nblocks = xm_tensor_get_nblocks(a);
+	blockcount = xm_dim_dot(&nblocks);
+#ifdef _OPENMP
+#pragma omp parallel private(i)
+#endif
+{
+#ifdef _OPENMP
+#pragma omp for schedule(dynamic)
+#endif
+	for (i = 0; i < blockcount; i++) {
+		xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
+		int type = xm_tensor_get_block_type(a, idx);
+		if (type == XM_BLOCK_TYPE_CANONICAL)
+			xm_tensor_write_block(a, idx, buf);
+	}
+}
+	free(buf);
+}
+
+void
 xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
     const char *idxb)
+{
+	xm_add(0, a, s, b, idxa, idxb);
+}
+
+void
+xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
+    const xm_tensor_t *b, const char *idxa, const char *idxb)
 {
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, nblocksa;
@@ -70,20 +110,27 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
 			typeb = xm_tensor_get_block_type(b, ib);
 			blksize = xm_tensor_get_block_size(b, ib);
-			if (typeb == XM_BLOCK_TYPE_ZERO) {
-				memset(buf1, 0, blksize * sizeof *buf1);
+			if (beta == 0 || typeb == XM_BLOCK_TYPE_ZERO) {
+				memset(buf2, 0, blksize * sizeof *buf2);
 			} else {
-				xm_scalar_t scalar;
-				scalar = xm_tensor_get_block_scalar(b, ib) * s;
-				xm_tensor_read_block(b, ib, buf1);
-				xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
-				    buf2, blksize);
-				for (j = 0; j < blksize; j++)
-					buf2[j] *= scalar;
-				xm_tensor_fold_block(a, ia, cidxa, zero, buf2,
+				xm_scalar_t scalar = beta;
+				scalar *= xm_tensor_get_block_scalar(b, ib);
+				xm_tensor_read_block(b, ib, buf2);
+				xm_tensor_unfold_block(b, ib, cidxb, zero, buf2,
 				    buf1, blksize);
+				for (j = 0; j < blksize; j++)
+					buf1[j] *= scalar;
+				xm_tensor_fold_block(a, ia, cidxa, zero, buf1,
+				    buf2, blksize);
 			}
-			xm_tensor_write_block(a, ia, buf1);
+			if (alpha == 0)
+				xm_tensor_write_block(a, ia, buf2);
+			else {
+				xm_tensor_read_block(a, ia, buf1);
+				for (j = 0; j < blksize; j++)
+					buf1[j] = alpha * buf1[j] + buf2[j];
+				xm_tensor_write_block(a, ia, buf1);
+			}
 		}
 	}
 	free(buf1);
@@ -91,42 +138,9 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 }
 
 void
-xm_set(xm_tensor_t *a, xm_scalar_t x)
-{
-	const xm_block_space_t *bs;
-	xm_dim_t nblocks;
-	size_t i, blockcount, maxblksize;
-	xm_scalar_t *buf;
-
-	bs = xm_tensor_get_block_space(a);
-	maxblksize = xm_block_space_get_largest_block_size(bs);
-	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
-		fatal("out of memory");
-	for (i = 0; i < maxblksize; i++)
-		buf[i] = x;
-	nblocks = xm_tensor_get_nblocks(a);
-	blockcount = xm_dim_dot(&nblocks);
-#ifdef _OPENMP
-#pragma omp parallel private(i)
-#endif
-{
-#ifdef _OPENMP
-#pragma omp for schedule(dynamic)
-#endif
-	for (i = 0; i < blockcount; i++) {
-		xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
-		int type = xm_tensor_get_block_type(a, idx);
-		if (type == XM_BLOCK_TYPE_CANONICAL)
-			xm_tensor_write_block(a, idx, buf);
-	}
-}
-	free(buf);
-}
-
-void
 xm_print_banner(void)
 {
-	printf("libxm (c) 2014-2017 Ilya Kaliman\n");
-	printf("Efficient operations on block tensors\n");
+	printf("Libxm Tensor Library\n");
+	printf("(c) 2014-2017 Ilya Kaliman\n");
 	printf("https://github.com/ilyak/libxm\n");
 }

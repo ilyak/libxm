@@ -38,6 +38,14 @@ void xm_set(xm_tensor_t *a, xm_scalar_t x);
 void xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
 
+/* Add tensors (a = alpha * a + beta * b). Tensors must have compatible
+ * block-structures. Permutation is specified using strings idxa and idxb.
+ *
+ * Example: xm_add(1.0, a, 2.0, b, "ij", "ji");
+ */
+void xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
+    const xm_tensor_t *b, const char *idxa, const char *idxb);
+
 /* Contract two tensors over contraction indices specified by strings idxa and
  * idxb (c = alpha * a * b + beta * c). Permutation of tensor c is specified by
  * idxc. The routine will perform optimal contraction using symmetry and
