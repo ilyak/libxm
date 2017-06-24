@@ -20,8 +20,8 @@ print_tensor(const xm_tensor_t *t)
 int
 main(void)
 {
-	/* Create an allocator. Passing NULL means that we store data in RAM,
-	 * not in a file on disk. */
+	/* Create an allocator. Passing NULL as path means that we store data
+	 * in RAM, not in a file on disk. */
 	xm_allocator_t *allocator = xm_allocator_create(NULL);
 
 	/* Create the block-spaces. Our matrices will be 4x5, 5x3, and 4x3
@@ -77,8 +77,10 @@ main(void)
 	xm_tensor_set_derivative_block(b, jj, ii, xm_dim_2(0, 1), -0.5);
 	/* other blocks stay zero */
 
-	/* Compute c = 2*a*b */
-	xm_contract(2.0, a, b, 0.0, c, "ik", "kj", "ij");
+	/* Set all elements of c to 1 */
+	xm_set(c, 1.0);
+	/* Compute c = 2*a*b + c */
+	xm_contract(2.0, a, b, 1.0, c, "ik", "kj", "ij");
 
 	/* Print the result. */
 	printf("tensor a\n");
@@ -87,7 +89,7 @@ main(void)
 	printf("tensor b\n");
 	print_tensor(b);
 	printf("\n");
-	printf("tensor c = 2*a*b\n");
+	printf("tensor c = 2*a*b + 1\n");
 	print_tensor(c);
 
 	/* Finally, cleanup all allocated resources. */
