@@ -140,13 +140,14 @@ void xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 
 /* Fold block back from the matrix form. This is the inverse of the
  * xm_tensor_unfold_block function. On return, "to" will contain raw block data
- * that can be directly written to the data_ptr of the block. Only canonical
- * blocks can be folded. */
+ * that can be directly written to the block. Only canonical blocks can be
+ * folded. */
 void xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
     xm_scalar_t *to, size_t stride);
 
-/* Deallocate associated data for all blocks of this tensor. */
+/* Deallocate associated data for all blocks of this tensor. This resets all
+ * blocks to zero. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);
 
 /* Release resources associated with a tensor. The actual block data are not
