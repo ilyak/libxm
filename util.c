@@ -31,7 +31,7 @@ xm_fatal(const char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 	fprintf(stderr, "\n");
-	abort();
+	exit(1);
 }
 
 void
