@@ -16,17 +16,6 @@ supports single and double precision scalar and complex numbers.
 
 The code described in the paper can be found in the **xm1** branch.
 
-### Usage
-
-A documented example on how to use libxm can be found in the `example.c` file.
-Once tensors are setup the contraction routine is similar to BLAS dgemm call:
-
-    xm_contract(alpha, A, B, beta, C, "abcd", "ijcd", "ijab");
-
-This will preform the following contraction of two 4-index tensors A and B:
-
-    C_ijab := alpha * A_abcd * B_ijcd + beta * C_ijab
-
 ### Compilation
 
 To compile libxm you need a POSIX environment, an efficient BLAS library, and
@@ -46,12 +35,12 @@ Compiler and flags can be adjusted by modifying libxm Makefile.
 
 ### Source code overview
 
-- xm.h - main API header file
+- example.c - sample code with comments - start here
+- xm.h - main libxm include header file
 - tensor.c/tensor.h - block-tensor manipulation routines
 - alloc.c/alloc.h - disk-backed data allocator
 - blockspace.c/blockspace.h - operations on block-spaces
 - dim.c/dim.h - operations on multidimensional indices
-- example.c - sample code with comments
 - test.c - testing facilities
 
 Corresponding documentation can be found in individual header files.
