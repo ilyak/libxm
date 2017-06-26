@@ -141,6 +141,6 @@ void
 xm_print_banner(void)
 {
 	printf("Libxm Tensor Library\n");
-	printf("(c) 2014-2017 Ilya Kaliman\n");
+	printf("Copyright (c) 2014-2017 Ilya Kaliman\n");
 	printf("https://github.com/ilyak/libxm\n");
 }
