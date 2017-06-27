@@ -34,8 +34,8 @@ void xm_set(xm_tensor_t *a, xm_scalar_t x);
  * specified using strings idxa and idxb. This function does not change the
  * original block-structure of the output tensor.
  *
- * Example: xm_copy(a, 2.0, b, "ij", "ji");
- *          a_ij = 2 * b_ji
+ * Example: xm_copy(a, 2.0, b, "ijk", "kij");
+ *          a_ijk = 2 * b_kij
  */
 void xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
