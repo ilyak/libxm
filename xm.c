@@ -81,7 +81,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 		fatal("index spaces do not match");
 	for (i = 0; i < cidxa.n; i++)
 		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
-			fatal("inconsistent block spaces");
+			fatal("inconsistent block-spaces");
 
 	zero = xm_dim_zero(0);
 	maxblksize = xm_block_space_get_largest_block_size(bsa);

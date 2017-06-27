@@ -239,13 +239,13 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 
 	for (i = 0; i < cidxa.n; i++)
 		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
-			fatal("inconsistent a and b tensor block spaces");
+			fatal("inconsistent a and b tensor block-spaces");
 	for (i = 0; i < cidxc.n; i++)
 		if (!xm_block_space_eq1(bsc, cidxc.i[i], bsa, aidxa.i[i]))
-			fatal("inconsistent a and c tensor block spaces");
+			fatal("inconsistent a and c tensor block-spaces");
 	for (i = 0; i < aidxc.n; i++)
 		if (!xm_block_space_eq1(bsc, aidxc.i[i], bsb, aidxb.i[i]))
-			fatal("inconsistent b and c tensor block spaces");
+			fatal("inconsistent b and c tensor block-spaces");
 
 	nblocksa = xm_tensor_get_nblocks(a);
 	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
