@@ -1534,6 +1534,43 @@ test_dim(void)
 }
 
 static void
+test_blockspace(void)
+{
+	xm_block_space_t *bs;
+	xm_dim_t dima, dimb;
+
+	bs = xm_block_space_create(xm_dim_8(1,2,3,4,5,6,7,8));
+	xm_block_space_autosplit(bs);
+	dima = xm_block_space_get_nblocks(bs);
+	dimb = xm_dim_same(8, 1);
+	assert(xm_dim_eq(&dima, &dimb));
+	dima = xm_block_space_get_block_dims(bs, xm_dim_zero(8));
+	dimb = xm_dim_8(1,2,3,4,5,6,7,8);
+	assert(xm_dim_eq(&dima, &dimb));
+	xm_block_space_free(bs);
+
+	bs = xm_block_space_create(xm_dim_8(10,20,30,40,50,60,70,80));
+	xm_block_space_autosplit(bs);
+	dima = xm_block_space_get_nblocks(bs);
+	dimb = xm_dim_8(1,1,1,2,2,2,3,3);
+	assert(xm_dim_eq(&dima, &dimb));
+	dima = xm_block_space_get_block_dims(bs, xm_dim_zero(8));
+	dimb = xm_dim_8(10,20,30,32,32,32,32,32);
+	assert(xm_dim_eq(&dima, &dimb));
+	xm_block_space_free(bs);
+
+	bs = xm_block_space_create(xm_dim_5(30,31,32,33,34));
+	xm_block_space_autosplit(bs);
+	dima = xm_block_space_get_nblocks(bs);
+	dimb = xm_dim_5(1,1,1,2,2);
+	assert(xm_dim_eq(&dima, &dimb));
+	dima = xm_block_space_get_block_dims(bs, xm_dim_zero(5));
+	dimb = xm_dim_5(30,31,32,32,32);
+	assert(xm_dim_eq(&dima, &dimb));
+	xm_block_space_free(bs);
+}
+
+static void
 test_set(const char *path)
 {
 	xm_allocator_t *alloc;
@@ -1656,6 +1693,11 @@ main(void)
 	printf("dim test 1... ");
 	fflush(stdout);
 	test_dim();
+	printf("success\n");
+
+	printf("block-space test 1... ");
+	fflush(stdout);
+	test_blockspace();
 	printf("success\n");
 
 	printf("set test 1... ");
