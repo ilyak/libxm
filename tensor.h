@@ -101,10 +101,10 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /* Set tensor block as canonical block allocating necessary data for storage.
- * Canonical blocks are the only ones that store actual data.
- * Note: if blocks are allocated using disk-backed allocator they should be
- * at least several megabytes in size for best performance (e.g., 32^4 elements
- * for 4-index tensors). */
+ * Canonical blocks are the only ones that store actual data. Note: if blocks
+ * are allocated using disk-backed allocator they should be at least several
+ * megabytes in size for best performance. Use xm_block_space_autosplit to
+ * split block-spaces into optimally-sized blocks. */
 void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /* Same as xm_tensor_set_canonical_block with the ability to specify

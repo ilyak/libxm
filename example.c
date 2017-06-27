@@ -31,7 +31,8 @@ main(void)
 	xm_block_space_t *bsc = xm_block_space_create(xm_dim_2(4, 3));
 
 	/* Split the block-spaces into blocks. Block-spaces must be consistent
-	 * with each other. */
+	 * with each other. Alternatively, xm_block_space_autosplit function
+	 * can be used. */
 	/* block-space a - 6 blocks */
 	xm_block_space_split(bsa, 0, 2);
 	xm_block_space_split(bsa, 1, 2);
