@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define XM_AUTOSPLIT_BLOCK_SIZE 32
+
 struct xm_block_space {
 	xm_dim_t dims, nblocks;
 	size_t *splits[XM_MAX_DIM];
@@ -134,6 +136,17 @@ xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x)
 	    (bs->nblocks.i[dim]-i+1)*sizeof(size_t));
 	bs->splits[dim][i] = x;
 	bs->nblocks.i[dim]++;
+}
+
+void
+xm_block_space_autosplit(xm_block_space_t *bs)
+{
+	const size_t blocksize = XM_AUTOSPLIT_BLOCK_SIZE;
+	size_t i, j;
+
+	for (j = 0; j < bs->dims.n; j++)
+		for (i = blocksize; i < bs->dims.i[j]; i += blocksize)
+			xm_block_space_split(bs, j, i);
 }
 
 size_t

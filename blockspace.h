@@ -48,6 +48,9 @@ xm_dim_t xm_block_space_get_nblocks(const xm_block_space_t *bs);
 /* Split block-space along a dimension at point x. */
 void xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x);
 
+/* Automatically split the block-space into optimally-sized blocks. */
+void xm_block_space_autosplit(xm_block_space_t *bs);
+
 /* Return i-th split point along the dimension dim. */
 size_t xm_block_space_get_split(xm_block_space_t *bs, size_t dim, size_t i);
 
