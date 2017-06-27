@@ -1536,38 +1536,57 @@ test_dim(void)
 static void
 test_blockspace(void)
 {
-	xm_block_space_t *bs;
+	xm_block_space_t *bsa, *bsb;
 	xm_dim_t dima, dimb;
 
-	bs = xm_block_space_create(xm_dim_8(1,2,3,4,5,6,7,8));
-	xm_block_space_autosplit(bs);
-	dima = xm_block_space_get_nblocks(bs);
+	bsa = xm_block_space_create(xm_dim_8(1,2,3,4,5,6,7,8));
+	xm_block_space_autosplit(bsa);
+	dima = xm_block_space_get_nblocks(bsa);
 	dimb = xm_dim_same(8, 1);
 	assert(xm_dim_eq(&dima, &dimb));
-	dima = xm_block_space_get_block_dims(bs, xm_dim_zero(8));
+	dima = xm_block_space_get_block_dims(bsa, xm_dim_zero(8));
 	dimb = xm_dim_8(1,2,3,4,5,6,7,8);
 	assert(xm_dim_eq(&dima, &dimb));
-	xm_block_space_free(bs);
+	xm_block_space_free(bsa);
 
-	bs = xm_block_space_create(xm_dim_8(10,20,30,40,50,60,70,80));
-	xm_block_space_autosplit(bs);
-	dima = xm_block_space_get_nblocks(bs);
+	bsa = xm_block_space_create(xm_dim_8(10,20,30,40,50,60,70,80));
+	xm_block_space_autosplit(bsa);
+	dima = xm_block_space_get_nblocks(bsa);
 	dimb = xm_dim_8(1,1,1,2,2,2,3,3);
 	assert(xm_dim_eq(&dima, &dimb));
-	dima = xm_block_space_get_block_dims(bs, xm_dim_zero(8));
+	dima = xm_block_space_get_block_dims(bsa, xm_dim_zero(8));
 	dimb = xm_dim_8(10,20,30,32,32,32,32,32);
 	assert(xm_dim_eq(&dima, &dimb));
-	xm_block_space_free(bs);
+	xm_block_space_free(bsa);
 
-	bs = xm_block_space_create(xm_dim_5(30,31,32,33,34));
-	xm_block_space_autosplit(bs);
-	dima = xm_block_space_get_nblocks(bs);
+	bsa = xm_block_space_create(xm_dim_5(30,31,32,33,34));
+	xm_block_space_autosplit(bsa);
+	dima = xm_block_space_get_nblocks(bsa);
 	dimb = xm_dim_5(1,1,1,2,2);
 	assert(xm_dim_eq(&dima, &dimb));
-	dima = xm_block_space_get_block_dims(bs, xm_dim_zero(5));
+	dima = xm_block_space_get_block_dims(bsa, xm_dim_zero(5));
 	dimb = xm_dim_5(30,31,32,32,32);
 	assert(xm_dim_eq(&dima, &dimb));
-	xm_block_space_free(bs);
+	xm_block_space_free(bsa);
+
+	bsa = xm_block_space_create(xm_dim_7(102,40,203,593,15,84,1934));
+	bsb = xm_block_space_create(xm_dim_6(40,593,83,84,85,1934));
+	assert(xm_block_space_eq1(bsa, 1, bsb, 0));
+	assert(xm_block_space_eq1(bsa, 3, bsb, 1));
+	assert(!xm_block_space_eq1(bsa, 5, bsb, 2));
+	assert(xm_block_space_eq1(bsa, 5, bsb, 3));
+	assert(!xm_block_space_eq1(bsa, 5, bsb, 4));
+	assert(xm_block_space_eq1(bsa, 6, bsb, 5));
+	xm_block_space_autosplit(bsa);
+	xm_block_space_autosplit(bsb);
+	assert(xm_block_space_eq1(bsa, 1, bsb, 0));
+	assert(xm_block_space_eq1(bsa, 3, bsb, 1));
+	assert(!xm_block_space_eq1(bsa, 5, bsb, 2));
+	assert(xm_block_space_eq1(bsa, 5, bsb, 3));
+	assert(!xm_block_space_eq1(bsa, 5, bsb, 4));
+	assert(xm_block_space_eq1(bsa, 6, bsb, 5));
+	xm_block_space_free(bsa);
+	xm_block_space_free(bsb);
 }
 
 static void
