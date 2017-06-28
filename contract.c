@@ -46,30 +46,6 @@ xgemm(char transa, char transb, long int m, long int n, long int k,
 	    &beta, c, &ldc);
 }
 
-static xm_dim_t *
-get_canonical_block_list(xm_tensor_t *tensor, size_t *ncanblksout)
-{
-	xm_dim_t idx, nblocks, *canblks = NULL;
-	size_t ncanblks = 0;
-	int type;
-
-	nblocks = xm_tensor_get_nblocks(tensor);
-	idx = xm_dim_zero(nblocks.n);
-	while (xm_dim_ne(&idx, &nblocks)) {
-		type = xm_tensor_get_block_type(tensor, idx);
-		if (type == XM_BLOCK_TYPE_CANONICAL) {
-			ncanblks++;
-			canblks = realloc(canblks, ncanblks * sizeof *canblks);
-			if (canblks == NULL)
-				fatal("out of memory");
-			canblks[ncanblks-1] = idx;
-		}
-		xm_dim_inc(&idx, &nblocks);
-	}
-	*ncanblksout = ncanblks;
-	return canblks;
-}
-
 static void
 compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, xm_dim_t cidxa, xm_dim_t aidxa,
@@ -209,8 +185,8 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     const char *idxc)
 {
 	const xm_block_space_t *bsa, *bsb, *bsc;
-	xm_dim_t nblocksa, *canblks, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
-	size_t i, bufsize, ncanblks, nblkk;
+	xm_dim_t nblocksa, nblocksc, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
+	size_t i, bufsize, nblkc, nblkk;
 
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
@@ -248,12 +224,13 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			fatal("inconsistent b and c tensor block-spaces");
 
 	nblocksa = xm_tensor_get_nblocks(a);
+	nblocksc = xm_tensor_get_nblocks(c);
 	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
+	nblkc = xm_dim_dot(&nblocksc);
 	bufsize = 0;
 	bufsize += 2 * xm_block_space_get_largest_block_size(bsa);
 	bufsize += 2 * xm_block_space_get_largest_block_size(bsb);
 	bufsize += 2 * xm_block_space_get_largest_block_size(bsc);
-	canblks = get_canonical_block_list(c, &ncanblks);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
@@ -268,12 +245,15 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
-	for (i = 0; i < ncanblks; i++) {
-		compute_block(alpha, a, b, beta, c, cidxa, aidxa, cidxb,
-		    aidxb, cidxc, aidxc, canblks[i], pairs, buf);
+	for (i = 0; i < nblkc; i++) {
+		xm_dim_t idx = xm_dim_from_offset(i, &nblocksc);
+		int type = xm_tensor_get_block_type(c, idx);
+		if (type == XM_BLOCK_TYPE_CANONICAL) {
+			compute_block(alpha, a, b, beta, c, cidxa, aidxa, cidxb,
+			    aidxb, cidxc, aidxc, idx, pairs, buf);
+		}
 	}
 	free(buf);
 	free(pairs);
 }
-	free(canblks);
 }
