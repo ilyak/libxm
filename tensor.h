@@ -121,6 +121,13 @@ void xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
 void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t source_blkidx, xm_dim_t permutation, xm_scalar_t scalar);
 
+/* Create a list of all canonical blocks of this tensor. The memory used by the
+ * list should be released using free() function when it is no longer needed.
+ * The number of elements in the blklist array will be stored in the nblklist
+ * variable. */
+void xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
+    xm_dim_t **blklist, size_t *nblklist);
+
 /* Read tensor block data into memory buffer. The buffer has to be large enough
  * to hold the data. */
 void xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,

@@ -281,6 +281,30 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 }
 
 void
+xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
+    xm_dim_t **blklist, size_t *nblklist)
+{
+	xm_dim_t idx, nblocks, *list = NULL;
+	size_t nlist = 0;
+
+	nblocks = xm_tensor_get_nblocks(tensor);
+	idx = xm_dim_zero(nblocks.n);
+	while (xm_dim_ne(&idx, &nblocks)) {
+		int type = xm_tensor_get_block_type(tensor, idx);
+		if (type == XM_BLOCK_TYPE_CANONICAL) {
+			nlist++;
+			list = realloc(list, nlist * sizeof(xm_dim_t));
+			if (list == NULL)
+				fatal("out of memory");
+			list[nlist-1] = idx;
+		}
+		xm_dim_inc(&idx, &nblocks);
+	}
+	*blklist = list;
+	*nblklist = nlist;
+}
+
+void
 xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_scalar_t *buf)
 {
