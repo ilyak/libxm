@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WITH_MPI
+#include <mpi.h>
+#endif
+
 #include "xm.h"
 #include "util.h"
 
@@ -187,7 +191,12 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	const xm_block_space_t *bsa, *bsb, *bsc;
 	xm_dim_t nblocksa, nblocksc, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
 	size_t i, bufsize, nblkc, nblkk;
+	int mpirank = 0, mpisize = 1;
 
+#ifdef WITH_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+#endif
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
 	bsc = xm_tensor_get_block_space(c);
@@ -246,6 +255,8 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < nblkc; i++) {
+		if (i % mpisize != mpirank)
+			continue;
 		xm_dim_t idx = xm_dim_from_offset(i, &nblocksc);
 		int type = xm_tensor_get_block_type(c, idx);
 		if (type == XM_BLOCK_TYPE_CANONICAL) {
@@ -256,4 +267,7 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	free(buf);
 	free(pairs);
 }
+#ifdef WITH_MPI
+	MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }

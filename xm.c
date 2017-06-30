@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WITH_MPI
+#include <mpi.h>
+#endif
+
 #include "xm.h"
 #include "util.h"
 
@@ -28,7 +32,12 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 	xm_dim_t nblocks;
 	size_t i, blockcount, maxblksize;
 	xm_scalar_t *buf;
+	int mpirank = 0, mpisize = 1;
 
+#ifdef WITH_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+#endif
 	bs = xm_tensor_get_block_space(a);
 	maxblksize = xm_block_space_get_largest_block_size(bs);
 	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
@@ -45,6 +54,8 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < blockcount; i++) {
+		if (i % mpisize != mpirank)
+			continue;
 		xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
 		int type = xm_tensor_get_block_type(a, idx);
 		if (type == XM_BLOCK_TYPE_CANONICAL)
@@ -52,6 +63,9 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 	}
 }
 	free(buf);
+#ifdef WITH_MPI
+	MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }
 
 void
@@ -68,7 +82,12 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, nblocksa;
 	size_t i, blockcount, maxblksize;
+	int mpirank = 0, mpisize = 1;
 
+#ifdef WITH_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+#endif
 	bsa = xm_tensor_get_block_space(a);
 	bsb = xm_tensor_get_block_space(b);
 	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
@@ -104,6 +123,8 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < blockcount; i++) {
+		if (i % mpisize != mpirank)
+			continue;
 		ia = xm_dim_from_offset(i, &nblocksa);
 		typea = xm_tensor_get_block_type(a, ia);
 		if (typea == XM_BLOCK_TYPE_CANONICAL) {
@@ -135,6 +156,9 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	}
 	free(buf1);
 }
+#ifdef WITH_MPI
+	MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }
 
 void
