@@ -22,6 +22,10 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef WITH_MPI
+#include <mpi.h>
+#endif
+
 #include "xm.h"
 #include "util.h"
 
@@ -90,6 +94,9 @@ fill_random(xm_tensor_t *t)
 		xm_dim_inc(&idx, &nblocks);
 	}
 	free(data);
+#ifdef WITH_MPI
+	MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }
 
 static void
@@ -570,22 +577,46 @@ make_abc_9(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	xm_dim_t idx, idx2, perm;
 	xm_block_space_t *bsa, *bsb;
 	xm_tensor_t *a, *b, *c;
-	const size_t o = 8, v = 11, blocksize = 3;
+	const size_t o = 6, v = 10;
 	const size_t nblko = 3, nblkv = 4;
-	size_t i;
 
 	bsa = xm_block_space_create(xm_dim_4(o, o, v, v));
-	for (i = 1; i < nblko; i++) {
-		xm_block_space_split(bsa, 0, i * blocksize);
-		xm_block_space_split(bsa, 1, i * blocksize);
-	}
-	for (i = 1; i < nblkv; i++) {
-		xm_block_space_split(bsa, 2, i * blocksize);
-		xm_block_space_split(bsa, 3, i * blocksize);
-	}
+	bsb = xm_block_space_create(xm_dim_4(v, v, v, v));
+
+	/* o: 2, 3, 1 = 6 */
+	xm_block_space_split(bsa, 0, 2);
+	xm_block_space_split(bsa, 1, 2);
+	xm_block_space_split(bsa, 0, 5);
+	xm_block_space_split(bsa, 1, 5);
+
+	/* v: 3, 1, 4, 2 = 10 */
+	xm_block_space_split(bsa, 2, 3);
+	xm_block_space_split(bsa, 3, 3);
+	xm_block_space_split(bsb, 0, 3);
+	xm_block_space_split(bsb, 1, 3);
+	xm_block_space_split(bsb, 2, 3);
+	xm_block_space_split(bsb, 3, 3);
+
+	xm_block_space_split(bsa, 2, 4);
+	xm_block_space_split(bsa, 3, 4);
+	xm_block_space_split(bsb, 0, 4);
+	xm_block_space_split(bsb, 1, 4);
+	xm_block_space_split(bsb, 2, 4);
+	xm_block_space_split(bsb, 3, 4);
+
+	xm_block_space_split(bsa, 2, 8);
+	xm_block_space_split(bsa, 3, 8);
+	xm_block_space_split(bsb, 0, 8);
+	xm_block_space_split(bsb, 1, 8);
+	xm_block_space_split(bsb, 2, 8);
+	xm_block_space_split(bsb, 3, 8);
+
 	a = xm_tensor_create(bsa, allocator);
+	b = xm_tensor_create(bsb, allocator);
 	c = xm_tensor_create(bsa, allocator);
 	xm_block_space_free(bsa);
+	xm_block_space_free(bsb);
+
 	idx = xm_dim_zero(4);
 	for (idx.i[0] = 0; idx.i[0] < nblko; idx.i[0]++)
 	for (idx.i[1] = 0; idx.i[1] < nblko; idx.i[1]++)
@@ -616,15 +647,6 @@ make_abc_9(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 		}
 	}
 
-	bsb = xm_block_space_create(xm_dim_4(v, v, v, v));
-	for (i = 1; i < nblkv; i++) {
-		xm_block_space_split(bsb, 0, i * blocksize);
-		xm_block_space_split(bsb, 1, i * blocksize);
-		xm_block_space_split(bsb, 2, i * blocksize);
-		xm_block_space_split(bsb, 3, i * blocksize);
-	}
-	b = xm_tensor_create(bsb, allocator);
-	xm_block_space_free(bsb);
 	idx = xm_dim_zero(4);
 	for (idx.i[0] = 0; idx.i[0] < nblkv; idx.i[0]++)
 	for (idx.i[1] = 0; idx.i[1] < nblkv; idx.i[1]++)
@@ -966,7 +988,7 @@ make_abc_12(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 static void
 test_unfold_1(const char *path)
 {
-	xm_allocator_t *allocator_t, *allocator_u;
+	xm_allocator_t *allocator_t;
 	xm_block_space_t *bs;
 	xm_tensor_t *t, *u;
 	xm_scalar_t *buf1, *buf2;
@@ -987,9 +1009,7 @@ test_unfold_1(const char *path)
 	xm_tensor_set_derivative_block(t, xm_dim_1(1), xm_dim_1(0),
 	    xm_dim_identity_permutation(1), 0.5);
 	fill_random(t);
-	allocator_u = xm_allocator_create(NULL);
-	assert(allocator_u);
-	u = xm_tensor_create_structure(t, allocator_u);
+	u = xm_tensor_create_structure(t, allocator_t);
 	xm_copy(u, 1, t, "i", "i");
 	buf1 = malloc(5 * sizeof(xm_scalar_t));
 	assert(buf1);
@@ -1018,13 +1038,12 @@ test_unfold_1(const char *path)
 	xm_tensor_free(t);
 	xm_tensor_free(u);
 	xm_allocator_destroy(allocator_t);
-	xm_allocator_destroy(allocator_u);
 }
 
 static void
 test_unfold_2(const char *path)
 {
-	xm_allocator_t *allocator_t, *allocator_u;
+	xm_allocator_t *allocator_t;
 	xm_block_space_t *bs;
 	xm_tensor_t *t, *u;
 	xm_scalar_t *buf1, *buf2;
@@ -1044,9 +1063,7 @@ test_unfold_2(const char *path)
 	xm_tensor_set_derivative_block(t, xm_dim_2(0, 1), xm_dim_2(0, 0),
 	    xm_dim_2(1, 0), -0.3);
 	fill_random(t);
-	allocator_u = xm_allocator_create(NULL);
-	assert(allocator_u);
-	u = xm_tensor_create_structure(t, allocator_u);
+	u = xm_tensor_create_structure(t, allocator_t);
 	xm_copy(u, 1, t, "ij", "ij");
 	buf1 = malloc(25 * sizeof(xm_scalar_t));
 	assert(buf1);
@@ -1129,13 +1146,12 @@ test_unfold_2(const char *path)
 	xm_tensor_free(t);
 	xm_tensor_free(u);
 	xm_allocator_destroy(allocator_t);
-	xm_allocator_destroy(allocator_u);
 }
 
 static void
 test_unfold_3(const char *path)
 {
-	xm_allocator_t *allocator_t, *allocator_u;
+	xm_allocator_t *allocator_t;
 	xm_block_space_t *bs;
 	xm_tensor_t *t, *u;
 	xm_scalar_t *buf1, *buf2;
@@ -1152,9 +1168,7 @@ test_unfold_3(const char *path)
 	xm_tensor_set_canonical_block(t, xm_dim_zero(4));
 	ptr = xm_tensor_get_block_data_ptr(t, xm_dim_zero(4));
 	fill_random(t);
-	allocator_u = xm_allocator_create(NULL);
-	assert(allocator_u);
-	u = xm_tensor_create_structure(t, allocator_u);
+	u = xm_tensor_create_structure(t, allocator_t);
 	xm_copy(u, 1, t, "ijab", "ijab");
 	buf1 = malloc(3*4*5*6*sizeof(xm_scalar_t));
 	assert(buf1);
@@ -1256,13 +1270,12 @@ test_unfold_3(const char *path)
 	xm_tensor_free(t);
 	xm_tensor_free(u);
 	xm_allocator_destroy(allocator_t);
-	xm_allocator_destroy(allocator_u);
 }
 
 static void
 test_copy_1(const char *path)
 {
-	xm_allocator_t *allocatora, *allocatorc;
+	xm_allocator_t *allocatora;
 	xm_tensor_t *a, *b, *c;
 	xm_block_space_t *bs;
 	xm_dim_t dims, idx;
@@ -1270,7 +1283,6 @@ test_copy_1(const char *path)
 	const xm_scalar_t sc = random_scalar();
 
 	allocatora = xm_allocator_create(path);
-	allocatorc = xm_allocator_create(NULL);
 	dims = xm_dim_7(3, 4, 1, 7, 3, 5, 9);
 	bs = xm_block_space_create(dims);
 	assert(bs);
@@ -1286,7 +1298,7 @@ test_copy_1(const char *path)
 	fill_random(a);
 	b = xm_tensor_create_structure(a, NULL);
 	xm_copy(b, sb, a, "1234567", "1234567");
-	c = xm_tensor_create_structure(a, allocatorc);
+	c = xm_tensor_create_structure(a, allocatora);
 	xm_copy(c, sc, a, "1234567", "1234567");
 	xm_copy(c, sb, c, "1234567", "1234567");
 	idx = xm_dim_zero(dims.n);
@@ -1307,7 +1319,6 @@ test_copy_1(const char *path)
 	xm_tensor_free(b);
 	xm_tensor_free(c);
 	xm_allocator_destroy(allocatora);
-	xm_allocator_destroy(allocatorc);
 }
 
 static void
@@ -1458,12 +1469,11 @@ test_copy_4(const char *path)
 static void
 test_copy_5(const char *path)
 {
-	xm_allocator_t *allocatora, *allocatorb;
+	xm_allocator_t *allocatora;
 	xm_block_space_t *bsa;
 	xm_tensor_t *a, *b;
 
 	allocatora = xm_allocator_create(path);
-	allocatorb = xm_allocator_create(NULL);
 	bsa = xm_block_space_create(xm_dim_4(2, 9, 11, 3));
 	xm_block_space_split(bsa, 0, 1);
 	xm_block_space_split(bsa, 1, 2);
@@ -1472,7 +1482,7 @@ test_copy_5(const char *path)
 	xm_block_space_split(bsa, 2, 4);
 	xm_block_space_split(bsa, 2, 3);
 	a = xm_tensor_create(bsa, allocatora);
-	b = xm_tensor_create_canonical(bsa, allocatorb);
+	b = xm_tensor_create_canonical(bsa, allocatora);
 	xm_block_space_free(bsa);
 
 	xm_tensor_set_canonical_block(a, xm_dim_4(0, 0, 0, 0));
@@ -1492,7 +1502,6 @@ test_copy_5(const char *path)
 	xm_tensor_free(a);
 	xm_tensor_free(b);
 	xm_allocator_destroy(allocatora);
-	xm_allocator_destroy(allocatorb);
 }
 
 static void
@@ -1702,13 +1711,18 @@ static const struct contract_test contract_tests[] = {
 };
 
 int
-main(void)
+main(int argc, char **argv)
 {
 	const char *path = "xmpagefile";
 	size_t i;
 
-	srand48(time(NULL));
-
+#ifdef WITH_MPI
+	MPI_Init(&argc, &argv);
+	srand48_deterministic(0);
+#else
+	(void)argc;
+	(void)argv;
+#endif
 	printf("dim test 1... ");
 	fflush(stdout);
 	test_dim();
@@ -1767,5 +1781,8 @@ main(void)
 		    random_scalar());
 		printf("success\n");
 	}
+#ifdef WITH_MPI
+	MPI_Finalize();
+#endif
 	return 0;
 }
