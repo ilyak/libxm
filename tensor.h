@@ -53,11 +53,9 @@ xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
 xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs,
     xm_allocator_t *allocator);
 
-/* Create new block-tensor using block structure from "tensor". If allocator
- * argument is NULL, use the same allocator as the tensor being cloned. This
- * function only copies the block structure and does not copy actual data. */
-xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor,
-    xm_allocator_t *allocator);
+/* Create new block-tensor using block structure from "tensor". This function
+ * only copies the block structure and does not copy actual data. */
+xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor);
 
 /* Return block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);

@@ -93,15 +93,13 @@ xm_tensor_create_canonical(const xm_block_space_t *bs,
 }
 
 xm_tensor_t *
-xm_tensor_create_structure(const xm_tensor_t *tensor, xm_allocator_t *allocator)
+xm_tensor_create_structure(const xm_tensor_t *tensor)
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
 	size_t blksize;
 
-	if (allocator == NULL)
-		allocator = tensor->allocator;
-	ret = xm_tensor_create(tensor->bs, allocator);
+	ret = xm_tensor_create(tensor->bs, tensor->allocator);
 	nblocks = xm_tensor_get_nblocks(ret);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
