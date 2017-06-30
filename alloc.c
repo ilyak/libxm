@@ -25,6 +25,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef WITH_MPI
+#include <mpi.h>
+#endif
+
 #ifdef HAVE_BITSTRING_H
 #include <bitstring.h>
 #else
@@ -53,6 +57,7 @@ RB_HEAD(tree, block);
 
 struct xm_allocator {
 	int                     fd;
+	int                     mpirank;
 	char                   *path;
 	size_t                  file_bytes;
 	bitstr_t               *pages;
@@ -163,23 +168,40 @@ xm_allocator_create(const char *path)
 		perror("malloc");
 		return (NULL);
 	}
+#ifdef WITH_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &allocator->mpirank);
+#endif
 	if (path) {
-		if ((allocator->fd = open(path, O_CREAT|O_RDWR,
-		    S_IRUSR|S_IWUSR)) == -1) {
-			perror("open");
-			free(allocator);
-			return (NULL);
-		}
-
 		allocator->file_bytes = XM_PAGE_SIZE;
 		allocator->pages = bit_alloc(1);
 
-		if (ftruncate(allocator->fd, (off_t)allocator->file_bytes)) {
-			perror("ftruncate");
-			if (close(allocator->fd))
-				perror("close");
-			free(allocator);
-			return (NULL);
+		if (allocator->mpirank == 0) {
+			if ((allocator->fd = open(path, O_CREAT|O_RDWR,
+			    S_IRUSR|S_IWUSR)) == -1) {
+				perror("open");
+				free(allocator);
+				return (NULL);
+			}
+			if (ftruncate(allocator->fd,
+			    (off_t)allocator->file_bytes)) {
+				perror("ftruncate");
+				if (close(allocator->fd))
+					perror("close");
+				free(allocator);
+				return (NULL);
+			}
+#ifdef WITH_MPI
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
+		} else {
+#ifdef WITH_MPI
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
+			if ((allocator->fd = open(path, O_RDWR)) == -1) {
+				perror("open");
+				free(allocator);
+				return (NULL);
+			}
 		}
 		if ((allocator->path = strdup(path)) == NULL) {
 			perror("malloc");
@@ -212,7 +234,15 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 {
 	struct block *block;
 	void *data;
+	uintptr_t data_ptr = XM_NULL_PTR;
 
+	if (allocator->mpirank != 0) {
+#ifdef WITH_MPI
+		MPI_Bcast(&data_ptr, 1, MPI_UNSIGNED_LONG_LONG, 0,
+		    MPI_COMM_WORLD);
+#endif
+		return (data_ptr);
+	}
 	if ((block = calloc(1, sizeof(*block))) == NULL) {
 		perror("malloc");
 		return (XM_NULL_PTR);
@@ -222,9 +252,10 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 		fatal("pthread_mutex_lock");
 
 	if (allocator->path) {
-		if ((block->data_ptr = allocate_pages(allocator,
+		if ((data_ptr = allocate_pages(allocator,
 		    size_bytes)) == XM_NULL_PTR)
 			goto fail;
+		block->data_ptr = data_ptr;
 	} else {
 		if ((data = malloc(size_bytes)) == NULL) {
 			perror("malloc");
@@ -238,6 +269,9 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 
 	if (pthread_mutex_unlock(&allocator->mutex))
 		fatal("pthread_mutex_unlock");
+#ifdef WITH_MPI
+	MPI_Bcast(&data_ptr, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+#endif
 	return (block->data_ptr);
 fail:
 	if (pthread_mutex_unlock(&allocator->mutex))
@@ -322,6 +356,8 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 {
 	struct block *block;
 
+	if (allocator->mpirank != 0)
+		return;
 	if (data_ptr == XM_NULL_PTR)
 		return;
 	if (pthread_mutex_lock(&allocator->mutex))
@@ -352,7 +388,9 @@ xm_allocator_destroy(xm_allocator_t *allocator)
 {
 	struct block *block, *next;
 
-	if (allocator) {
+	if (allocator == NULL)
+		return;
+	if (allocator->mpirank == 0) {
 		RB_FOREACH_SAFE(block, tree, &allocator->blocks, next) {
 			xm_allocator_deallocate(allocator, block->data_ptr);
 		}
@@ -365,6 +403,12 @@ xm_allocator_destroy(xm_allocator_t *allocator)
 		}
 		if (pthread_mutex_destroy(&allocator->mutex))
 			perror("pthread_mutex_destroy");
+		free(allocator->pages);
+		free(allocator);
+	} else {
+		if (pthread_mutex_destroy(&allocator->mutex))
+			perror("pthread_mutex_destroy");
+		free(allocator->path);
 		free(allocator->pages);
 		free(allocator);
 	}
