@@ -1710,19 +1710,11 @@ static const struct contract_test contract_tests[] = {
 	{ make_abc_12, "afcb", "bace", "fe" },
 };
 
-int
-main(int argc, char **argv)
+static void
+run_tests(const char *path)
 {
-	const char *path = "xmpagefile";
 	size_t i;
 
-#ifdef WITH_MPI
-	MPI_Init(&argc, &argv);
-	srand48_deterministic(0);
-#else
-	(void)argc;
-	(void)argv;
-#endif
 	printf("dim test 1... ");
 	fflush(stdout);
 	test_dim();
@@ -1735,31 +1727,24 @@ main(int argc, char **argv)
 
 	printf("set test 1... ");
 	fflush(stdout);
-	test_set(NULL);
 	test_set(path);
 	printf("success\n");
 
 	for (i = 0; i < sizeof unfold_tests / sizeof *unfold_tests; i++) {
 		printf("unfold test %zu... ", i+1);
 		fflush(stdout);
-		unfold_tests[i](NULL);
 		unfold_tests[i](path);
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof copy_tests / sizeof *copy_tests; i++) {
 		printf("copy test %zu... ", i+1);
 		fflush(stdout);
-		copy_tests[i](NULL);
 		copy_tests[i](path);
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof add_tests / sizeof *add_tests; i++) {
 		printf("add test %zu... ", i+1);
 		fflush(stdout);
-		test_add(&add_tests[i], NULL, 0, 0);
-		test_add(&add_tests[i], NULL, 0, random_scalar());
-		test_add(&add_tests[i], NULL, random_scalar(), 0);
-		test_add(&add_tests[i], NULL, random_scalar(), random_scalar());
 		test_add(&add_tests[i], path, 0, 0);
 		test_add(&add_tests[i], path, 0, random_scalar());
 		test_add(&add_tests[i], path, random_scalar(), 0);
@@ -1769,11 +1754,6 @@ main(int argc, char **argv)
 	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
 		printf("contract test %2zu... ", i+1);
 		fflush(stdout);
-		test_contract(&contract_tests[i], NULL, 0, 0);
-		test_contract(&contract_tests[i], NULL, 0, random_scalar());
-		test_contract(&contract_tests[i], NULL, random_scalar(), 0);
-		test_contract(&contract_tests[i], NULL, random_scalar(),
-		    random_scalar());
 		test_contract(&contract_tests[i], path, 0, 0);
 		test_contract(&contract_tests[i], path, 0, random_scalar());
 		test_contract(&contract_tests[i], path, random_scalar(), 0);
@@ -1781,8 +1761,23 @@ main(int argc, char **argv)
 		    random_scalar());
 		printf("success\n");
 	}
+}
+
+int
+main(int argc, char **argv)
+{
+	const char *path = "xmpagefile";
+
 #ifdef WITH_MPI
+	MPI_Init(&argc, &argv);
+	srand48_deterministic(0);
+	run_tests(path);
 	MPI_Finalize();
+#else
+	(void)argc;
+	(void)argv;
+	run_tests(NULL);
+	run_tests(path);
 #endif
 	return 0;
 }
