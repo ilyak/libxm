@@ -193,6 +193,9 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	size_t i, bufsize, nblkc, nblkk;
 	int mpirank = 0, mpisize = 1;
 
+	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(c) ||
+	    xm_tensor_get_allocator(b) != xm_tensor_get_allocator(c))
+		fatal("tensors must use same allocator");
 #ifdef WITH_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);

@@ -84,6 +84,8 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	size_t i, blockcount, maxblksize;
 	int mpirank = 0, mpisize = 1;
 
+	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
+		fatal("tensors must use same allocator");
 #ifdef WITH_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
