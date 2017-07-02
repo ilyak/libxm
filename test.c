@@ -1749,7 +1749,7 @@ main(int argc, char **argv)
 
 #ifdef WITH_MPI
 	MPI_Init(&argc, &argv);
-	srand48_deterministic(0);
+	srand48(0);
 	run_tests(path);
 	MPI_Finalize();
 #else
