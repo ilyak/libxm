@@ -257,7 +257,7 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < nblklist; i++) {
-		if (i % mpisize == mpirank)
+		if ((int)i % mpisize == mpirank)
 			compute_block(alpha, a, b, beta, c, cidxa, aidxa, cidxb,
 			    aidxb, cidxc, aidxc, blklist[i], pairs, buf);
 	}

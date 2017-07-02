@@ -53,7 +53,7 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < nblklist; i++) {
-		if (i % mpisize == mpirank)
+		if ((int)i % mpisize == mpirank)
 			xm_tensor_write_block(a, blklist[i], buf);
 	}
 }
@@ -120,7 +120,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 #pragma omp for schedule(dynamic)
 #endif
 	for (i = 0; i < nblklist; i++) {
-		if (i % mpisize == mpirank) {
+		if ((int)i % mpisize == mpirank) {
 			ia = blklist[i];
 			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
 			typeb = xm_tensor_get_block_type(b, ib);
