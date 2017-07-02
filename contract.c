@@ -189,8 +189,8 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     const char *idxc)
 {
 	const xm_block_space_t *bsa, *bsb, *bsc;
-	xm_dim_t nblocksa, nblocksc, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc;
-	size_t i, bufsize, nblkc, nblkk;
+	xm_dim_t nblocksa, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *blklist;
+	size_t i, bufsize, nblkk, nblklist;
 	int mpirank = 0, mpisize = 1;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(c) ||
@@ -236,13 +236,12 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			fatal("inconsistent b and c tensor block-spaces");
 
 	nblocksa = xm_tensor_get_nblocks(a);
-	nblocksc = xm_tensor_get_nblocks(c);
 	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
-	nblkc = xm_dim_dot(&nblocksc);
 	bufsize = 0;
 	bufsize += 2 * xm_block_space_get_largest_block_size(bsa);
 	bufsize += 2 * xm_block_space_get_largest_block_size(bsb);
 	bufsize += 2 * xm_block_space_get_largest_block_size(bsc);
+	xm_tensor_get_canonical_block_list(c, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
@@ -257,19 +256,15 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
-	for (i = 0; i < nblkc; i++) {
-		if (i % mpisize != mpirank)
-			continue;
-		xm_dim_t idx = xm_dim_from_offset(i, &nblocksc);
-		int type = xm_tensor_get_block_type(c, idx);
-		if (type == XM_BLOCK_TYPE_CANONICAL) {
+	for (i = 0; i < nblklist; i++) {
+		if (i % mpisize == mpirank)
 			compute_block(alpha, a, b, beta, c, cidxa, aidxa, cidxb,
-			    aidxb, cidxc, aidxc, idx, pairs, buf);
-		}
+			    aidxb, cidxc, aidxc, blklist[i], pairs, buf);
 	}
 	free(buf);
 	free(pairs);
 }
+	free(blklist);
 #ifdef WITH_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif

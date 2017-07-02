@@ -29,8 +29,8 @@ void
 xm_set(xm_tensor_t *a, xm_scalar_t x)
 {
 	const xm_block_space_t *bs;
-	xm_dim_t nblocks;
-	size_t i, blockcount, maxblksize;
+	xm_dim_t *blklist;
+	size_t i, maxblksize, nblklist;
 	xm_scalar_t *buf;
 	int mpirank = 0, mpisize = 1;
 
@@ -44,8 +44,7 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 		fatal("out of memory");
 	for (i = 0; i < maxblksize; i++)
 		buf[i] = x;
-	nblocks = xm_tensor_get_nblocks(a);
-	blockcount = xm_dim_dot(&nblocks);
+	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
@@ -53,16 +52,13 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
-	for (i = 0; i < blockcount; i++) {
-		if (i % mpisize != mpirank)
-			continue;
-		xm_dim_t idx = xm_dim_from_offset(i, &nblocks);
-		int type = xm_tensor_get_block_type(a, idx);
-		if (type == XM_BLOCK_TYPE_CANONICAL)
-			xm_tensor_write_block(a, idx, buf);
+	for (i = 0; i < nblklist; i++) {
+		if (i % mpisize == mpirank)
+			xm_tensor_write_block(a, blklist[i], buf);
 	}
 }
 	free(buf);
+	free(blklist);
 #ifdef WITH_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
@@ -80,8 +76,8 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
     const xm_tensor_t *b, const char *idxa, const char *idxb)
 {
 	const xm_block_space_t *bsa, *bsb;
-	xm_dim_t cidxa, cidxb, zero, nblocksa;
-	size_t i, blockcount, maxblksize;
+	xm_dim_t cidxa, cidxb, zero, *blklist;
+	size_t i, maxblksize, nblklist;
 	int mpirank = 0, mpisize = 1;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
@@ -106,8 +102,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 
 	zero = xm_dim_zero(0);
 	maxblksize = xm_block_space_get_largest_block_size(bsa);
-	nblocksa = xm_tensor_get_nblocks(a);
-	blockcount = xm_dim_dot(&nblocksa);
+	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
@@ -115,7 +110,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	xm_dim_t ia, ib;
 	xm_scalar_t *buf1, *buf2;
 	size_t j, blksize;
-	int typea, typeb;
+	int typeb;
 
 	if ((buf1 = malloc(2 * maxblksize * sizeof *buf1)) == NULL)
 		fatal("out of memory");
@@ -124,12 +119,9 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
-	for (i = 0; i < blockcount; i++) {
-		if (i % mpisize != mpirank)
-			continue;
-		ia = xm_dim_from_offset(i, &nblocksa);
-		typea = xm_tensor_get_block_type(a, ia);
-		if (typea == XM_BLOCK_TYPE_CANONICAL) {
+	for (i = 0; i < nblklist; i++) {
+		if (i % mpisize == mpirank) {
+			ia = blklist[i];
 			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
 			typeb = xm_tensor_get_block_type(b, ib);
 			blksize = xm_tensor_get_block_size(b, ib);
@@ -158,6 +150,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	}
 	free(buf1);
 }
+	free(blklist);
 #ifdef WITH_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
