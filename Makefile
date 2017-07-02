@@ -45,6 +45,11 @@ $(XM_A): $(XM_O)
 check: $(TEST)
 	./$(TEST)
 
+checkmpi: $(TEST)
+	mpirun -np 1 ./$(TEST)
+	mpirun -np 2 ./$(TEST)
+	mpirun -np 3 ./$(TEST)
+
 dist:
 	git archive --format=tar.gz --prefix=libxm/ -o libxm.tgz HEAD
 
@@ -52,4 +57,4 @@ clean:
 	rm -f $(XM_A) $(XM_O) $(EXAMPLE) $(EXAMPLE_O) $(TEST) $(TEST_O)
 	rm -f *.core xmpagefile libxm.tgz
 
-.PHONY: all check clean dist
+.PHONY: all check checkmpi clean dist
