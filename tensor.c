@@ -148,19 +148,15 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	xm_dim_t blkidx, blkdims, elidx;
 	xm_scalar_t *buf, ret;
 	size_t blksize, eloff;
-	uintptr_t data_ptr;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
 	block = tensor_get_block(tensor, blkidx);
 	if (block->type == XM_BLOCK_TYPE_ZERO)
 		return 0;
-	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
-	assert(data_ptr != XM_NULL_PTR);
 	blksize = xm_tensor_get_block_size(tensor, blkidx);
 	if ((buf = malloc(blksize * sizeof *buf)) == NULL)
 		fatal("out of memory");
-	xm_allocator_read(tensor->allocator, data_ptr, buf,
-	    blksize * sizeof(xm_scalar_t));
+	xm_tensor_read_block(tensor, blkidx, buf);
 	elidx = xm_dim_permute(&elidx, &block->permutation);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
 	blkdims = xm_dim_permute(&blkdims, &block->permutation);
