@@ -1525,7 +1525,7 @@ static void
 test_blockspace(void)
 {
 	xm_block_space_t *bsa, *bsb;
-	xm_dim_t dima, dimb;
+	xm_dim_t dima, dimb, nblocks, idx;
 
 	bsa = xm_block_space_create(xm_dim_8(1,2,3,4,5,6,7,8));
 	xm_block_space_autosplit(bsa);
@@ -1539,21 +1539,25 @@ test_blockspace(void)
 
 	bsa = xm_block_space_create(xm_dim_8(10,20,30,40,50,60,70,80));
 	xm_block_space_autosplit(bsa);
-	dima = xm_block_space_get_nblocks(bsa);
-	dimb = xm_dim_8(1,1,1,2,2,2,3,3);
-	assert(xm_dim_eq(&dima, &dimb));
-	dima = xm_block_space_get_block_dims(bsa, xm_dim_zero(8));
-	dimb = xm_dim_8(10,20,30,32,32,32,32,32);
-	assert(xm_dim_eq(&dima, &dimb));
+	nblocks = xm_block_space_get_nblocks(bsa);
+	dima = xm_dim_8(1,1,1,2,2,2,3,3);
+	assert(xm_dim_eq(&nblocks, &dima));
+	idx = xm_dim_zero(nblocks.n);
+	while (xm_dim_ne(&idx, &nblocks)) {
+		dima = xm_block_space_get_block_dims(bsa, idx);
+		dimb = xm_dim_same(8, 31);
+		assert(xm_dim_less(&dima, &dimb));
+		xm_dim_inc(&idx, &nblocks);
+	}
 	xm_block_space_free(bsa);
 
 	bsa = xm_block_space_create(xm_dim_5(30,31,32,33,34));
 	xm_block_space_autosplit(bsa);
-	dima = xm_block_space_get_nblocks(bsa);
-	dimb = xm_dim_5(1,1,1,2,2);
-	assert(xm_dim_eq(&dima, &dimb));
+	nblocks = xm_block_space_get_nblocks(bsa);
+	dima = xm_dim_5(1,1,1,2,2);
+	assert(xm_dim_eq(&nblocks, &dima));
 	dima = xm_block_space_get_block_dims(bsa, xm_dim_zero(5));
-	dimb = xm_dim_5(30,31,32,32,32);
+	dimb = xm_dim_5(30,31,32,16,18);
 	assert(xm_dim_eq(&dima, &dimb));
 	xm_block_space_free(bsa);
 

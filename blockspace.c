@@ -141,12 +141,25 @@ xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x)
 void
 xm_block_space_autosplit(xm_block_space_t *bs)
 {
-	const size_t blocksize = XM_AUTOSPLIT_BLOCK_SIZE;
-	size_t i, j;
+	const size_t blksz = XM_AUTOSPLIT_BLOCK_SIZE;
+	size_t i, j, pos;
 
-	for (j = 0; j < bs->dims.n; j++)
-		for (i = blocksize; i < bs->dims.i[j]; i += blocksize)
-			xm_block_space_split(bs, j, i);
+	for (j = 0; j < bs->dims.n; j++) {
+		size_t dim = bs->dims.i[j];
+		size_t nblks = dim % blksz ? dim / blksz + 1 : dim / blksz;
+
+		for(i = 0, pos = 0; i < nblks - 1; i++) {
+			size_t sz = dim / (nblks - i);
+
+			if(sz > 1 && sz % 2 && nblks - i > 1) {
+				if(sz < blksz) sz++;
+				else sz--;
+			}
+			dim -= sz;
+			pos += sz;
+			xm_block_space_split(bs, j, pos);
+		}
+	}
 }
 
 size_t
