@@ -1787,21 +1787,33 @@ main(int argc, char **argv)
 #ifdef WITH_MPI
 	MPI_Init(&argc, &argv);
 	srand48(0);
+	puts("Testing float...");
 	run_tests(path, XM_SCALAR_FLOAT);
+	puts("Testing double...");
 	run_tests(path, XM_SCALAR_DOUBLE);
+	puts("Testing float complex...");
 	run_tests(path, XM_SCALAR_FLOAT_COMPLEX);
+	puts("Testing double complex...");
 	run_tests(path, XM_SCALAR_DOUBLE_COMPLEX);
 	MPI_Finalize();
 #else
 	(void)argc;
 	(void)argv;
+	puts("Testing float...");
 	run_tests(NULL, XM_SCALAR_FLOAT);
+	puts("Testing double...");
 	run_tests(NULL, XM_SCALAR_DOUBLE);
+	puts("Testing float complex...");
 	run_tests(NULL, XM_SCALAR_FLOAT_COMPLEX);
+	puts("Testing double complex...");
 	run_tests(NULL, XM_SCALAR_DOUBLE_COMPLEX);
+	puts("Testing float...");
 	run_tests(path, XM_SCALAR_FLOAT);
+	puts("Testing double...");
 	run_tests(path, XM_SCALAR_DOUBLE);
+	puts("Testing float complex...");
 	run_tests(path, XM_SCALAR_FLOAT_COMPLEX);
+	puts("Testing double complex...");
 	run_tests(path, XM_SCALAR_DOUBLE_COMPLEX);
 #endif
 	return 0;
