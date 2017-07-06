@@ -287,7 +287,7 @@ xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
 		int type = xm_tensor_get_block_type(tensor, idx);
 		if (type == XM_BLOCK_TYPE_CANONICAL) {
 			nlist++;
-			list = realloc(list, nlist * sizeof(xm_dim_t));
+			list = realloc(list, nlist * sizeof *list);
 			if (list == NULL)
 				fatal("out of memory");
 			list[nlist-1] = idx;
