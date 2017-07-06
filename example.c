@@ -45,10 +45,11 @@ main(void)
 
 	/* Create tensors a and b. Tensors are initialized with all
 	 * zero-blocks by default. */
-	xm_tensor_t *a = xm_tensor_create(bsa, allocator);
-	xm_tensor_t *b = xm_tensor_create(bsb, allocator);
+	xm_tensor_t *a = xm_tensor_create(bsa, XM_SCALAR_DOUBLE, allocator);
+	xm_tensor_t *b = xm_tensor_create(bsb, XM_SCALAR_DOUBLE, allocator);
 	/* Tensor c has only canonical blocks. */
-	xm_tensor_t *c = xm_tensor_create_canonical(bsc, allocator);
+	xm_tensor_t *c = xm_tensor_create_canonical(bsc, XM_SCALAR_DOUBLE,
+	    allocator);
 
 	/* Block-spaces can be deallocated now. */
 	xm_block_space_free(bsa);
@@ -59,7 +60,7 @@ main(void)
 	xm_dim_t ii, jj;
 
 	/* tensor a */
-	xm_scalar_t blka[] = { 1, 2, 3, 4 };
+	double blka[] = { 1, 2, 3, 4 };
 	ii = xm_dim_2(0, 0);
 	xm_tensor_set_canonical_block(a, ii);
 	xm_tensor_write_block(a, ii, blka);
@@ -69,7 +70,7 @@ main(void)
 	/* other blocks stay zero */
 
 	/* tensor b */
-	xm_scalar_t blkb[] = { 6, 5, -4, 3, 2, -1 };
+	double blkb[] = { 6, 5, -4, 3, 2, -1 };
 	ii = xm_dim_2(0, 0);
 	xm_tensor_set_canonical_block(b, ii);
 	xm_tensor_write_block(b, ii, blkb);
