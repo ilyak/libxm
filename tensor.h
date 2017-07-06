@@ -19,6 +19,7 @@
 
 #include "alloc.h"
 #include "blockspace.h"
+#include "scalar.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,36 +30,28 @@ extern "C" {
 #define XM_BLOCK_TYPE_CANONICAL   1  /* see xm_tensor_set_canonical_block */
 #define XM_BLOCK_TYPE_DERIVATIVE  2  /* see xm_tensor_set_derivative_block */
 
-#if defined(XM_SCALAR_FLOAT)
-typedef float xm_scalar_t;
-#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
-#include <complex.h>
-typedef double complex xm_scalar_t;
-#elif defined(XM_SCALAR_FLOAT_COMPLEX)
-#include <complex.h>
-typedef float complex xm_scalar_t;
-#else /* assume double */
-typedef double xm_scalar_t;
-#endif
-
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
 /* Create new block-tensor with all blocks set to zero-blocks. */
-xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs,
+xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, int type,
     xm_allocator_t *allocator);
 
 /* Create new block-tensor with all blocks set to newly allocated canonical
  * blocks. */
-xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs,
+xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
     xm_allocator_t *allocator);
 
 /* Create new block-tensor using block structure from "tensor". This function
  * only copies the block structure and does not copy actual data. */
-xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor);
+xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor, int type,
+    xm_allocator_t *allocator);
 
 /* Return block-space associated with this tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
+
+/* Return scalar type of this tensor. */
+int xm_tensor_get_scalar_type(const xm_tensor_t *tensor);
 
 /* Return allocator associated with this tensor. */
 xm_allocator_t *xm_tensor_get_allocator(const xm_tensor_t *tensor);
@@ -81,6 +74,15 @@ xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /* Return size in number of elements of a specific tensor block. */
 size_t xm_tensor_get_block_size(const xm_tensor_t *tensor, xm_dim_t blkidx);
+
+/* Return size in number of bytes of a specific tensor block. */
+size_t xm_tensor_get_block_bytes(const xm_tensor_t *tensor, xm_dim_t blkidx);
+
+/* Return size in number of elements of the largest tensor block. */
+size_t xm_tensor_get_largest_block_size(const xm_tensor_t *tensor);
+
+/* Return size in number of bytes of the largest tensor block. */
+size_t xm_tensor_get_largest_block_bytes(const xm_tensor_t *tensor);
 
 /* Return block data pointer. This returns XM_NULL_PTR for zero blocks. */
 uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
@@ -129,27 +131,27 @@ void xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
 /* Read tensor block data into memory buffer. The buffer has to be large enough
  * to hold the data. */
 void xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_scalar_t *buf);
+    void *buf);
 
 /* Write tensor block data from memory buffer. */
 void xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx,
-    const xm_scalar_t *buf);
+    const void *buf);
 
 /* Unfold block into the matrix form. The sequences of unfolding indices are
  * specified using the masks. The from parameter should point to the raw block
  * data in memory. The stride must be equal to or greater than the product of
  * mask_i block dimensions. */
 void xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
-    xm_scalar_t *to, size_t stride);
+    xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
+    size_t stride);
 
 /* Fold block back from the matrix form. This is the inverse of the
  * xm_tensor_unfold_block function. On return, "to" will contain raw block data
  * that can be directly written to the block. Only canonical blocks can be
  * folded. */
 void xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from,
-    xm_scalar_t *to, size_t stride);
+    xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
+    size_t stride);
 
 /* Deallocate associated data for all blocks of this tensor. This resets all
  * blocks to zero. */

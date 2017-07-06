@@ -29,50 +29,78 @@ struct blockpair {
 	xm_scalar_t alpha;
 };
 
-#if defined(XM_SCALAR_FLOAT)
-#define dgemm_ sgemm_
-#elif defined(XM_SCALAR_DOUBLE_COMPLEX)
-#define dgemm_ zgemm_
-#elif defined(XM_SCALAR_FLOAT_COMPLEX)
-#define dgemm_ cgemm_
-#endif
-
-void dgemm_(char *, char *, long int *, long int *, long int *, xm_scalar_t *,
-    xm_scalar_t *, long int *, xm_scalar_t *, long int *, xm_scalar_t *,
-    xm_scalar_t *, long int *);
+void sgemm_(char *, char *, long int *, long int *, long int *,
+    float *, float *, long int *,
+    float *, long int *, float *,
+    float *, long int *);
+void cgemm_(char *, char *, long int *, long int *, long int *,
+    float complex *, float complex *, long int *,
+    float complex *, long int *, float complex *,
+    float complex *, long int *);
+void dgemm_(char *, char *, long int *, long int *, long int *,
+    double *, double *, long int *,
+    double *, long int *, double *,
+    double *, long int *);
+void zgemm_(char *, char *, long int *, long int *, long int *,
+    double complex *, double complex *, long int *,
+    double complex *, long int *, double complex *,
+    double complex *, long int *);
 
 static void
 xgemm(char transa, char transb, long int m, long int n, long int k,
-    xm_scalar_t alpha, xm_scalar_t *a, long int lda, xm_scalar_t *b,
-    long int ldb, xm_scalar_t beta, xm_scalar_t *c, long int ldc)
+    xm_scalar_t alpha, void *a, long int lda, void *b, long int ldb,
+    xm_scalar_t beta, void *c, long int ldc, int type)
 {
-	dgemm_(&transa, &transb, &m, &n, &k, &alpha, a, &lda, b, &ldb,
-	    &beta, c, &ldc);
+	switch (type) {
+	case XM_SCALAR_FLOAT: {
+		float al = alpha, bt = beta;
+		sgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
+		    &bt, c, &ldc);
+		return;
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		float complex al = alpha, bt = beta;
+		cgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
+		    &bt, c, &ldc);
+		return;
+	}
+	case XM_SCALAR_DOUBLE: {
+		double al = alpha, bt = beta;
+		dgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
+		    &bt, c, &ldc);
+		return;
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		double complex al = alpha, bt = beta;
+		zgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
+		    &bt, c, &ldc);
+		return;
+	}
+	}
 }
 
 static void
 compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, xm_dim_t cidxa, xm_dim_t aidxa,
     xm_dim_t cidxb, xm_dim_t aidxb, xm_dim_t cidxc, xm_dim_t aidxc,
-    xm_dim_t blkidxc, struct blockpair *pairs, xm_scalar_t *buf)
+    xm_dim_t blkidxc, struct blockpair *pairs, void *buf)
 {
-	const xm_block_space_t *bsa = xm_tensor_get_block_space(a);
-	const xm_block_space_t *bsb = xm_tensor_get_block_space(b);
-	const xm_block_space_t *bsc = xm_tensor_get_block_space(c);
-	size_t maxblocksizea = xm_block_space_get_largest_block_size(bsa);
-	size_t maxblocksizeb = xm_block_space_get_largest_block_size(bsb);
-	size_t maxblocksizec = xm_block_space_get_largest_block_size(bsc);
+	size_t maxblockbytesa = xm_tensor_get_largest_block_bytes(a);
+	size_t maxblockbytesb = xm_tensor_get_largest_block_bytes(b);
+	size_t maxblockbytesc = xm_tensor_get_largest_block_bytes(c);
 	xm_dim_t dims, blkidxa, blkidxb, nblocksa, nblocksb;
-	xm_scalar_t *bufa1, *bufa2, *bufb1, *bufb2, *bufc1, *bufc2;
+	void *bufa1, *bufa2, *bufb1, *bufb2, *bufc1, *bufc2;
 	size_t i, j, m, n, k, nblkk, blksize;
+	int type;
 
 	bufa1 = buf;
-	bufa2 = bufa1 + maxblocksizea;
-	bufb1 = bufa2 + maxblocksizea;
-	bufb2 = bufb1 + maxblocksizeb;
-	bufc1 = bufb2 + maxblocksizeb;
-	bufc2 = bufc1 + maxblocksizec;
+	bufa2 = (char *)bufa1 + maxblockbytesa;
+	bufb1 = (char *)bufa2 + maxblockbytesa;
+	bufb2 = (char *)bufb1 + maxblockbytesb;
+	bufc1 = (char *)bufb2 + maxblockbytesb;
+	bufc2 = (char *)bufc1 + maxblockbytesc;
 
+	type = xm_tensor_get_scalar_type(c);
 	nblocksa = xm_tensor_get_nblocks(a);
 	nblocksb = xm_tensor_get_nblocks(b);
 	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
@@ -81,20 +109,18 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	m = xm_dim_dot_mask(&dims, &cidxc);
 	n = xm_dim_dot_mask(&dims, &aidxc);
 	xm_tensor_read_block(c, blkidxc, bufc2);
-	if (aidxc.n > 0 && aidxc.i[0] == 0) {
+	if (aidxc.n > 0 && aidxc.i[0] == 0)
 		xm_tensor_unfold_block(c, blkidxc, aidxc, cidxc,
 		    bufc2, bufc1, n);
-	} else {
+	else
 		xm_tensor_unfold_block(c, blkidxc, cidxc, aidxc,
 		    bufc2, bufc1, m);
-	}
 	blksize = xm_tensor_get_block_size(c, blkidxc);
-	for (i = 0; i < blksize; i++)
-		bufc1[i] *= beta;
+	xm_scalar_mul(bufc1, blksize, type, beta);
 	if (alpha == 0)
 		goto done;
-	blkidxa = xm_dim_zero(xm_block_space_get_ndims(bsa));
-	blkidxb = xm_dim_zero(xm_block_space_get_ndims(bsb));
+	blkidxa = xm_dim_zero(nblocksa.n);
+	blkidxb = xm_dim_zero(nblocksb.n);
 	xm_dim_set_mask(&blkidxa, &aidxa, &blkidxc, &cidxc);
 	xm_dim_set_mask(&blkidxb, &aidxb, &blkidxc, &aidxc);
 	for (i = 0; i < nblkk; i++) {
@@ -164,22 +190,19 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			if (aidxc.n > 0 && aidxc.i[0] == 0) {
 				xgemm('T', 'N', (int)n, (int)m, (int)k,
 				    alpha*pairs[i].alpha, bufb2, (int)k, bufa2,
-				    (int)k, 1.0, bufc1, (int)n);
+				    (int)k, 1.0, bufc1, (int)n, type);
 			} else {
 				xgemm('T', 'N', (int)m, (int)n, (int)k,
 				    alpha*pairs[i].alpha, bufa2, (int)k, bufb2,
-				    (int)k, 1.0, bufc1, (int)m);
+				    (int)k, 1.0, bufc1, (int)m, type);
 			}
 		}
 	}
 done:
-	if (aidxc.n > 0 && aidxc.i[0] == 0) {
-		xm_tensor_fold_block(c, blkidxc, aidxc, cidxc,
-		    bufc1, bufc2, n);
-	} else {
-		xm_tensor_fold_block(c, blkidxc, cidxc, aidxc,
-		    bufc1, bufc2, m);
-	}
+	if (aidxc.n > 0 && aidxc.i[0] == 0)
+		xm_tensor_fold_block(c, blkidxc, aidxc, cidxc, bufc1, bufc2, n);
+	else
+		xm_tensor_fold_block(c, blkidxc, cidxc, aidxc, bufc1, bufc2, m);
 	xm_tensor_write_block(c, blkidxc, bufc2);
 }
 
@@ -190,12 +213,15 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 {
 	const xm_block_space_t *bsa, *bsb, *bsc;
 	xm_dim_t nblocksa, cidxa, aidxa, cidxb, aidxb, cidxc, aidxc, *blklist;
-	size_t i, bufsize, nblkk, nblklist;
+	size_t i, bufbytes, nblkk, nblklist;
 	int mpirank = 0, mpisize = 1;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(c) ||
 	    xm_tensor_get_allocator(b) != xm_tensor_get_allocator(c))
 		fatal("tensors must use same allocator");
+	if (xm_tensor_get_scalar_type(a) != xm_tensor_get_scalar_type(c) ||
+	    xm_tensor_get_scalar_type(b) != xm_tensor_get_scalar_type(c))
+		fatal("tensors must have same scalar type");
 #ifdef WITH_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
@@ -237,21 +263,20 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 
 	nblocksa = xm_tensor_get_nblocks(a);
 	nblkk = xm_dim_dot_mask(&nblocksa, &cidxa);
-	bufsize = 0;
-	bufsize += 2 * xm_block_space_get_largest_block_size(bsa);
-	bufsize += 2 * xm_block_space_get_largest_block_size(bsb);
-	bufsize += 2 * xm_block_space_get_largest_block_size(bsc);
+	bufbytes = 2 * (xm_tensor_get_largest_block_bytes(a) +
+			xm_tensor_get_largest_block_bytes(b) +
+			xm_tensor_get_largest_block_bytes(c));
 	xm_tensor_get_canonical_block_list(c, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
 {
 	struct blockpair *pairs;
-	xm_scalar_t *buf;
+	void *buf;
 
 	if ((pairs = malloc(nblkk * sizeof *pairs)) == NULL)
 		fatal("out of memory");
-	if ((buf = malloc(bufsize * sizeof *buf)) == NULL)
+	if ((buf = malloc(bufbytes)) == NULL)
 		fatal("out of memory");
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)

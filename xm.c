@@ -28,22 +28,38 @@
 void
 xm_set(xm_tensor_t *a, xm_scalar_t x)
 {
-	const xm_block_space_t *bs;
 	xm_dim_t *blklist;
 	size_t i, maxblksize, nblklist;
-	xm_scalar_t *buf;
+	void *buf;
 	int mpirank = 0, mpisize = 1;
 
 #ifdef WITH_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
 #endif
-	bs = xm_tensor_get_block_space(a);
-	maxblksize = xm_block_space_get_largest_block_size(bs);
-	if ((buf = malloc(maxblksize * sizeof *buf)) == NULL)
+	if ((buf = malloc(xm_tensor_get_largest_block_bytes(a))) == NULL)
 		fatal("out of memory");
-	for (i = 0; i < maxblksize; i++)
-		buf[i] = x;
+	maxblksize = xm_tensor_get_largest_block_size(a);
+	switch (xm_tensor_get_scalar_type(a)) {
+	case XM_SCALAR_FLOAT:
+		for (i = 0; i < maxblksize; i++)
+			((float *)buf)[i] = (float)x;
+		break;
+	case XM_SCALAR_FLOAT_COMPLEX:
+		for (i = 0; i < maxblksize; i++)
+			((float complex *)buf)[i] = (float complex)x;
+		break;
+	case XM_SCALAR_DOUBLE:
+		for (i = 0; i < maxblksize; i++)
+			((double *)buf)[i] = (double)x;
+		break;
+	case XM_SCALAR_DOUBLE_COMPLEX:
+		for (i = 0; i < maxblksize; i++)
+			((double complex *)buf)[i] = (double complex)x;
+		break;
+	default:
+		fatal("unknown scalar type");
+	}
 	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
@@ -77,11 +93,13 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 {
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, *blklist;
-	size_t i, maxblksize, nblklist;
-	int mpirank = 0, mpisize = 1;
+	size_t i, maxblkbytes, nblklist;
+	int mpirank = 0, mpisize = 1, scalartype;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
 		fatal("tensors must use same allocator");
+	if (xm_tensor_get_scalar_type(a) != xm_tensor_get_scalar_type(b))
+		fatal("tensors must have same scalar type");
 #ifdef WITH_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
@@ -100,21 +118,23 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
 			fatal("inconsistent block-spaces");
 
+	scalartype = xm_tensor_get_scalar_type(a);
 	zero = xm_dim_zero(0);
-	maxblksize = xm_block_space_get_largest_block_size(bsa);
+	maxblkbytes = xm_tensor_get_largest_block_bytes(a);
 	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
 #endif
 {
 	xm_dim_t ia, ib;
-	xm_scalar_t *buf1, *buf2;
-	size_t j, blksize;
+	void *buf1, *buf2;
+	size_t blksize;
 	int typeb;
 
-	if ((buf1 = malloc(2 * maxblksize * sizeof *buf1)) == NULL)
+	if ((buf1 = malloc(maxblkbytes)) == NULL)
 		fatal("out of memory");
-	buf2 = buf1 + maxblksize;
+	if ((buf2 = malloc(maxblkbytes)) == NULL)
+		fatal("out of memory");
 	ib = xm_dim_zero(cidxb.n);
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
@@ -126,15 +146,15 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 			typeb = xm_tensor_get_block_type(b, ib);
 			blksize = xm_tensor_get_block_size(b, ib);
 			if (beta == 0 || typeb == XM_BLOCK_TYPE_ZERO) {
-				memset(buf2, 0, blksize * sizeof *buf2);
+				memset(buf2, 0, maxblkbytes);
 			} else {
 				xm_scalar_t scalar = beta;
 				scalar *= xm_tensor_get_block_scalar(b, ib);
 				xm_tensor_read_block(b, ib, buf2);
 				xm_tensor_unfold_block(b, ib, cidxb, zero, buf2,
 				    buf1, blksize);
-				for (j = 0; j < blksize; j++)
-					buf1[j] *= scalar;
+				xm_scalar_mul(buf1, blksize, scalartype,
+				    scalar);
 				xm_tensor_fold_block(a, ia, cidxa, zero, buf1,
 				    buf2, blksize);
 			}
@@ -142,8 +162,8 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 				xm_tensor_write_block(a, ia, buf2);
 			else {
 				xm_tensor_read_block(a, ia, buf1);
-				for (j = 0; j < blksize; j++)
-					buf1[j] = alpha * buf1[j] + buf2[j];
+				xm_scalar_axpy(alpha, buf1, buf2, blksize,
+				    scalartype);
 				xm_tensor_write_block(a, ia, buf1);
 			}
 		}

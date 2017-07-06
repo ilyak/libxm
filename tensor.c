@@ -32,6 +32,7 @@ struct xm_block {
 };
 
 struct xm_tensor {
+	int type;
 	xm_block_space_t *bs;
 	xm_allocator_t *allocator;
 	struct xm_block *blocks;
@@ -50,7 +51,8 @@ tensor_get_block(const xm_tensor_t *tensor, xm_dim_t blkidx)
 }
 
 xm_tensor_t *
-xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
+xm_tensor_create(const xm_block_space_t *bs, int type,
+    xm_allocator_t *allocator)
 {
 	xm_dim_t idx, nblocks;
 	xm_tensor_t *ret;
@@ -62,6 +64,7 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 		fatal("out of memory");
 	if ((ret->bs = xm_block_space_clone(bs)) == NULL)
 		fatal("out of memory");
+	ret->type = type;
 	ret->allocator = allocator;
 	nblocks = xm_block_space_get_nblocks(bs);
 	if ((ret->blocks = calloc(xm_dim_dot(&nblocks),
@@ -76,13 +79,13 @@ xm_tensor_create(const xm_block_space_t *bs, xm_allocator_t *allocator)
 }
 
 xm_tensor_t *
-xm_tensor_create_canonical(const xm_block_space_t *bs,
+xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
     xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
 
-	ret = xm_tensor_create(bs, allocator);
+	ret = xm_tensor_create(bs, type, allocator);
 	nblocks = xm_block_space_get_nblocks(bs);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
@@ -93,25 +96,22 @@ xm_tensor_create_canonical(const xm_block_space_t *bs,
 }
 
 xm_tensor_t *
-xm_tensor_create_structure(const xm_tensor_t *tensor)
+xm_tensor_create_structure(const xm_tensor_t *tensor, int type,
+    xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
 	xm_dim_t idx, nblocks;
-	size_t blksize;
 
-	ret = xm_tensor_create(tensor->bs, tensor->allocator);
+	if (allocator == NULL)
+		allocator = xm_tensor_get_allocator(tensor);
+	ret = xm_tensor_create(tensor->bs, type, allocator);
 	nblocks = xm_tensor_get_nblocks(ret);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
 		size_t i = xm_dim_offset(&idx, &nblocks);
 		ret->blocks[i] = tensor->blocks[i];
-		if (ret->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
-			blksize = xm_tensor_get_block_size(ret, idx);
-			ret->blocks[i].data_ptr = xm_allocator_allocate(
-			    ret->allocator, blksize * sizeof(xm_scalar_t));
-			if (ret->blocks[i].data_ptr == XM_NULL_PTR)
-				fatal("unable to allocate block data");
-		}
+		if (ret->blocks[i].type == XM_BLOCK_TYPE_CANONICAL)
+			xm_tensor_set_canonical_block(ret, idx);
 		xm_dim_inc(&idx, &nblocks);
 	}
 	return ret;
@@ -121,6 +121,12 @@ const xm_block_space_t *
 xm_tensor_get_block_space(const xm_tensor_t *tensor)
 {
 	return tensor->bs;
+}
+
+int
+xm_tensor_get_scalar_type(const xm_tensor_t *tensor)
+{
+	return tensor->type;
 }
 
 xm_allocator_t *
@@ -146,24 +152,47 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 {
 	struct xm_block *block;
 	xm_dim_t blkidx, blkdims, elidx;
-	xm_scalar_t *buf, ret;
-	size_t blksize, eloff;
+	size_t eloff;
+	uintptr_t data_ptr;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
 	block = tensor_get_block(tensor, blkidx);
 	if (block->type == XM_BLOCK_TYPE_ZERO)
 		return 0;
-	blksize = xm_tensor_get_block_size(tensor, blkidx);
-	if ((buf = malloc(blksize * sizeof *buf)) == NULL)
-		fatal("out of memory");
-	xm_tensor_read_block(tensor, blkidx, buf);
 	elidx = xm_dim_permute(&elidx, &block->permutation);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
 	blkdims = xm_dim_permute(&blkdims, &block->permutation);
 	eloff = xm_dim_offset(&elidx, &blkdims);
-	ret = block->scalar * buf[eloff];
-	free(buf);
-	return ret;
+	data_ptr = block->data_ptr;
+	if (block->type == XM_BLOCK_TYPE_DERIVATIVE)
+		data_ptr = tensor->blocks[data_ptr].data_ptr;
+	switch (tensor->type) {
+	case XM_SCALAR_FLOAT: {
+		float x;
+		data_ptr += eloff * sizeof x;
+		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
+		return block->scalar * x;
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		float complex x;
+		data_ptr += eloff * sizeof x;
+		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
+		return block->scalar * x;
+	}
+	case XM_SCALAR_DOUBLE: {
+		double x;
+		data_ptr += eloff * sizeof x;
+		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
+		return block->scalar * x;
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		double complex x;
+		data_ptr += eloff * sizeof x;
+		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
+		return block->scalar * x;
+	}
+	}
+	return 0;
 }
 
 int
@@ -182,6 +211,26 @@ size_t
 xm_tensor_get_block_size(const xm_tensor_t *tensor, xm_dim_t blkidx)
 {
 	return xm_block_space_get_block_size(tensor->bs, blkidx);
+}
+
+size_t
+xm_tensor_get_block_bytes(const xm_tensor_t *tensor, xm_dim_t blkidx)
+{
+	return xm_tensor_get_block_size(tensor, blkidx) *
+	       xm_scalar_sizeof(tensor->type);
+}
+
+size_t
+xm_tensor_get_largest_block_size(const xm_tensor_t *tensor)
+{
+	return xm_block_space_get_largest_block_size(tensor->bs);
+}
+
+size_t
+xm_tensor_get_largest_block_bytes(const xm_tensor_t *tensor)
+{
+	return xm_tensor_get_largest_block_size(tensor) *
+	       xm_scalar_sizeof(tensor->type);
 }
 
 uintptr_t
@@ -224,12 +273,11 @@ xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 void
 xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 {
-	size_t blksize;
+	size_t blkbytes;
 	uintptr_t data_ptr;
 
-	blksize = xm_tensor_get_block_size(tensor, blkidx);
-	data_ptr = xm_allocator_allocate(tensor->allocator,
-	    blksize * sizeof(xm_scalar_t));
+	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
+	data_ptr = xm_allocator_allocate(tensor->allocator, blkbytes);
 	if (data_ptr == XM_NULL_PTR)
 		fatal("unable to allocate block data");
 	xm_tensor_set_canonical_block_raw(tensor, blkidx, data_ptr);
@@ -299,163 +347,224 @@ xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
 }
 
 void
-xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_scalar_t *buf)
+xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx, void *buf)
 {
-	size_t blksize;
-	uintptr_t dataptr;
+	size_t blkbytes;
+	uintptr_t data_ptr;
 	int type;
 
 	type = xm_tensor_get_block_type(tensor, blkidx);
 	if (type == XM_BLOCK_TYPE_ZERO)
 		fatal("cannot read data from zero-blocks");
-	blksize = xm_tensor_get_block_size(tensor, blkidx);
-	dataptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
-	xm_allocator_read(tensor->allocator, dataptr, buf,
-	    blksize * sizeof(xm_scalar_t));
+	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
+	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
+	xm_allocator_read(tensor->allocator, data_ptr, buf, blkbytes);
 }
 
 void
-xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx,
-    const xm_scalar_t *buf)
+xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 {
-	size_t blksize;
-	uintptr_t dataptr;
+	size_t blkbytes;
+	uintptr_t data_ptr;
 	int type;
 
 	type = xm_tensor_get_block_type(tensor, blkidx);
 	if (type != XM_BLOCK_TYPE_CANONICAL)
 		fatal("can only write to canonical blocks");
-	blksize = xm_tensor_get_block_size(tensor, blkidx);
-	dataptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
-	xm_allocator_write(tensor->allocator, dataptr, buf,
-	    blksize * sizeof(xm_scalar_t));
+	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
+	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
+	xm_allocator_write(tensor->allocator, data_ptr, buf, blkbytes);
 }
+
+typedef float complex float_complex;
+typedef double complex double_complex;
+
+#define DEFINE_UNFOLD_FUNCTION(_type)					       \
+static void								       \
+xm_tensor_unfold_block_ ## _type(const xm_tensor_t *tensor, xm_dim_t blkidx,   \
+    xm_dim_t mask_i, xm_dim_t mask_j, const _type *from, _type *to,	       \
+    size_t stride)							       \
+{									       \
+	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;		       \
+	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;		       \
+	size_t block_size_i, block_size_j;				       \
+									       \
+	blkdims = xm_tensor_get_block_dims(tensor, blkidx);		       \
+	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);		       \
+	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);		       \
+	permutation = xm_tensor_get_block_permutation(tensor, blkidx);	       \
+	blkdimsp = xm_dim_permute(&blkdims, &permutation);		       \
+	elidx = xm_dim_zero(blkdims.n);					       \
+									       \
+	inc = 1;							       \
+	lead_ii_nel = 1;						       \
+									       \
+	if (mask_i.n > 0) {						       \
+		lead_ii = mask_i.i[0];					       \
+		for (kk = 0; kk < permutation.i[lead_ii]; kk++)		       \
+			inc *= blkdimsp.i[kk];				       \
+		for (ii = 0; ii < mask_i.n-1; ii++)			       \
+			mask_i.i[ii] = mask_i.i[ii+1];			       \
+		mask_i.n--;						       \
+		lead_ii_nel = blkdims.i[lead_ii];			       \
+	}								       \
+	if (inc == 1) { /* use memcpy */				       \
+		for (jj = 0; jj < block_size_j; jj++) {			       \
+			xm_dim_zero_mask(&elidx, &mask_i);		       \
+			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {   \
+				idx = xm_dim_permute(&elidx, &permutation);    \
+				offset = xm_dim_offset(&idx, &blkdimsp);       \
+				memcpy(&to[jj * stride + ii], from + offset,   \
+				    sizeof(_type) * lead_ii_nel);	       \
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);    \
+			}						       \
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);	       \
+		}							       \
+	} else {							       \
+		for (jj = 0; jj < block_size_j; jj++) {			       \
+			xm_dim_zero_mask(&elidx, &mask_i);		       \
+			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {   \
+				idx = xm_dim_permute(&elidx, &permutation);    \
+				offset = xm_dim_offset(&idx, &blkdimsp);       \
+				for (kk = 0; kk < lead_ii_nel; kk++) {	       \
+					to[jj * stride + ii + kk] =	       \
+					    from[offset];		       \
+					offset += inc;			       \
+				}					       \
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);    \
+			}						       \
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);	       \
+		}							       \
+	}								       \
+}
+
+DEFINE_UNFOLD_FUNCTION(float)
+DEFINE_UNFOLD_FUNCTION(float_complex)
+DEFINE_UNFOLD_FUNCTION(double)
+DEFINE_UNFOLD_FUNCTION(double_complex)
 
 void
 xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to,
+    xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride)
 {
-	struct xm_block *block;
-	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;
-	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
-	size_t block_size_i, block_size_j;
+	if (from == NULL || to == NULL || from == to)
+		fatal("invalid argument");
+	if (mask_i.n + mask_j.n != blkidx.n)
+		fatal("invalid mask dimensions");
 
-	assert(from);
-	assert(to);
-	assert(from != to);
-	assert(mask_i.n + mask_j.n == blkidx.n);
-
-	block = tensor_get_block(tensor, blkidx);
-	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
-	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);
-	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);
-	permutation = block->permutation;
-	blkdimsp = xm_dim_permute(&blkdims, &permutation);
-	elidx = xm_dim_zero(blkdims.n);
-
-	inc = 1;
-	lead_ii_nel = 1;
-
-	if (mask_i.n > 0) {
-		lead_ii = mask_i.i[0];
-		for (kk = 0; kk < permutation.i[lead_ii]; kk++)
-			inc *= blkdimsp.i[kk];
-		for (ii = 0; ii < mask_i.n-1; ii++)
-			mask_i.i[ii] = mask_i.i[ii+1];
-		mask_i.n--;
-		lead_ii_nel = blkdims.i[lead_ii];
-	}
-	if (inc == 1) { /* use memcpy */
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				idx = xm_dim_permute(&elidx, &permutation);
-				offset = xm_dim_offset(&idx, &blkdimsp);
-				memcpy(&to[jj * stride + ii], from + offset,
-				    sizeof(xm_scalar_t) * lead_ii_nel);
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
-	} else {
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				idx = xm_dim_permute(&elidx, &permutation);
-				offset = xm_dim_offset(&idx, &blkdimsp);
-				for (kk = 0; kk < lead_ii_nel; kk++) {
-					to[jj * stride + ii + kk] =
-					    from[offset];
-					offset += inc;
-				}
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
+	switch (tensor->type) {
+	case XM_SCALAR_FLOAT:
+		xm_tensor_unfold_block_float(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
+	case XM_SCALAR_FLOAT_COMPLEX:
+		xm_tensor_unfold_block_float_complex(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
+	case XM_SCALAR_DOUBLE:
+		xm_tensor_unfold_block_double(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
+	case XM_SCALAR_DOUBLE_COMPLEX:
+		xm_tensor_unfold_block_double_complex(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
 	}
 }
 
+#define DEFINE_FOLD_FUNCTION(_type)					       \
+static void								       \
+xm_tensor_fold_block_ ## _type(const xm_tensor_t *tensor, xm_dim_t blkidx,     \
+    xm_dim_t mask_i, xm_dim_t mask_j, const _type *from, _type *to,	       \
+    size_t stride)							       \
+{									       \
+	xm_dim_t blkdims, elidx;					       \
+	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;		       \
+	size_t block_size_i, block_size_j;				       \
+									       \
+	blkdims = xm_tensor_get_block_dims(tensor, blkidx);		       \
+	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);		       \
+	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);		       \
+	elidx = xm_dim_zero(blkdims.n);					       \
+									       \
+	inc = 1;							       \
+	lead_ii_nel = 1;						       \
+									       \
+	if (mask_i.n > 0) {						       \
+		lead_ii = mask_i.i[0];					       \
+		for (kk = 0; kk < lead_ii; kk++)			       \
+			inc *= blkdims.i[kk];				       \
+		for (ii = 0; ii < mask_i.n-1; ii++)			       \
+			mask_i.i[ii] = mask_i.i[ii+1];			       \
+		mask_i.n--;						       \
+		lead_ii_nel = blkdims.i[lead_ii];			       \
+	}								       \
+	if (inc == 1) { /* use memcpy */				       \
+		for (jj = 0; jj < block_size_j; jj++) {			       \
+			xm_dim_zero_mask(&elidx, &mask_i);		       \
+			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {   \
+				offset = xm_dim_offset(&elidx, &blkdims);      \
+				memcpy(to + offset, &from[jj * stride + ii],   \
+				    sizeof(_type) * lead_ii_nel);	       \
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);    \
+			}						       \
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);	       \
+		}							       \
+	} else {							       \
+		for (jj = 0; jj < block_size_j; jj++) {			       \
+			xm_dim_zero_mask(&elidx, &mask_i);		       \
+			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {   \
+				offset = xm_dim_offset(&elidx, &blkdims);      \
+				for (kk = 0; kk < lead_ii_nel; kk++) {	       \
+					to[offset] = from[jj*stride+ii+kk];    \
+					offset += inc;			       \
+				}					       \
+				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);    \
+			}						       \
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);	       \
+		}							       \
+	}								       \
+}
+
+DEFINE_FOLD_FUNCTION(float)
+DEFINE_FOLD_FUNCTION(float_complex)
+DEFINE_FOLD_FUNCTION(double)
+DEFINE_FOLD_FUNCTION(double_complex)
+
 void
 xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
-    xm_dim_t mask_i, xm_dim_t mask_j, const xm_scalar_t *from, xm_scalar_t *to,
+    xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride)
 {
-	struct xm_block *block;
-	xm_dim_t blkdims, elidx;
-	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
-	size_t block_size_i, block_size_j;
+	int blocktype;
 
-	assert(from);
-	assert(to);
-	assert(from != to);
-	assert(mask_i.n + mask_j.n == blkidx.n);
+	if (from == NULL || to == NULL || from == to)
+		fatal("invalid argument");
+	if (mask_i.n + mask_j.n != blkidx.n)
+		fatal("invalid mask dimensions");
 
-	block = tensor_get_block(tensor, blkidx);
-	if (block->type != XM_BLOCK_TYPE_CANONICAL)
+	blocktype = xm_tensor_get_block_type(tensor, blkidx);
+	if (blocktype != XM_BLOCK_TYPE_CANONICAL)
 		fatal("can only fold canonical blocks");
-	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
-	block_size_i = xm_dim_dot_mask(&blkdims, &mask_i);
-	block_size_j = xm_dim_dot_mask(&blkdims, &mask_j);
-	elidx = xm_dim_zero(blkdims.n);
 
-	inc = 1;
-	lead_ii_nel = 1;
-
-	if (mask_i.n > 0) {
-		lead_ii = mask_i.i[0];
-		for (kk = 0; kk < lead_ii; kk++)
-			inc *= blkdims.i[kk];
-		for (ii = 0; ii < mask_i.n-1; ii++)
-			mask_i.i[ii] = mask_i.i[ii+1];
-		mask_i.n--;
-		lead_ii_nel = blkdims.i[lead_ii];
-	}
-	if (inc == 1) { /* use memcpy */
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				offset = xm_dim_offset(&elidx, &blkdims);
-				memcpy(to + offset, &from[jj * stride + ii],
-				    sizeof(xm_scalar_t) * lead_ii_nel);
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
-	} else {
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				offset = xm_dim_offset(&elidx, &blkdims);
-				for (kk = 0; kk < lead_ii_nel; kk++) {
-					to[offset] = from[jj*stride+ii+kk];
-					offset += inc;
-				}
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
+	switch (tensor->type) {
+	case XM_SCALAR_FLOAT:
+		xm_tensor_fold_block_float(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
+	case XM_SCALAR_FLOAT_COMPLEX:
+		xm_tensor_fold_block_float_complex(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
+	case XM_SCALAR_DOUBLE:
+		xm_tensor_fold_block_double(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
+	case XM_SCALAR_DOUBLE_COMPLEX:
+		xm_tensor_fold_block_double_complex(tensor, blkidx, mask_i,
+		    mask_j, from, to, stride);
+		return;
 	}
 }
 
