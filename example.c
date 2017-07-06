@@ -44,7 +44,7 @@ main(void)
 	xm_block_space_split(bsc, 0, 2);
 
 	/* Create tensors a and b. Tensors are initialized with all
-	 * zero-blocks by default. */
+	 * zero-blocks by default. The type of tensor data is "double". */
 	xm_tensor_t *a = xm_tensor_create(bsa, XM_SCALAR_DOUBLE, allocator);
 	xm_tensor_t *b = xm_tensor_create(bsb, XM_SCALAR_DOUBLE, allocator);
 	/* Tensor c has only canonical blocks. */
