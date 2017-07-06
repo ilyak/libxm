@@ -1,21 +1,11 @@
-# Scalar type is double
-SCALAR_TYPE= XM_SCALAR_DOUBLE
-# Scalar type is float
-#SCALAR_TYPE= XM_SCALAR_FLOAT
-# Scalar type is double complex
-#SCALAR_TYPE= XM_SCALAR_DOUBLE_COMPLEX
-# Scalar type is float complex
-#SCALAR_TYPE= XM_SCALAR_FLOAT_COMPLEX
-
-# cc with Netlib BLAS
 CC= cc
-CFLAGS= -D$(SCALAR_TYPE) -Wall -Wextra -g -fopenmp
+CFLAGS= -Wall -Wextra -g -fopenmp
 LDFLAGS= -L/usr/local/lib
 LIBS= -lblas -lpthread -lm
 
 # Intel Compiler with MKL on Linux (release build)
 #CC= icc
-#CFLAGS= -D$(SCALAR_TYPE) -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
+#CFLAGS= -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
 #LDFLAGS=
 #LIBS= -lpthread -lm
 
@@ -25,7 +15,7 @@ TEST= test
 TEST_O= test.o
 
 XM_A= xm.a
-XM_O= alloc.o blockspace.o contract.o dim.o tensor.o util.o xm.o
+XM_O= alloc.o blockspace.o contract.o dim.o scalar.o tensor.o util.o xm.o
 
 AR= ar rc
 RANLIB= ranlib
