@@ -307,10 +307,10 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 {
 	struct xm_block *block;
 	xm_dim_t blkdims1, blkdims2, nblocks;
-	int type;
+	int blocktype;
 
-	type = xm_tensor_get_block_type(tensor, source_blkidx);
-	if (type != XM_BLOCK_TYPE_CANONICAL)
+	blocktype = xm_tensor_get_block_type(tensor, source_blkidx);
+	if (blocktype != XM_BLOCK_TYPE_CANONICAL)
 		fatal("derivative blocks must have canonical source blocks");
 	blkdims1 = xm_block_space_get_block_dims(tensor->bs, blkidx);
 	blkdims1 = xm_dim_permute(&blkdims1, &permutation);
@@ -335,8 +335,8 @@ xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
 	nblocks = xm_tensor_get_nblocks(tensor);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
-		int type = xm_tensor_get_block_type(tensor, idx);
-		if (type == XM_BLOCK_TYPE_CANONICAL) {
+		int blocktype = xm_tensor_get_block_type(tensor, idx);
+		if (blocktype == XM_BLOCK_TYPE_CANONICAL) {
 			nlist++;
 			list = realloc(list, nlist * sizeof *list);
 			if (list == NULL)
@@ -354,10 +354,10 @@ xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx, void *buf)
 {
 	size_t blkbytes;
 	uintptr_t data_ptr;
-	int type;
+	int blocktype;
 
-	type = xm_tensor_get_block_type(tensor, blkidx);
-	if (type == XM_BLOCK_TYPE_ZERO)
+	blocktype = xm_tensor_get_block_type(tensor, blkidx);
+	if (blocktype == XM_BLOCK_TYPE_ZERO)
 		fatal("cannot read data from zero-blocks");
 	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
 	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
@@ -369,10 +369,10 @@ xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 {
 	size_t blkbytes;
 	uintptr_t data_ptr;
-	int type;
+	int blocktype;
 
-	type = xm_tensor_get_block_type(tensor, blkidx);
-	if (type != XM_BLOCK_TYPE_CANONICAL)
+	blocktype = xm_tensor_get_block_type(tensor, blkidx);
+	if (blocktype != XM_BLOCK_TYPE_CANONICAL)
 		fatal("can only write to canonical blocks");
 	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
 	data_ptr = xm_tensor_get_block_data_ptr(tensor, blkidx);
@@ -576,13 +576,13 @@ xm_tensor_free_block_data(xm_tensor_t *tensor)
 {
 	xm_dim_t idx, nblocks;
 	uintptr_t data_ptr;
-	int type;
+	int blocktype;
 
 	nblocks = xm_tensor_get_nblocks(tensor);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
-		type = xm_tensor_get_block_type(tensor, idx);
-		if (type == XM_BLOCK_TYPE_CANONICAL) {
+		blocktype = xm_tensor_get_block_type(tensor, idx);
+		if (blocktype == XM_BLOCK_TYPE_CANONICAL) {
 			data_ptr = xm_tensor_get_block_data_ptr(tensor, idx);
 			xm_allocator_deallocate(tensor->allocator, data_ptr);
 		}

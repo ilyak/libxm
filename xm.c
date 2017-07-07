@@ -127,7 +127,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	xm_dim_t ia, ib;
 	void *buf1, *buf2;
 	size_t blksize;
-	int typeb;
+	int blocktype;
 
 	if ((buf1 = malloc(maxblkbytes)) == NULL)
 		fatal("out of memory");
@@ -141,9 +141,9 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 		if ((int)i % mpisize == mpirank) {
 			ia = blklist[i];
 			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
-			typeb = xm_tensor_get_block_type(b, ib);
 			blksize = xm_tensor_get_block_size(b, ib);
-			if (beta == 0 || typeb == XM_BLOCK_TYPE_ZERO) {
+			blocktype = xm_tensor_get_block_type(b, ib);
+			if (beta == 0 || blocktype == XM_BLOCK_TYPE_ZERO) {
 				memset(buf2, 0, maxblkbytes);
 			} else {
 				xm_scalar_t scalar = beta;
