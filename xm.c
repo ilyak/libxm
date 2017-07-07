@@ -57,8 +57,6 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 		for (i = 0; i < maxblksize; i++)
 			((double complex *)buf)[i] = (double complex)x;
 		break;
-	default:
-		fatal("unknown scalar type");
 	}
 	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
 #ifdef _OPENMP

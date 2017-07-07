@@ -60,6 +60,9 @@ xm_tensor_create(const xm_block_space_t *bs, int type,
 	assert(bs);
 	assert(allocator);
 
+	if (type != XM_SCALAR_FLOAT && type != XM_SCALAR_FLOAT_COMPLEX &&
+	    type != XM_SCALAR_DOUBLE && type != XM_SCALAR_DOUBLE_COMPLEX)
+		fatal("unknown scalar type");
 	if ((ret = calloc(1, sizeof *ret)) == NULL)
 		fatal("out of memory");
 	if ((ret->bs = xm_block_space_clone(bs)) == NULL)

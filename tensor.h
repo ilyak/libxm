@@ -33,7 +33,9 @@ extern "C" {
 /* Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
-/* Create new block-tensor with all blocks set to zero-blocks. */
+/* Create new block-tensor with all blocks set to zero-blocks. Type argument
+ * specifies floating point type of a tensor and should be one of the
+ * XM_SCALAR_ values. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, int type,
     xm_allocator_t *allocator);
 
