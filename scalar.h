@@ -30,7 +30,11 @@ extern "C" {
 #define XM_SCALAR_DOUBLE_COMPLEX  3
 
 /* Largest floating point type convertible to all other types. */
+#ifdef __cplusplus
+typedef std::complex<double> xm_scalar_t;
+#else
 typedef double complex xm_scalar_t;
+#endif
 
 size_t xm_scalar_sizeof(int type);
 void xm_scalar_set(void *buf, size_t len, int type, xm_scalar_t x);
