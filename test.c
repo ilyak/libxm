@@ -1403,7 +1403,7 @@ test_copy_3(const char *path, int type)
 	xm_block_space_split(bsa, 2, 21);
 	a = xm_tensor_create_canonical(bsa, type, allocator);
 	fill_random(a);
-	bsb = xm_block_space_clone1(bsa, permutation);
+	bsb = xm_block_space_permute_clone(bsa, permutation);
 	assert(bsb);
 	xm_block_space_free(bsa);
 	b = xm_tensor_create_canonical(bsb, type, allocator);
@@ -1442,7 +1442,7 @@ test_copy_4(const char *path, int type)
 	xm_block_space_split(bsa, 2, 8);
 	xm_block_space_split(bsa, 2, 4);
 	xm_block_space_split(bsa, 2, 3);
-	bsb = xm_block_space_clone1(bsa, xm_dim_3(2, 0, 1));
+	bsb = xm_block_space_permute_clone(bsa, xm_dim_3(2, 0, 1));
 	a = xm_tensor_create(bsa, type, allocator);
 	b = xm_tensor_create_canonical(bsb, type, allocator);
 	xm_block_space_free(bsa);

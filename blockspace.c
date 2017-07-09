@@ -73,7 +73,7 @@ xm_block_space_clone(const xm_block_space_t *bs)
 }
 
 xm_block_space_t *
-xm_block_space_clone1(const xm_block_space_t *bs, xm_dim_t permutation)
+xm_block_space_permute_clone(const xm_block_space_t *bs, xm_dim_t permutation)
 {
 	xm_block_space_t *ret;
 	size_t i, j;

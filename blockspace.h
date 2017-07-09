@@ -33,7 +33,7 @@ xm_block_space_t *xm_block_space_create(xm_dim_t dims);
 xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
 
 /* Create a deep copy of a block-space while applying permutation. */
-xm_block_space_t *xm_block_space_clone1(const xm_block_space_t *bs,
+xm_block_space_t *xm_block_space_permute_clone(const xm_block_space_t *bs,
     xm_dim_t permutation);
 
 /* Return number of dimensions a block-space has. */
