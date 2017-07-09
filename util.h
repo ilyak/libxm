@@ -17,6 +17,8 @@
 #ifndef UTIL_H_INCLUDED
 #define UTIL_H_INCLUDED
 
+/* Private header */
+
 #include "dim.h"
 
 #define fatal(x) xm_fatal("%s: %s", __func__, (x))
