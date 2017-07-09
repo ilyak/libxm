@@ -169,6 +169,9 @@ xm_allocator_create(const char *path)
 {
 	xm_allocator_t *allocator;
 
+#ifdef WITH_MPI
+	assert(path); /* data must be on a shared filesystem */
+#endif
 	if ((allocator = calloc(1, sizeof(*allocator))) == NULL) {
 		perror("malloc");
 		return (NULL);
