@@ -20,6 +20,10 @@
 #include <complex.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define XM_SCALAR_FLOAT           0
 #define XM_SCALAR_FLOAT_COMPLEX   1
 #define XM_SCALAR_DOUBLE          2
@@ -33,5 +37,9 @@ void xm_scalar_set(void *buf, size_t len, int type, xm_scalar_t x);
 void xm_scalar_mul(void *buf, size_t len, int type, xm_scalar_t x);
 void xm_scalar_axpy(xm_scalar_t a, void *x, const void *y, size_t len,
     int type);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* XM_SCALAR_H_INCLUDED */
