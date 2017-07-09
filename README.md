@@ -23,7 +23,7 @@ an ANSI C complaint compiler. Issue `make` in the directory with libxm source
 code to compile the library. To use libxm in your project, include `xm.h` file
 and compile the code:
 
-    cc myprog.c xm.a -lblas -lm
+    cc -fopenmp myprog.c xm.a -lblas -lm
 
 Detailed documentation can be found in `xm.h` and other header files. The tests
 can be executed by issuing the following command in the directory with the
