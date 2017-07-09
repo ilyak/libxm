@@ -1,13 +1,13 @@
 CC= cc
 CFLAGS= -Wall -Wextra -g -fopenmp
 LDFLAGS= -L/usr/local/lib
-LIBS= -lblas -lpthread -lm
+LIBS= -lblas -lm
 
 # Intel Compiler with MKL on Linux (release build)
 #CC= icc
 #CFLAGS= -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
 #LDFLAGS=
-#LIBS= -lpthread -lm
+#LIBS= -lm
 
 EXAMPLE= example
 EXAMPLE_O= example.o
