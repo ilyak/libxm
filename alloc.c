@@ -16,7 +16,6 @@
 
 #include <assert.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +23,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #ifdef WITH_MPI
 #include <mpi.h>
@@ -61,7 +64,9 @@ struct xm_allocator {
 	char                   *path;
 	size_t                  file_bytes;
 	bitstr_t               *pages;
-	pthread_mutex_t         mutex;
+#ifdef _OPENMP
+	omp_lock_t		mutex;
+#endif
 	struct tree             blocks;
 };
 
@@ -211,14 +216,9 @@ xm_allocator_create(const char *path)
 			return (NULL);
 		}
 	}
-	if (pthread_mutex_init(&allocator->mutex, NULL)) {
-		perror("pthread_mutex_init");
-		if (close(allocator->fd))
-			perror("close");
-		free(allocator->path);
-		free(allocator);
-		return (NULL);
-	}
+#ifdef _OPENMP
+	omp_init_lock(&allocator->mutex);
+#endif
 	RB_INIT(&allocator->blocks);
 	return (allocator);
 }
@@ -247,10 +247,9 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 		perror("malloc");
 		return (XM_NULL_PTR);
 	}
-
-	if (pthread_mutex_lock(&allocator->mutex))
-		fatal("pthread_mutex_lock");
-
+#ifdef _OPENMP
+	omp_set_lock(&allocator->mutex);
+#endif
 	if (allocator->path) {
 		if ((data_ptr = allocate_pages(allocator,
 		    size_bytes)) == XM_NULL_PTR)
@@ -266,16 +265,17 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 
 	block->size_bytes = size_bytes;
 	RB_INSERT(tree, &allocator->blocks, block);
-
-	if (pthread_mutex_unlock(&allocator->mutex))
-		fatal("pthread_mutex_unlock");
+#ifdef _OPENMP
+	omp_unset_lock(&allocator->mutex);
+#endif
 #ifdef WITH_MPI
 	MPI_Bcast(&data_ptr, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
 #endif
 	return (block->data_ptr);
 fail:
-	if (pthread_mutex_unlock(&allocator->mutex))
-		fatal("pthread_mutex_unlock");
+#ifdef _OPENMP
+	omp_unset_lock(&allocator->mutex);
+#endif
 	free(block);
 	return (XM_NULL_PTR);
 }
@@ -329,9 +329,9 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 		return;
 	if (data_ptr == XM_NULL_PTR)
 		return;
-	if (pthread_mutex_lock(&allocator->mutex))
-		fatal("pthread_mutex_lock");
-
+#ifdef _OPENMP
+	omp_set_lock(&allocator->mutex);
+#endif
 	block = find_block(&allocator->blocks, data_ptr);
 	assert(block);
 
@@ -347,9 +347,9 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 		free((void *)data_ptr);
 	}
 	free(block);
-
-	if (pthread_mutex_unlock(&allocator->mutex))
-		fatal("pthread_mutex_unlock");
+#ifdef _OPENMP
+	omp_unset_lock(&allocator->mutex);
+#endif
 }
 
 void
@@ -370,13 +370,15 @@ xm_allocator_destroy(xm_allocator_t *allocator)
 				perror("unlink");
 			free(allocator->path);
 		}
-		if (pthread_mutex_destroy(&allocator->mutex))
-			perror("pthread_mutex_destroy");
+#ifdef _OPENMP
+		omp_destroy_lock(&allocator->mutex);
+#endif
 		free(allocator->pages);
 		free(allocator);
 	} else {
-		if (pthread_mutex_destroy(&allocator->mutex))
-			perror("pthread_mutex_destroy");
+#ifdef _OPENMP
+		omp_destroy_lock(&allocator->mutex);
+#endif
 		free(allocator->path);
 		free(allocator->pages);
 		free(allocator);
