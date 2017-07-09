@@ -368,19 +368,12 @@ xm_allocator_destroy(xm_allocator_t *allocator)
 				perror("close");
 			if (unlink(allocator->path))
 				perror("unlink");
-			free(allocator->path);
 		}
-#ifdef _OPENMP
-		omp_destroy_lock(&allocator->mutex);
-#endif
-		free(allocator->pages);
-		free(allocator);
-	} else {
-#ifdef _OPENMP
-		omp_destroy_lock(&allocator->mutex);
-#endif
-		free(allocator->path);
-		free(allocator->pages);
-		free(allocator);
 	}
+#ifdef _OPENMP
+	omp_destroy_lock(&allocator->mutex);
+#endif
+	free(allocator->path);
+	free(allocator->pages);
+	free(allocator);
 }
