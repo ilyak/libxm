@@ -133,10 +133,7 @@ find_pages(xm_allocator_t *allocator, size_t n_pages)
 	if (start == n_total)
 		return (XM_NULL_PTR);
 	for (i = start, n_free = 0; i < n_total; i++) {
-		if (bitmap_test(allocator->pages, i))
-			n_free = 0;
-		else
-			n_free++;
+		n_free = bitmap_test(allocator->pages, i) ? 0 : n_free + 1;
 		if (n_free == n_pages) {
 			for (offset = i + 1 - n_free; offset <= i; offset++)
 				bitmap_set(allocator->pages, offset);
