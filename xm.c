@@ -167,6 +167,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 		}
 	}
 	free(buf1);
+	free(buf2);
 }
 	free(blklist);
 #ifdef WITH_MPI
