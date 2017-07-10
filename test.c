@@ -914,7 +914,6 @@ make_abc_11(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	*aa = a;
 	*bb = b;
 	*cc = xm_tensor_create_structure(b, type, allocator);
-	xm_copy(*cc, 1, b, "abcd", "abcd");
 }
 
 static void
