@@ -32,12 +32,6 @@
 #include <mpi.h>
 #endif
 
-#ifdef HAVE_BITSTRING_H
-#include <bitstring.h>
-#else
-#include "compat/bitstring.h"
-#endif
-
 #ifdef HAVE_TREE_H
 #include <sys/tree.h>
 #else
@@ -45,6 +39,7 @@
 #endif
 
 #include "alloc.h"
+#include "bitmap.h"
 #include "util.h"
 
 #define XM_PAGE_SIZE (512ULL * 1024)
@@ -59,15 +54,15 @@ struct block {
 RB_HEAD(tree, block);
 
 struct xm_allocator {
-	int                     fd;
-	int                     mpirank;
-	char                   *path;
-	size_t                  file_bytes;
-	bitstr_t               *pages;
+	int fd;
+	int mpirank;
+	char *path;
+	size_t file_bytes;
+	unsigned char *pages;
 #ifdef _OPENMP
-	omp_lock_t		mutex;
+	omp_lock_t mutex;
 #endif
-	struct tree             blocks;
+	struct tree blocks;
 };
 
 static int
@@ -102,46 +97,50 @@ extend_file(xm_allocator_t *allocator)
 {
 	size_t oldsize, newsize;
 
-	oldsize = bitstr_size(allocator->file_bytes / XM_PAGE_SIZE);
+	oldsize = allocator->file_bytes / XM_PAGE_SIZE / 8;
+	if (allocator->file_bytes % (XM_PAGE_SIZE * 8))
+		oldsize++;
 	allocator->file_bytes = allocator->file_bytes > XM_GROW_SIZE ?
 	    allocator->file_bytes + XM_GROW_SIZE :
 	    allocator->file_bytes * 2;
-	newsize = bitstr_size(allocator->file_bytes / XM_PAGE_SIZE);
+	newsize = allocator->file_bytes / XM_PAGE_SIZE / 8;
+	if (allocator->file_bytes % (XM_PAGE_SIZE * 8))
+		newsize++;
 
 	if (ftruncate(allocator->fd, (off_t)allocator->file_bytes)) {
 		perror("ftruncate");
 		return (1);
 	}
-	if ((allocator->pages = realloc(allocator->pages,
-	    newsize * sizeof(bitstr_t))) == NULL) {
+	if ((allocator->pages = realloc(allocator->pages, newsize)) == NULL) {
 		perror("realloc");
 		return (1);
 	}
-	memset(allocator->pages + oldsize, 0,
-	    (newsize - oldsize) * sizeof(bitstr_t));
+	memset(allocator->pages + oldsize, 0, newsize - oldsize);
 	return (0);
 }
 
 static uintptr_t
 find_pages(xm_allocator_t *allocator, size_t n_pages)
 {
-	int i, n_free, n_total, offset, start;
+	unsigned int i, n_free, n_total, offset, start;
 
 	assert(n_pages > 0);
 
-	n_total = (int)(allocator->file_bytes / XM_PAGE_SIZE);
-	bit_ffc(allocator->pages, n_total, &start);
-	if (start == -1)
+	n_total = allocator->file_bytes / XM_PAGE_SIZE;
+	for (start = 0; start < n_total; start++)
+		if (!bitmap_test(allocator->pages, start))
+			break;
+	if (start == n_total)
 		return (XM_NULL_PTR);
 	for (i = start, n_free = 0; i < n_total; i++) {
-		if (bit_test(allocator->pages, i))
+		if (bitmap_test(allocator->pages, i))
 			n_free = 0;
 		else
 			n_free++;
-		if (n_free == (int)n_pages) {
-			offset = i + 1 - n_free;
-			bit_nset(allocator->pages, offset, i);
-			return ((uintptr_t)offset * XM_PAGE_SIZE);
+		if (n_free == n_pages) {
+			for (offset = i + 1 - n_free; offset <= i; offset++)
+				bitmap_set(allocator->pages, offset);
+			return ((uintptr_t)(i + 1 - n_free) * XM_PAGE_SIZE);
 		}
 	}
 	return (XM_NULL_PTR);
@@ -181,8 +180,8 @@ xm_allocator_create(const char *path)
 #endif
 	if (path) {
 		allocator->file_bytes = XM_PAGE_SIZE;
-		allocator->pages = bit_alloc(1);
-
+		if ((allocator->pages = calloc(1,1)) == NULL)
+			fatal("out of memory");
 		if (allocator->mpirank == 0) {
 			if ((allocator->fd = open(path, O_CREAT|O_RDWR,
 			    S_IRUSR|S_IWUSR)) == -1) {
@@ -341,11 +340,12 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
 	RB_REMOVE(tree, &allocator->blocks, block);
 
 	if (allocator->path) {
-		int start, count;
+		unsigned int start, stop;
 		assert(data_ptr % XM_PAGE_SIZE == 0);
-		start = (int)(data_ptr / XM_PAGE_SIZE);
-		count = (int)((block->size_bytes - 1) / XM_PAGE_SIZE);
-		bit_nclear(allocator->pages, start, start + count);
+		start = data_ptr / XM_PAGE_SIZE;
+		stop = start + (block->size_bytes - 1) / XM_PAGE_SIZE;
+		while (start <= stop)
+			bitmap_clear(allocator->pages, start++);
 	} else {
 		free((void *)data_ptr);
 	}
