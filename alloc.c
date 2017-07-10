@@ -46,7 +46,7 @@
 #define XM_GROW_SIZE (256ULL * 1024 * 1024 * 1024)
 
 struct block {
-	uintptr_t               data_ptr;
+	uint64_t                data_ptr;
 	size_t                  size_bytes;
 	RB_ENTRY(block)         entry;
 };
@@ -82,7 +82,7 @@ tree_cmp(const struct block *a, const struct block *b)
 RB_GENERATE_STATIC(tree, block, entry, tree_cmp)
 
 static struct block *
-find_block(struct tree *tree, uintptr_t data_ptr)
+find_block(struct tree *tree, uint64_t data_ptr)
 {
 	struct block key, *block;
 
@@ -119,7 +119,7 @@ extend_file(xm_allocator_t *allocator)
 	return (0);
 }
 
-static uintptr_t
+static uint64_t
 find_pages(xm_allocator_t *allocator, size_t n_pages)
 {
 	unsigned int i, n_free, n_total, offset, start;
@@ -137,17 +137,17 @@ find_pages(xm_allocator_t *allocator, size_t n_pages)
 		if (n_free == n_pages) {
 			for (offset = i + 1 - n_free; offset <= i; offset++)
 				bitmap_set(allocator->pages, offset);
-			return ((uintptr_t)(i + 1 - n_free) * XM_PAGE_SIZE);
+			return ((uint64_t)(i + 1 - n_free) * XM_PAGE_SIZE);
 		}
 	}
 	return (XM_NULL_PTR);
 }
 
-static uintptr_t
+static uint64_t
 allocate_pages(xm_allocator_t *allocator, size_t size_bytes)
 {
 	size_t n_pages;
-	uintptr_t ptr;
+	uint64_t ptr;
 
 	if (size_bytes == 0)
 		return (XM_NULL_PTR);
@@ -228,12 +228,12 @@ xm_allocator_get_path(xm_allocator_t *allocator)
 	return (allocator->path);
 }
 
-uintptr_t
+uint64_t
 xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 {
 	struct block *block;
 	void *data;
-	uintptr_t data_ptr = XM_NULL_PTR;
+	uint64_t data_ptr = XM_NULL_PTR;
 
 	if (allocator->mpirank != 0) {
 #ifdef WITH_MPI
@@ -259,7 +259,7 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 			perror("malloc");
 			goto fail;
 		}
-		block->data_ptr = (uintptr_t)data;
+		block->data_ptr = (uint64_t)data;
 	}
 
 	block->size_bytes = size_bytes;
@@ -280,7 +280,7 @@ fail:
 }
 
 void
-xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
+xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
     void *mem, size_t size_bytes)
 {
 	ssize_t read_bytes;
@@ -300,7 +300,7 @@ xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
 }
 
 void
-xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
+xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
     const void *mem, size_t size_bytes)
 {
 	ssize_t write_bytes;
@@ -320,7 +320,7 @@ xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
 }
 
 void
-xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr)
+xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr)
 {
 	struct block *block;
 

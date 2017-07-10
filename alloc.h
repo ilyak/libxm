@@ -24,19 +24,19 @@
 extern "C" {
 #endif
 
-#define XM_NULL_PTR ((uintptr_t)(-1))
+#define XM_NULL_PTR ((uint64_t)(-1))
 
 typedef struct xm_allocator xm_allocator_t;
 
 xm_allocator_t *xm_allocator_create(const char *path);
 const char *xm_allocator_get_path(xm_allocator_t *allocator);
-uintptr_t xm_allocator_allocate(xm_allocator_t *allocator,
+uint64_t xm_allocator_allocate(xm_allocator_t *allocator,
     size_t size_bytes);
-void xm_allocator_read(xm_allocator_t *allocator, uintptr_t data_ptr,
+void xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
     void *mem, size_t size_bytes);
-void xm_allocator_write(xm_allocator_t *allocator, uintptr_t data_ptr,
+void xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
     const void *mem, size_t size_bytes);
-void xm_allocator_deallocate(xm_allocator_t *allocator, uintptr_t data_ptr);
+void xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr);
 void xm_allocator_destroy(xm_allocator_t *allocator);
 
 #ifdef __cplusplus

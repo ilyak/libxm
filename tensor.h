@@ -87,7 +87,7 @@ size_t xm_tensor_get_largest_block_size(const xm_tensor_t *tensor);
 size_t xm_tensor_get_largest_block_bytes(const xm_tensor_t *tensor);
 
 /* Return block data pointer. This returns XM_NULL_PTR for zero blocks. */
-uintptr_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
+uint64_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
 /* Return permutation of a specific tensor block. */
@@ -115,7 +115,7 @@ void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx);
  * used during tensor creation. Allocation must be large enough to hold block
  * data. */
 void xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
-    uintptr_t data_ptr);
+    uint64_t data_ptr);
 
 /* Set tensor block as derivative block. A derivative block is a copy of some
  * canonical block with applied permutation and multiplication by a scalar

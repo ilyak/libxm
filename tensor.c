@@ -27,8 +27,8 @@ struct xm_block {
 	int type;
 	xm_dim_t permutation;
 	xm_scalar_t scalar;
-	uintptr_t data_ptr; /* for derivative blocks stores offset of the
-			       corresponding canonical block */
+	uint64_t data_ptr; /* for derivative blocks stores offset of the
+			      corresponding canonical block */
 };
 
 struct xm_tensor {
@@ -156,7 +156,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	struct xm_block *block;
 	xm_dim_t blkidx, blkdims, elidx;
 	size_t eloff;
-	uintptr_t data_ptr;
+	uint64_t data_ptr;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
 	block = tensor_get_block(tensor, blkidx);
@@ -236,7 +236,7 @@ xm_tensor_get_largest_block_bytes(const xm_tensor_t *tensor)
 	       xm_scalar_sizeof(tensor->type);
 }
 
-uintptr_t
+uint64_t
 xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor, xm_dim_t blkidx)
 {
 	struct xm_block *block;
@@ -277,7 +277,7 @@ void
 xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 {
 	size_t blkbytes;
-	uintptr_t data_ptr;
+	uint64_t data_ptr;
 
 	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
 	data_ptr = xm_allocator_allocate(tensor->allocator, blkbytes);
@@ -288,7 +288,7 @@ xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 
 void
 xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
-    uintptr_t data_ptr)
+    uint64_t data_ptr)
 {
 	struct xm_block *block;
 
@@ -322,7 +322,7 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 	block->type = XM_BLOCK_TYPE_DERIVATIVE;
 	block->permutation = permutation;
 	block->scalar = scalar;
-	block->data_ptr = (uintptr_t)xm_dim_offset(&source_blkidx, &nblocks);
+	block->data_ptr = xm_dim_offset(&source_blkidx, &nblocks);
 }
 
 void
@@ -353,7 +353,7 @@ void
 xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx, void *buf)
 {
 	size_t blkbytes;
-	uintptr_t data_ptr;
+	uint64_t data_ptr;
 	int blocktype;
 
 	blocktype = xm_tensor_get_block_type(tensor, blkidx);
@@ -368,7 +368,7 @@ void
 xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 {
 	size_t blkbytes;
-	uintptr_t data_ptr;
+	uint64_t data_ptr;
 	int blocktype;
 
 	blocktype = xm_tensor_get_block_type(tensor, blkidx);
@@ -575,7 +575,7 @@ void
 xm_tensor_free_block_data(xm_tensor_t *tensor)
 {
 	xm_dim_t idx, nblocks;
-	uintptr_t data_ptr;
+	uint64_t data_ptr;
 	int blocktype;
 
 	nblocks = xm_tensor_get_nblocks(tensor);
