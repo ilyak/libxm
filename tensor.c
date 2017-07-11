@@ -155,8 +155,9 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 {
 	struct xm_block *block;
 	xm_dim_t blkidx, blkdims, elidx;
-	size_t eloff;
-	uint64_t data_ptr;
+	size_t eloff, blkbytes;
+	xm_scalar_t ret = 0;
+	void *buf;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
 	block = tensor_get_block(tensor, blkidx);
@@ -164,38 +165,36 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 		return 0;
 	elidx = xm_dim_permute(&elidx, &block->permutation);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
+	blkbytes = xm_dim_dot(&blkdims) * xm_scalar_sizeof(tensor->type);
 	blkdims = xm_dim_permute(&blkdims, &block->permutation);
 	eloff = xm_dim_offset(&elidx, &blkdims);
-	data_ptr = block->data_ptr;
-	if (block->type == XM_BLOCK_TYPE_DERIVATIVE)
-		data_ptr = tensor->blocks[data_ptr].data_ptr;
+	if ((buf = malloc(blkbytes)) == NULL)
+		fatal("out of memory");
+	xm_tensor_read_block(tensor, blkidx, buf);
 	switch (tensor->type) {
 	case XM_SCALAR_FLOAT: {
-		float x;
-		data_ptr += eloff * sizeof x;
-		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
-		return block->scalar * x;
+		float *x = buf;
+		ret = block->scalar * x[eloff];
+		break;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
-		float complex x;
-		data_ptr += eloff * sizeof x;
-		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
-		return block->scalar * x;
+		float complex *x = buf;
+		ret = block->scalar * x[eloff];
+		break;
 	}
 	case XM_SCALAR_DOUBLE: {
-		double x;
-		data_ptr += eloff * sizeof x;
-		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
-		return block->scalar * x;
+		double *x = buf;
+		ret = block->scalar * x[eloff];
+		break;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
-		double complex x;
-		data_ptr += eloff * sizeof x;
-		xm_allocator_read(tensor->allocator, data_ptr, &x, sizeof x);
-		return block->scalar * x;
+		double complex *x = buf;
+		ret = block->scalar * x[eloff];
+		break;
 	}
 	}
-	return 0;
+	free(buf);
+	return ret;
 }
 
 int
