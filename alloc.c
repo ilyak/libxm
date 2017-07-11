@@ -32,26 +32,12 @@
 #include <mpi.h>
 #endif
 
-#ifdef HAVE_TREE_H
-#include <sys/tree.h>
-#else
-#include "compat/tree.h"
-#endif
-
 #include "alloc.h"
 #include "bitmap.h"
 #include "util.h"
 
 #define XM_PAGE_SIZE (512ULL * 1024)
 #define XM_GROW_SIZE (256ULL * 1024 * 1024 * 1024)
-
-struct block {
-	uint64_t                data_ptr;
-	size_t                  size_bytes;
-	RB_ENTRY(block)         entry;
-};
-
-RB_HEAD(tree, block);
 
 struct xm_allocator {
 	int fd;
@@ -62,34 +48,27 @@ struct xm_allocator {
 #ifdef _OPENMP
 	omp_lock_t mutex;
 #endif
-	struct tree blocks;
 };
 
-static int
-tree_cmp(const struct block *a, const struct block *b)
+/* data_ptr: first 48 bits are offset + 16 bits size in number of pages */
+static uint64_t
+make_data_ptr(uint64_t offset, uint64_t npages)
 {
-	return (a->data_ptr == b->data_ptr ? 0 :
-	    a->data_ptr < b->data_ptr ? -1 : 1);
+	if (npages >= 65536)
+		fatal("allocation size is too large");
+	return (offset | (npages << 48));
 }
 
-#ifndef __unused
-#if defined(__GNUC__)
-#define __unused __attribute__((__unused__))
-#else
-#define __unused
-#endif
-#endif /* __unused */
-RB_GENERATE_STATIC(tree, block, entry, tree_cmp)
-
-static struct block *
-find_block(struct tree *tree, uint64_t data_ptr)
+static size_t
+get_block_offset(uint64_t data_ptr)
 {
-	struct block key, *block;
+	return (data_ptr & ((1ULL << 48) - 1));
+}
 
-	key.data_ptr = data_ptr;
-	block = RB_FIND(tree, tree, &key);
-
-	return (block);
+static size_t
+get_block_npages(uint64_t data_ptr)
+{
+	return (data_ptr >> 48);
 }
 
 static int
@@ -122,7 +101,7 @@ extend_file(xm_allocator_t *allocator)
 static uint64_t
 find_pages(xm_allocator_t *allocator, size_t n_pages)
 {
-	unsigned int i, n_free, n_total, offset, start;
+	unsigned int i, n_free, n_total, start;
 
 	assert(n_pages > 0);
 
@@ -135,9 +114,11 @@ find_pages(xm_allocator_t *allocator, size_t n_pages)
 	for (i = start, n_free = 0; i < n_total; i++) {
 		n_free = bitmap_test(allocator->pages, i) ? 0 : n_free + 1;
 		if (n_free == n_pages) {
+			uint64_t offset;
 			for (offset = i + 1 - n_free; offset <= i; offset++)
 				bitmap_set(allocator->pages, offset);
-			return ((uint64_t)(i + 1 - n_free) * XM_PAGE_SIZE);
+			offset = (uint64_t)(i + 1 - n_free) * XM_PAGE_SIZE;
+			return make_data_ptr(offset, n_pages);
 		}
 	}
 	return (XM_NULL_PTR);
@@ -218,7 +199,6 @@ xm_allocator_create(const char *path)
 #ifdef _OPENMP
 	omp_init_lock(&allocator->mutex);
 #endif
-	RB_INIT(&allocator->blocks);
 	return (allocator);
 }
 
@@ -231,9 +211,8 @@ xm_allocator_get_path(xm_allocator_t *allocator)
 uint64_t
 xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 {
-	struct block *block;
-	void *data;
 	uint64_t data_ptr = XM_NULL_PTR;
+	void *data;
 
 	if (allocator->mpirank != 0) {
 #ifdef WITH_MPI
@@ -242,41 +221,25 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 #endif
 		return (data_ptr);
 	}
-	if ((block = calloc(1, sizeof(*block))) == NULL) {
-		perror("malloc");
-		return (XM_NULL_PTR);
-	}
 #ifdef _OPENMP
 	omp_set_lock(&allocator->mutex);
 #endif
 	if (allocator->path) {
-		if ((data_ptr = allocate_pages(allocator,
-		    size_bytes)) == XM_NULL_PTR)
-			goto fail;
-		block->data_ptr = data_ptr;
+		data_ptr = allocate_pages(allocator, size_bytes);
 	} else {
 		if ((data = malloc(size_bytes)) == NULL) {
 			perror("malloc");
-			goto fail;
-		}
-		block->data_ptr = (uint64_t)data;
+			data_ptr = XM_NULL_PTR;
+		} else
+			data_ptr = (uint64_t)data;
 	}
-
-	block->size_bytes = size_bytes;
-	RB_INSERT(tree, &allocator->blocks, block);
 #ifdef _OPENMP
 	omp_unset_lock(&allocator->mutex);
 #endif
 #ifdef WITH_MPI
 	MPI_Bcast(&data_ptr, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
 #endif
-	return (block->data_ptr);
-fail:
-#ifdef _OPENMP
-	omp_unset_lock(&allocator->mutex);
-#endif
-	free(block);
-	return (XM_NULL_PTR);
+	return (data_ptr);
 }
 
 void
@@ -292,8 +255,7 @@ xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
 		memcpy(mem, (const void *)data_ptr, size_bytes);
 		return;
 	}
-
-	offset = (off_t)data_ptr;
+	offset = (off_t)get_block_offset(data_ptr);
 	read_bytes = pread(allocator->fd, mem, size_bytes, offset);
 	if (read_bytes != (ssize_t)size_bytes)
 		fatal("pread");
@@ -312,8 +274,7 @@ xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 		memcpy((void *)data_ptr, mem, size_bytes);
 		return;
 	}
-
-	offset = (off_t)data_ptr;
+	offset = (off_t)get_block_offset(data_ptr);
 	write_bytes = pwrite(allocator->fd, mem, size_bytes, offset);
 	if (write_bytes != (ssize_t)size_bytes)
 		fatal("pwrite");
@@ -322,8 +283,6 @@ xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 void
 xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr)
 {
-	struct block *block;
-
 	if (allocator->mpirank != 0)
 		return;
 	if (data_ptr == XM_NULL_PTR)
@@ -331,22 +290,17 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr)
 #ifdef _OPENMP
 	omp_set_lock(&allocator->mutex);
 #endif
-	block = find_block(&allocator->blocks, data_ptr);
-	assert(block);
-
-	RB_REMOVE(tree, &allocator->blocks, block);
-
 	if (allocator->path) {
-		unsigned int start, stop;
-		assert(data_ptr % XM_PAGE_SIZE == 0);
-		start = data_ptr / XM_PAGE_SIZE;
-		stop = start + (block->size_bytes - 1) / XM_PAGE_SIZE;
-		while (start <= stop)
-			bitmap_clear(allocator->pages, start++);
+		size_t i, start;
+		size_t offset = get_block_offset(data_ptr);
+		size_t npages = get_block_npages(data_ptr);
+		assert(offset % XM_PAGE_SIZE == 0);
+		start = offset / XM_PAGE_SIZE;
+		for (i = 0; i < npages; i++)
+			bitmap_clear(allocator->pages, start + i);
 	} else {
 		free((void *)data_ptr);
 	}
-	free(block);
 #ifdef _OPENMP
 	omp_unset_lock(&allocator->mutex);
 #endif
@@ -355,14 +309,9 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr)
 void
 xm_allocator_destroy(xm_allocator_t *allocator)
 {
-	struct block *block, *next;
-
 	if (allocator == NULL)
 		return;
 	if (allocator->mpirank == 0) {
-		RB_FOREACH_SAFE(block, tree, &allocator->blocks, next) {
-			xm_allocator_deallocate(allocator, block->data_ptr);
-		}
 		if (allocator->path) {
 			if (close(allocator->fd))
 				perror("close");
