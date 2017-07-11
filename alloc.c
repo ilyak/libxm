@@ -36,7 +36,9 @@
 #include "bitmap.h"
 #include "util.h"
 
+/* Data is allocated in 512 KiB chunks. */
 #define XM_PAGE_SIZE (512ULL * 1024)
+/* Pagefile growth when no more space is available. */
 #define XM_GROW_SIZE (256ULL * 1024 * 1024 * 1024)
 
 struct xm_allocator {

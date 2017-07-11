@@ -26,6 +26,7 @@ extern "C" {
 
 #define XM_NULL_PTR ((uint64_t)(-1))
 
+/* MPI-aware thread-safe disk-backed memory allocator. */
 typedef struct xm_allocator xm_allocator_t;
 
 xm_allocator_t *xm_allocator_create(const char *path);
