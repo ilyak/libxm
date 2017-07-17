@@ -38,12 +38,28 @@ Compiler and flags can be adjusted by modifying libxm Makefile.
 - example.c - sample code with comments - start here
 - xm.h - main libxm include header file
 - tensor.c/tensor.h - block-tensor manipulation routines
-- alloc.c/alloc.h - disk-backed data allocator
+- alloc.c/alloc.h - MPI-aware thread-safe disk-backed memory allocator
 - blockspace.c/blockspace.h - operations on block-spaces
 - dim.c/dim.h - operations on multidimensional indices
 - test.c - testing facilities
 
 Corresponding documentation can be found in individual header files.
+
+### Parallel scaling
+
+The table below shows parallel scalability of some libxm operations on the
+NERSC Cori Cray XC40 supercomputer. The total tensor data size was over 2 Tb.
+Burst Buffer was used in all tests. Table shows time in seconds with speedup
+relative to 1 node shown in parenthesis.
+
+|      Nodes      |  xm\_contract  |   xm\_add   |   xm\_set   |
+|:---------------:|:--------------:|:-----------:|:-----------:|
+|  1 (  32 cores) |  23660 ( 1.0x) | 787 ( 1.0x) | 457 ( 1.0x) |
+|  2 (  64 cores) |  11771 ( 2.0x) | 436 ( 1.8x) | 324 ( 1.4x) |
+|  4 ( 128 cores) |   5938 ( 4.0x) | 203 ( 3.9x) | 115 ( 4.0x) |
+|  8 ( 256 cores) |   3167 ( 7.5x) | 168 ( 4.7x) |  66 ( 6.9x) |
+| 16 ( 512 cores) |   1606 (14.7x) |  69 (11.4x) |  28 (16.3x) |
+| 32 (1024 cores) |    836 (28.3x) |  32 (24.6x) |  21 (21.8x) |
 
 ### Libxm users
 
