@@ -17,8 +17,13 @@
 #ifndef XM_SCALAR_H_INCLUDED
 #define XM_SCALAR_H_INCLUDED
 
-#include <complex.h>
 #include <stddef.h>
+
+#ifdef __cplusplus
+#include <complex>
+#else
+#include <complex.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
