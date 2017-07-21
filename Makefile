@@ -3,9 +3,15 @@ CFLAGS= -Wall -Wextra -g -fopenmp
 LDFLAGS= -L/usr/local/lib
 LIBS= -lblas -lm
 
-# Intel Compiler with MKL on Linux (release build)
+# Intel Compiler (release build)
 #CC= icc
 #CFLAGS= -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
+#LDFLAGS=
+#LIBS= -lm
+
+# Intel Compiler with MPI (release build)
+#CC= mpicc
+#CFLAGS= -DWITH_MPI -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
 #LDFLAGS=
 #LIBS= -lm
 
