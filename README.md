@@ -11,12 +11,6 @@ done in batches using optimized BLAS routines. Tensor block-level symmetry and
 sparsity is used to decrease storage and computational requirements. Libxm
 supports single and double precision scalar and complex numbers.
 
-### Reference
-
-[I.A. Kaliman and A.I. Krylov, JCC 2017](https://dx.doi.org/10.1002/jcc.24713)
-
-The code described in the paper can be found in the **xm1** branch.
-
 ### Compilation
 
 To compile libxm you need a POSIX environment, an efficient BLAS library, and
@@ -63,6 +57,12 @@ relative to 1 node shown in parenthesis.
 |  8 (256 cores)  |   3167 (7.5x)  | 168 (4.7x)  |  66 (6.9x)  |
 | 16 (512 cores)  |   1606 (14.7x) |  69 (11.4x) |  28 (16.3x) |
 | 32 (1024 cores) |    836 (28.3x) |  32 (24.6x) |  21 (21.8x) |
+
+### Journal reference
+
+[I.A. Kaliman and A.I. Krylov, JCC 2017](https://dx.doi.org/10.1002/jcc.24713)
+
+The older code described in the paper can be found in the **xm1** branch.
 
 ### Libxm users
 
