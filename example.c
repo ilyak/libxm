@@ -20,9 +20,10 @@ print_tensor(const xm_tensor_t *t)
 int
 main(void)
 {
-	/* Create an allocator. Passing NULL as path means that we store data
-	 * in RAM, not in a file on disk. */
-	xm_allocator_t *allocator = xm_allocator_create(NULL);
+	/* Create an allocator. Tensor data will be stored in the file
+	 * named "xmpagefile" which is created in the current directory.
+	 * If NULL is used as path, all data will be stored in RAM. */
+	xm_allocator_t *allocator = xm_allocator_create("xmpagefile");
 
 	/* Create the block-spaces. Our matrices will be 4x5, 5x3, and 4x3
 	 * elements in size. */
