@@ -1,7 +1,8 @@
 # libxm 2.0 (beta)
 
-Libxm is a C/C++ library that provides routines for efficient operations (e.g.,
-contractions) on very large (terabytes in size) disk-based block-tensors.
+Libxm is a distributed-parallel C/C++ library that provides routines for
+efficient operations (e.g., contractions) on very large (terabytes in size)
+disk-based block-tensors.
 
 With libxm tensors can be stored on hard disks which allows for virtually
 unlimited data size. Data are asynchronously prefetched to main memory for fast
@@ -32,6 +33,8 @@ source code:
     make check
 
 Compiler and flags can be adjusted by modifying libxm Makefile.
+MPI support is enabled by defining `WITH_MPI` during compilation and
+using `mpicc` as a compiler.
 
 ### Source code overview
 
