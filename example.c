@@ -58,7 +58,7 @@ main(void)
 	xm_block_space_free(bsc);
 
 	/* Fill a and b with some data. */
-	xm_dim_t ii, jj;
+	xm_dim_t ii, jj, permutation;
 
 	/* tensor a */
 	double blka[] = { 1, 2, 3, 4 };
@@ -67,7 +67,8 @@ main(void)
 	xm_tensor_write_block(a, ii, blka);
 	/* second block is transposed and negated first one */
 	jj = xm_dim_2(1, 2);
-	xm_tensor_set_derivative_block(a, jj, ii, xm_dim_2(1, 0), -1.0);
+	permutation = xm_dim_2(1, 0);
+	xm_tensor_set_derivative_block(a, jj, ii, permutation, -1.0);
 	/* other blocks stay zero */
 
 	/* tensor b */
@@ -77,7 +78,8 @@ main(void)
 	xm_tensor_write_block(b, ii, blkb);
 	/* second block is a copy of the first one multiplied by -0.5 */
 	jj = xm_dim_2(2, 0);
-	xm_tensor_set_derivative_block(b, jj, ii, xm_dim_2(0, 1), -0.5);
+	permutation = xm_dim_identity_permutation(2);
+	xm_tensor_set_derivative_block(b, jj, ii, permutation, -0.5);
 	/* other blocks stay zero */
 
 	/* Set all elements of c to 1 */
