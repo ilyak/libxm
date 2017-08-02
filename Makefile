@@ -1,17 +1,17 @@
 CC= cc
-CFLAGS= -Wall -Wextra -g -fopenmp
+CFLAGS= -Wall -Wextra -g -fopenmp -Isrc
 LDFLAGS= -L/usr/local/lib
 LIBS= -lblas -lm
 
 # Intel Compiler (release build)
 #CC= icc
-#CFLAGS= -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
+#CFLAGS= -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential -Isrc
 #LDFLAGS=
 #LIBS= -lm
 
 # Intel Compiler with MPI (release build)
 #CC= mpicc
-#CFLAGS= -DWITH_MPI -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential
+#CFLAGS= -DWITH_MPI -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential -Isrc
 #LDFLAGS=
 #LIBS= -lm
 
@@ -20,11 +20,7 @@ EXAMPLE_O= example.o
 TEST= test
 TEST_O= test.o
 
-XM_A= xm.a
-XM_O= alloc.o blockspace.o contract.o dim.o scalar.o tensor.o util.o xm.o
-
-AR= ar rc
-RANLIB= ranlib
+XM_A= src/xm.a
 
 all: $(EXAMPLE) $(TEST)
 
@@ -34,9 +30,8 @@ $(EXAMPLE): $(XM_A) $(EXAMPLE_O)
 $(TEST): $(XM_A) $(TEST_O)
 	$(CC) -o $@ $(CFLAGS) $(TEST_O) $(XM_A) $(LDFLAGS) $(LIBS)
 
-$(XM_A): $(XM_O)
-	$(AR) $@ $(XM_O)
-	$(RANLIB) $@
+$(XM_A):
+	cd src && CC="$(CC)" CFLAGS="$(CFLAGS)" $(MAKE)
 
 check: $(TEST)
 	./$(TEST)
@@ -50,7 +45,8 @@ dist:
 	git archive --format=tar.gz --prefix=libxm/ -o libxm.tgz HEAD
 
 clean:
-	rm -f $(XM_A) $(XM_O) $(EXAMPLE) $(EXAMPLE_O) $(TEST) $(TEST_O)
+	cd src && $(MAKE) clean
+	rm -f $(EXAMPLE) $(EXAMPLE_O) $(TEST) $(TEST_O)
 	rm -f *.core xmpagefile libxm.tgz
 
 .PHONY: all check checkmpi clean dist
