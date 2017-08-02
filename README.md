@@ -14,33 +14,28 @@ supports single and double precision scalar and complex numbers.
 ### Compilation
 
 To compile libxm you need a POSIX environment, an efficient BLAS library, and
-an ANSI C complaint compiler. Issue `make` in the directory with libxm source
-code to compile the library. To use libxm in your project, include `xm.h` file
-and compile the code:
+an ANSI C complaint compiler. To compile libxm, issue:
 
-    cc -fopenmp myprog.c xm.a -lblas -lm
+    cd src && make
 
-Detailed documentation can be found in `xm.h` and other header files. The tests
-can be executed by issuing the following command in the directory with the
-source code:
+To change the default compiler and enable OpenMP and MPI, the following command
+can be used:
 
-    make check
+    cd src && CC=mpicc CFLAGS="-fopenmp -DWITH_MPI" make
 
-Compiler and flags can be adjusted by modifying libxm Makefile.
-MPI support is enabled by defining `WITH_MPI` during compilation and
-using `mpicc` as a compiler.
+To use libxm in your project, include `xm.h` file and link with the compiled
+static `xm.a` library.
 
 ### Source code overview
 
-- example.c - sample code with comments - start here
-- xm.h - main libxm include header file
-- tensor.c/tensor.h - block-tensor manipulation routines
-- alloc.c/alloc.h - MPI-aware thread-safe disk-backed memory allocator
-- blockspace.c/blockspace.h - operations on block-spaces
-- dim.c/dim.h - operations on multidimensional indices
-- test.c - testing facilities
+For detailed documentation see individual header files in `src` directory.
 
-Corresponding documentation can be found in individual header files.
+- example.c - sample code with comments - start here
+- src/xm.h - main libxm include header file
+- src/tensor.c - block-tensor manipulation routines
+- src/alloc.c - MPI-aware thread-safe disk-backed memory allocator
+- src/blockspace.c - operations on block-spaces
+- src/dim.c - operations on multidimensional indices
 
 ### Parallel scaling
 
@@ -68,4 +63,3 @@ The older code described in the paper can be found in the **xm1** branch.
 
 - libxm is integrated with the [Q-Chem](http://www.q-chem.com) quantum
   chemistry package to accelerate large electronic structure calculations
-- libxm is used as a backend in C++ tensor library libtensor
