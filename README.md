@@ -13,8 +13,8 @@ supports single and double precision scalar and complex numbers.
 
 ### Compilation
 
-To compile libxm you need a POSIX environment, an efficient BLAS library, and
-an ANSI C complaint compiler. To compile libxm, issue:
+You will need a POSIX-compatible `make` utility, an efficient BLAS library (for
+linking), and an ANSI C complaint compiler. To compile libxm, issue:
 
     cd src && make
 
@@ -28,7 +28,7 @@ static `xm.a` library.
 
 ### Source code overview
 
-For detailed documentation see individual header files in `src` directory.
+For detailed documentation, see individual header files in `src` directory.
 
 - example.c - sample code with comments - start here
 - src/xm.h - main libxm include header file
