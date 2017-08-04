@@ -52,7 +52,8 @@ struct xm_allocator {
 #endif
 };
 
-/* data_ptr: first 48 bits are offset + 16 bits size in number of pages */
+/* 64-bit data_ptr handle: 16-bit size in number of pages + 48-bit file offset
+ * in bytes. */
 static uint64_t
 make_data_ptr(uint64_t offset, uint64_t npages)
 {
