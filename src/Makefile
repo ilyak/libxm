@@ -1,5 +1,12 @@
 XM_A= xm.a
-XM_O= alloc.o blockspace.o contract.o dim.o scalar.o tensor.o util.o xm.o
+XM_O= alloc.o \
+      blockspace.o \
+      contract.o \
+      dim.o \
+      scalar.o \
+      tensor.o \
+      util.o \
+      xm.o
 
 AR= ar rc
 RANLIB= ranlib
