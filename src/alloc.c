@@ -28,7 +28,7 @@
 #include <omp.h>
 #endif
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -149,14 +149,14 @@ xm_allocator_create(const char *path)
 {
 	xm_allocator_t *allocator;
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	assert(path); /* data must be on a shared filesystem */
 #endif
 	if ((allocator = calloc(1, sizeof(*allocator))) == NULL) {
 		perror("malloc");
 		return (NULL);
 	}
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &allocator->mpirank);
 #endif
 	if (path) {
@@ -178,11 +178,11 @@ xm_allocator_create(const char *path)
 				free(allocator);
 				return (NULL);
 			}
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 		} else {
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 			if ((allocator->fd = open(path, O_RDWR)) == -1) {
@@ -218,7 +218,7 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 	void *data;
 
 	if (allocator->mpirank != 0) {
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 		MPI_Bcast(&data_ptr, 1, MPI_UNSIGNED_LONG_LONG, 0,
 		    MPI_COMM_WORLD);
 #endif
@@ -239,7 +239,7 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 #ifdef _OPENMP
 	omp_unset_lock(&allocator->mutex);
 #endif
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Bcast(&data_ptr, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
 #endif
 	return (data_ptr);

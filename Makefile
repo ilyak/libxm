@@ -11,7 +11,7 @@ LIBS= -lblas -lm
 
 # Intel Compiler with MPI (release build)
 #CC= mpicc
-#CFLAGS= -DWITH_MPI -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential -Isrc
+#CFLAGS= -DXM_USE_MPI -DNDEBUG -Wall -Wextra -O3 -fopenmp -mkl=sequential -Isrc
 #LDFLAGS=
 #LIBS= -lm
 

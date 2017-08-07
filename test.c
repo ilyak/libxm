@@ -22,7 +22,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -125,7 +125,7 @@ fill_random(xm_tensor_t *t)
 		xm_dim_inc(&idx, &nblocks);
 	}
 	free(buf);
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }
@@ -1783,7 +1783,7 @@ main(int argc, char **argv)
 {
 	const char *path = "xmpagefile";
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Init(&argc, &argv);
 	srand48(0);
 	puts("Testing float...");

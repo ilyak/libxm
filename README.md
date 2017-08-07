@@ -21,7 +21,7 @@ linking), and an ANSI C complaint compiler. To compile libxm, issue:
 To change the default compiler and enable OpenMP and MPI, the following command
 can be used:
 
-    cd src && CC=mpicc CFLAGS="-fopenmp -DWITH_MPI" make
+    cd src && CC=mpicc CFLAGS="-O3 -fopenmp -DXM_USE_MPI" make
 
 To use libxm in your project, include `xm.h` file and link with the compiled
 static `xm.a` library.

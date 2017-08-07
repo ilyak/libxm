@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -33,7 +33,7 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 	void *buf;
 	int mpirank = 0, mpisize = 1;
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
 #endif
@@ -73,7 +73,7 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 }
 	free(buf);
 	free(blklist);
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }
@@ -98,7 +98,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 		fatal("tensors must use same allocator");
 	if (xm_tensor_get_scalar_type(a) != xm_tensor_get_scalar_type(b))
 		fatal("tensors must have same scalar type");
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
 #endif
@@ -170,7 +170,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	free(buf2);
 }
 	free(blklist);
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }

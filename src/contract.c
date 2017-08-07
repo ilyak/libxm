@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -222,7 +222,7 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	if (xm_tensor_get_scalar_type(a) != xm_tensor_get_scalar_type(c) ||
 	    xm_tensor_get_scalar_type(b) != xm_tensor_get_scalar_type(c))
 		fatal("tensors must have same scalar type");
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
 #endif
@@ -290,7 +290,7 @@ xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	free(pairs);
 }
 	free(blklist);
-#ifdef WITH_MPI
+#ifdef XM_USE_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }
