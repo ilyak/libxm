@@ -1,4 +1,4 @@
-XM_A= xm.a
+XM_A= libxm.a
 XM_O= alloc.o \
       blockspace.o \
       contract.o \

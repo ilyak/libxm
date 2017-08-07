@@ -20,7 +20,7 @@ EXAMPLE_O= example.o
 TEST= test
 TEST_O= test.o
 
-XM_A= src/xm.a
+XM_A= src/libxm.a
 
 all: $(EXAMPLE) $(TEST)
 

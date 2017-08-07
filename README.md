@@ -23,8 +23,8 @@ can be used:
 
     cd src && CC=mpicc CFLAGS="-O3 -fopenmp -DXM_USE_MPI" make
 
-To use libxm in your project, include `xm.h` file and link with the compiled
-static `xm.a` library.
+To use libxm in your project, include the `xm.h` file and link with the
+compiled static `libxm.a` library.
 
 ### Source code overview
 
