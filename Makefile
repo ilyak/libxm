@@ -37,9 +37,9 @@ check: $(TEST)
 	./$(TEST)
 
 checkmpi: $(TEST)
-	mpirun -np 1 ./$(TEST)
-	mpirun -np 2 ./$(TEST)
 	mpirun -np 3 ./$(TEST)
+	mpirun -np 2 ./$(TEST)
+	mpirun -np 1 ./$(TEST)
 
 dist:
 	git archive --format=tar.gz --prefix=libxm/ -o libxm.tgz HEAD
