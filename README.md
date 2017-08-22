@@ -2,7 +2,7 @@
 
 Libxm is a distributed-parallel C/C++ library that provides routines for
 efficient operations (e.g., contractions) on very large (terabytes in size)
-disk-based block-tensors.
+disk-backed block-tensors.
 
 With libxm tensors can be stored on hard disks which allows for virtually
 unlimited data size. Data are asynchronously prefetched to main memory for fast
