@@ -278,6 +278,8 @@ xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx)
 	size_t blkbytes;
 	uint64_t data_ptr;
 
+	if (xm_tensor_get_block_type(tensor, blkidx) != XM_BLOCK_TYPE_ZERO)
+		fatal("block must be zero");
 	blkbytes = xm_tensor_get_block_bytes(tensor, blkidx);
 	data_ptr = xm_allocator_allocate(tensor->allocator, blkbytes);
 	if (data_ptr == XM_NULL_PTR)
@@ -293,6 +295,8 @@ xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
 
 	if (data_ptr == XM_NULL_PTR)
 		fatal("unexpected null data pointer");
+	if (xm_tensor_get_block_type(tensor, blkidx) != XM_BLOCK_TYPE_ZERO)
+		fatal("block must be zero");
 	block = tensor_get_block(tensor, blkidx);
 	block->type = XM_BLOCK_TYPE_CANONICAL;
 	block->permutation = xm_dim_identity_permutation(blkidx.n);
@@ -308,6 +312,8 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 	xm_dim_t blkdims1, blkdims2, nblocks;
 	int blocktype;
 
+	if (xm_tensor_get_block_type(tensor, blkidx) != XM_BLOCK_TYPE_ZERO)
+		fatal("block must be zero");
 	blocktype = xm_tensor_get_block_type(tensor, source_blkidx);
 	if (blocktype != XM_BLOCK_TYPE_CANONICAL)
 		fatal("derivative blocks must have canonical source blocks");
