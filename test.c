@@ -172,30 +172,26 @@ check_add(xm_tensor_t *aa, xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 }
 
 static void
-test_add(const struct add_test *test, const char *path, int type,
-    xm_scalar_t alpha, xm_scalar_t beta)
+check_div(xm_tensor_t *aa, xm_tensor_t *a, xm_tensor_t *b, const char *idxa,
+    const char *idxb)
 {
-	xm_allocator_t *allocator;
-	xm_tensor_t *a, *b, *aa;
+	xm_dim_t absdimsa, absdimsb, cidxa, cidxb, ia, ib;
+	xm_scalar_t eaa, ref;
 
-	allocator = xm_allocator_create(path);
-	assert(allocator);
-	test->make_ab(allocator, &a, &b, type);
-	assert(a);
-	assert(b);
-	fill_random(a);
-	fill_random(b);
-	aa = xm_tensor_create_structure(a, type, allocator);
-	xm_copy(aa, 1, a, test->idxa, test->idxa);
-	xm_add(alpha, aa, beta, b, test->idxa, test->idxb);
-	check_add(aa, alpha, a, beta, b, test->idxa, test->idxb);
-	xm_tensor_free_block_data(a);
-	xm_tensor_free_block_data(b);
-	xm_tensor_free_block_data(aa);
-	xm_tensor_free(a);
-	xm_tensor_free(b);
-	xm_tensor_free(aa);
-	xm_allocator_destroy(allocator);
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	absdimsa = xm_tensor_get_abs_dims(a);
+	absdimsb = xm_tensor_get_abs_dims(b);
+	ia = xm_dim_zero(absdimsa.n);
+	ib = xm_dim_zero(absdimsb.n);
+	while (xm_dim_ne(&ia, &absdimsa)) {
+		xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
+		ref = xm_tensor_get_element(a, ia) /
+		      xm_tensor_get_element(b, ib);
+		eaa = xm_tensor_get_element(aa, ia);
+		if (!scalar_eq(eaa, ref, xm_tensor_get_scalar_type(aa)))
+			fatal("result != ref");
+		xm_dim_inc(&ia, &absdimsa);
+	}
 }
 
 static void
@@ -234,6 +230,59 @@ check_contract(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a,
 			fatal("result != ref");
 		xm_dim_inc(&ic, &absdimsc);
 	}
+}
+
+static void
+test_add(const struct add_test *test, const char *path, int type,
+    xm_scalar_t alpha, xm_scalar_t beta)
+{
+	xm_allocator_t *allocator;
+	xm_tensor_t *a, *b, *aa;
+
+	allocator = xm_allocator_create(path);
+	assert(allocator);
+	test->make_ab(allocator, &a, &b, type);
+	assert(a);
+	assert(b);
+	fill_random(a);
+	fill_random(b);
+	aa = xm_tensor_create_structure(a, type, allocator);
+	xm_copy(aa, 1, a, test->idxa, test->idxa);
+	xm_add(alpha, aa, beta, b, test->idxa, test->idxb);
+	check_add(aa, alpha, a, beta, b, test->idxa, test->idxb);
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free_block_data(aa);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_tensor_free(aa);
+	xm_allocator_destroy(allocator);
+}
+
+static void
+test_div(const struct add_test *test, const char *path, int type)
+{
+	xm_allocator_t *allocator;
+	xm_tensor_t *a, *b, *aa;
+
+	allocator = xm_allocator_create(path);
+	assert(allocator);
+	test->make_ab(allocator, &a, &b, type);
+	assert(a);
+	assert(b);
+	fill_random(a);
+	fill_random(b);
+	aa = xm_tensor_create_structure(a, type, allocator);
+	xm_copy(aa, 1, a, test->idxa, test->idxa);
+	xm_div(aa, b, test->idxa, test->idxb);
+	check_div(aa, a, b, test->idxa, test->idxb);
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free_block_data(aa);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_tensor_free(aa);
+	xm_allocator_destroy(allocator);
 }
 
 static void
@@ -345,6 +394,29 @@ make_ab_4(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
 	xm_tensor_set_canonical_block(b, xm_dim_2(0, 0));
 	xm_tensor_set_derivative_block(b, xm_dim_2(1, 1), xm_dim_2(0, 0),
 	    xm_dim_2(1, 0), -10);
+	xm_block_space_free(bs);
+	*aa = a;
+	*bb = b;
+}
+
+static void
+make_ab_5(xm_allocator_t *allocator, xm_tensor_t **aa, xm_tensor_t **bb,
+    int type)
+{
+	xm_block_space_t *bs;
+	xm_tensor_t *a, *b;
+
+	bs = xm_block_space_create(xm_dim_2(17, 31));
+	xm_block_space_split(bs, 0, 11);
+	xm_block_space_split(bs, 1, 15);
+	a = xm_tensor_create(bs, type, allocator);
+	xm_tensor_set_canonical_block(a, xm_dim_2(0, 0));
+	xm_tensor_set_canonical_block(a, xm_dim_2(1, 1));
+	b = xm_tensor_create(bs, type, allocator);
+	xm_tensor_set_canonical_block(b, xm_dim_2(0, 0));
+	xm_tensor_set_canonical_block(b, xm_dim_2(1, 1));
+	xm_tensor_set_canonical_block(b, xm_dim_2(0, 1));
+	xm_tensor_set_canonical_block(b, xm_dim_2(1, 0));
 	xm_block_space_free(bs);
 	*aa = a;
 	*bb = b;
@@ -1673,6 +1745,15 @@ static const struct add_test add_tests[] = {
 	{ make_ab_4, "ij", "ji" },
 };
 
+static const struct add_test div_tests[] = {
+	{ make_ab_1, "abcdefgh", "abcdefgh" },
+	{ make_ab_2, "ijkl", "ijkl" },
+	{ make_ab_2, "ijkl", "ijlk" },
+	{ make_ab_2, "ijkl", "jkil" },
+	{ make_ab_2, "ijkl", "lkji" },
+	{ make_ab_5, "ij", "ij" },
+};
+
 static const struct contract_test contract_tests[] = {
 	{ make_abc_1, "ik", "kj", "ij" },
 	{ make_abc_1, "ik", "kj", "ji" },
@@ -1762,6 +1843,12 @@ run_tests(const char *path, int type)
 		test_add(&add_tests[i], path, type, random_scalar(type), 0);
 		test_add(&add_tests[i], path, type, random_scalar(type),
 		    random_scalar(type));
+		printf("success\n");
+	}
+	for (i = 0; i < sizeof div_tests / sizeof *div_tests; i++) {
+		printf("div test %zu... ", i+1);
+		fflush(stdout);
+		test_div(&div_tests[i], path, type);
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
