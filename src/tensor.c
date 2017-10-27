@@ -113,8 +113,10 @@ xm_tensor_create_structure(const xm_tensor_t *tensor, int type,
 	while (xm_dim_ne(&idx, &nblocks)) {
 		size_t i = xm_dim_offset(&idx, &nblocks);
 		ret->blocks[i] = tensor->blocks[i];
-		if (ret->blocks[i].type == XM_BLOCK_TYPE_CANONICAL)
+		if (ret->blocks[i].type == XM_BLOCK_TYPE_CANONICAL) {
+			ret->blocks[i].type = XM_BLOCK_TYPE_ZERO;
 			xm_tensor_set_canonical_block(ret, idx);
+		}
 		xm_dim_inc(&idx, &nblocks);
 	}
 	return ret;
