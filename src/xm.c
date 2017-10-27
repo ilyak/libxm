@@ -176,6 +176,86 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 }
 
 void
+xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
+    const char *idxb)
+{
+	const xm_block_space_t *bsa, *bsb;
+	xm_dim_t cidxa, cidxb, zero, *blklist;
+	size_t i, maxblkbytes, nblklist;
+	int mpirank = 0, mpisize = 1, scalartype;
+
+	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
+		fatal("tensors must use same allocator");
+	if (xm_tensor_get_scalar_type(a) != xm_tensor_get_scalar_type(b))
+		fatal("tensors must have same scalar type");
+#ifdef XM_USE_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+#endif
+	bsa = xm_tensor_get_block_space(a);
+	bsb = xm_tensor_get_block_space(b);
+	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
+		fatal("idxa does not match tensor dimensions");
+	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
+		fatal("idxb does not match tensor dimensions");
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	if (cidxa.n != xm_block_space_get_ndims(bsa) ||
+	    cidxb.n != xm_block_space_get_ndims(bsb))
+		fatal("index spaces do not match");
+	for (i = 0; i < cidxa.n; i++)
+		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
+			fatal("inconsistent block-spaces");
+
+	scalartype = xm_tensor_get_scalar_type(a);
+	zero = xm_dim_zero(0);
+	maxblkbytes = xm_tensor_get_largest_block_bytes(a);
+	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
+#ifdef _OPENMP
+#pragma omp parallel private(i)
+#endif
+{
+	xm_dim_t ia, ib;
+	void *buf1, *buf2;
+	size_t blksize;
+	int blocktype;
+
+	if ((buf1 = malloc(maxblkbytes)) == NULL)
+		fatal("out of memory");
+	if ((buf2 = malloc(maxblkbytes)) == NULL)
+		fatal("out of memory");
+	ib = xm_dim_zero(cidxb.n);
+#ifdef _OPENMP
+#pragma omp for schedule(dynamic)
+#endif
+	for (i = 0; i < nblklist; i++) {
+		if ((int)i % mpisize == mpirank) {
+			xm_scalar_t scalar;
+			ia = blklist[i];
+			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
+			blksize = xm_tensor_get_block_size(b, ib);
+			blocktype = xm_tensor_get_block_type(b, ib);
+			if (blocktype == XM_BLOCK_TYPE_ZERO)
+				fatal("division by zero");
+			scalar = xm_tensor_get_block_scalar(b, ib);
+			xm_tensor_read_block(b, ib, buf1);
+			xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
+			    buf2, blksize);
+			xm_tensor_read_block(a, ia, buf1);
+			xm_scalar_div(buf1, scalar, buf2, blksize,
+			    scalartype);
+			xm_tensor_write_block(a, ia, buf1);
+		}
+	}
+	free(buf1);
+	free(buf2);
+}
+	free(blklist);
+#ifdef XM_USE_MPI
+	MPI_Barrier(MPI_COMM_WORLD);
+#endif
+}
+
+void
 xm_print_banner(void)
 {
 	printf("Libxm Tensor Library\n");
