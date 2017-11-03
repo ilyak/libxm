@@ -35,7 +35,7 @@ typedef void (*make_ab_fn)(xm_allocator_t *, xm_tensor_t **,
 typedef void (*make_abc_fn)(xm_allocator_t *, xm_tensor_t **, xm_tensor_t **,
     xm_tensor_t **, int);
 
-struct add_test {
+struct two_tensor_test {
 	make_ab_fn make_ab;
 	const char *idxa, *idxb;
 };
@@ -166,7 +166,7 @@ check_add(xm_tensor_t *aa, xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 		    beta * xm_tensor_get_element(b, ib);
 		eaa = xm_tensor_get_element(aa, ia);
 		if (!scalar_eq(eaa, ref, xm_tensor_get_scalar_type(aa)))
-			fatal("result != ref");
+			fatal("result != reference");
 		xm_dim_inc(&ia, &absdimsa);
 	}
 }
@@ -189,9 +189,31 @@ check_div(xm_tensor_t *aa, xm_tensor_t *a, xm_tensor_t *b, const char *idxa,
 		      xm_tensor_get_element(b, ib);
 		eaa = xm_tensor_get_element(aa, ia);
 		if (!scalar_eq(eaa, ref, xm_tensor_get_scalar_type(aa)))
-			fatal("result != ref");
+			fatal("result != reference");
 		xm_dim_inc(&ia, &absdimsa);
 	}
+}
+
+static void
+check_dot(xm_scalar_t res, xm_tensor_t *a, xm_tensor_t *b, const char *idxa,
+    const char *idxb)
+{
+	xm_dim_t absdimsa, absdimsb, cidxa, cidxb, ia, ib;
+	xm_scalar_t ref = 0;
+
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	absdimsa = xm_tensor_get_abs_dims(a);
+	absdimsb = xm_tensor_get_abs_dims(b);
+	ia = xm_dim_zero(absdimsa.n);
+	ib = xm_dim_zero(absdimsb.n);
+	while (xm_dim_ne(&ia, &absdimsa)) {
+		xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
+		ref += xm_tensor_get_element(a, ia) *
+		       xm_tensor_get_element(b, ib);
+		xm_dim_inc(&ia, &absdimsa);
+	}
+	if (!scalar_eq(res, ref, xm_tensor_get_scalar_type(a)))
+		fatal("result != reference");
 }
 
 static void
@@ -227,13 +249,13 @@ check_contract(xm_tensor_t *cc, xm_scalar_t alpha, xm_tensor_t *a,
 		}
 		ecc = xm_tensor_get_element(cc, ic);
 		if (!scalar_eq(ecc, ref, xm_tensor_get_scalar_type(cc)))
-			fatal("result != ref");
+			fatal("result != reference");
 		xm_dim_inc(&ic, &absdimsc);
 	}
 }
 
 static void
-test_add(const struct add_test *test, const char *path, int type,
+test_add(const struct two_tensor_test *test, const char *path, int type,
     xm_scalar_t alpha, xm_scalar_t beta)
 {
 	xm_allocator_t *allocator;
@@ -260,7 +282,7 @@ test_add(const struct add_test *test, const char *path, int type,
 }
 
 static void
-test_div(const struct add_test *test, const char *path, int type)
+test_div(const struct two_tensor_test *test, const char *path, int type)
 {
 	xm_allocator_t *allocator;
 	xm_tensor_t *a, *b, *aa;
@@ -282,6 +304,29 @@ test_div(const struct add_test *test, const char *path, int type)
 	xm_tensor_free(a);
 	xm_tensor_free(b);
 	xm_tensor_free(aa);
+	xm_allocator_destroy(allocator);
+}
+
+static void
+test_dot(const struct two_tensor_test *test, const char *path, int type)
+{
+	xm_allocator_t *allocator;
+	xm_tensor_t *a, *b;
+	xm_scalar_t res;
+
+	allocator = xm_allocator_create(path);
+	assert(allocator);
+	test->make_ab(allocator, &a, &b, type);
+	assert(a);
+	assert(b);
+	fill_random(a);
+	fill_random(b);
+	res = xm_dot(a, b, test->idxa, test->idxb);
+	check_dot(res, a, b, test->idxa, test->idxb);
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
 	xm_allocator_destroy(allocator);
 }
 
@@ -1733,7 +1778,7 @@ static const test_fn copy_tests[] = {
 	test_copy_5,
 };
 
-static const struct add_test add_tests[] = {
+static const struct two_tensor_test add_tests[] = {
 	{ make_ab_1, "abcdefgh", "abcdefgh" },
 	{ make_ab_2, "ijkl", "ijkl" },
 	{ make_ab_2, "ijkl", "ijlk" },
@@ -1745,12 +1790,25 @@ static const struct add_test add_tests[] = {
 	{ make_ab_4, "ij", "ji" },
 };
 
-static const struct add_test div_tests[] = {
+static const struct two_tensor_test div_tests[] = {
 	{ make_ab_1, "abcdefgh", "abcdefgh" },
 	{ make_ab_2, "ijkl", "ijkl" },
 	{ make_ab_2, "ijkl", "ijlk" },
 	{ make_ab_2, "ijkl", "jkil" },
 	{ make_ab_2, "ijkl", "lkji" },
+	{ make_ab_5, "ij", "ij" },
+};
+
+static const struct two_tensor_test dot_tests[] = {
+	{ make_ab_1, "abcdefgh", "abcdefgh" },
+	{ make_ab_2, "ijkl", "ijkl" },
+	{ make_ab_2, "ijkl", "ijlk" },
+	{ make_ab_2, "ijkl", "jkil" },
+	{ make_ab_2, "ijkl", "lkji" },
+	{ make_ab_3, "ij", "ij" },
+	{ make_ab_3, "ji", "ij" },
+	{ make_ab_4, "ij", "ij" },
+	{ make_ab_4, "ij", "ji" },
 	{ make_ab_5, "ij", "ij" },
 };
 
@@ -1849,6 +1907,12 @@ run_tests(const char *path, int type)
 		printf("div test %zu... ", i+1);
 		fflush(stdout);
 		test_div(&div_tests[i], path, type);
+		printf("success\n");
+	}
+	for (i = 0; i < sizeof dot_tests / sizeof *dot_tests; i++) {
+		printf("dot test %zu... ", i+1);
+		fflush(stdout);
+		test_dot(&dot_tests[i], path, type);
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof contract_tests / sizeof *contract_tests; i++) {
