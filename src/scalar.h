@@ -46,8 +46,8 @@ void xm_scalar_set(void *buf, size_t len, int type, xm_scalar_t x);
 void xm_scalar_mul(void *buf, size_t len, int type, xm_scalar_t x);
 void xm_scalar_axpy(xm_scalar_t a, void *x, const void *y, size_t len,
     int type);
-void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
-    int type);
+void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len, int type);
+xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len, int type);
 
 #ifdef __cplusplus
 } /* extern "C" */

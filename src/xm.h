@@ -61,6 +61,11 @@ void xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 void xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
     const char *idxb);
 
+/* Dot product of two tensors. Tensors must have compatible block-structures.
+ * Permutation is specified using strings idxa and idxb. */
+xm_scalar_t xm_dot(const xm_tensor_t *a, const xm_tensor_t *b,
+    const char *idxa, const char *idxb);
+
 /* Contract two tensors over contraction indices specified by strings idxa and
  * idxb (c = alpha * a * b + beta * c). Permutation of tensor "c" is specified
  * by idxc. The routine will perform optimal contraction using symmetry and

@@ -172,3 +172,42 @@ xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len, int type)
 	}
 	}
 }
+
+xm_scalar_t
+xm_scalar_dot(const void *x, const void *y, size_t len, int type)
+{
+	xm_scalar_t dot = 0;
+	size_t i;
+
+	switch (type) {
+	case XM_SCALAR_FLOAT: {
+		const float *xx = x;
+		const float *yy = y;
+		for (i = 0; i < len; i++)
+			dot += xx[i] * yy[i];
+		return dot;
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		const float complex *xx = x;
+		const float complex *yy = y;
+		for (i = 0; i < len; i++)
+			dot += xx[i] * yy[i];
+		return dot;
+	}
+	case XM_SCALAR_DOUBLE: {
+		const double *xx = x;
+		const double *yy = y;
+		for (i = 0; i < len; i++)
+			dot += xx[i] * yy[i];
+		return dot;
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		const double complex *xx = x;
+		const double complex *yy = y;
+		for (i = 0; i < len; i++)
+			dot += xx[i] * yy[i];
+		return dot;
+	}
+	}
+	return dot;
+}

@@ -255,6 +255,97 @@ xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 #endif
 }
 
+xm_scalar_t
+xm_dot(const xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
+    const char *idxb)
+{
+	const xm_block_space_t *bsa, *bsb;
+	xm_dim_t cidxa, cidxb, zero, nblocks;
+	xm_scalar_t dot = 0;
+	size_t i, maxblkbytes, nblklist;
+	int mpirank = 0, mpisize = 1, scalartype;
+
+	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
+		fatal("tensors must use same allocator");
+	if (xm_tensor_get_scalar_type(a) != xm_tensor_get_scalar_type(b))
+		fatal("tensors must have same scalar type");
+#ifdef XM_USE_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+#endif
+	bsa = xm_tensor_get_block_space(a);
+	bsb = xm_tensor_get_block_space(b);
+	if (strlen(idxa) != xm_block_space_get_ndims(bsa))
+		fatal("idxa does not match tensor dimensions");
+	if (strlen(idxb) != xm_block_space_get_ndims(bsb))
+		fatal("idxb does not match tensor dimensions");
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	if (cidxa.n != xm_block_space_get_ndims(bsa) ||
+	    cidxb.n != xm_block_space_get_ndims(bsb))
+		fatal("index spaces do not match");
+	for (i = 0; i < cidxa.n; i++)
+		if (!xm_block_space_eq1(bsa, cidxa.i[i], bsb, cidxb.i[i]))
+			fatal("inconsistent block-spaces");
+
+	scalartype = xm_tensor_get_scalar_type(a);
+	zero = xm_dim_zero(0);
+	maxblkbytes = xm_tensor_get_largest_block_bytes(a);
+	nblocks = xm_tensor_get_nblocks(a);
+	nblklist = xm_dim_dot(&nblocks);
+#ifdef _OPENMP
+#pragma omp parallel private(i) reduction(+:dot)
+#endif
+{
+	xm_dim_t ia, ib;
+	void *buf1, *buf2, *buf3;
+	size_t blksize;
+	int blocktype;
+
+	if ((buf1 = malloc(maxblkbytes)) == NULL)
+		fatal("out of memory");
+	if ((buf2 = malloc(maxblkbytes)) == NULL)
+		fatal("out of memory");
+	if ((buf3 = malloc(maxblkbytes)) == NULL)
+		fatal("out of memory");
+	ib = xm_dim_zero(cidxb.n);
+#ifdef _OPENMP
+#pragma omp for schedule(dynamic)
+#endif
+	for (i = 0; i < nblklist; i++) {
+		if ((int)i % mpisize == mpirank) {
+			xm_scalar_t scalara, scalarb;
+			ia = xm_dim_from_offset(i, &nblocks);
+			xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
+			blocktype = xm_tensor_get_block_type(a, ia);
+			if (blocktype == XM_BLOCK_TYPE_ZERO)
+				continue;
+			blocktype = xm_tensor_get_block_type(b, ib);
+			if (blocktype == XM_BLOCK_TYPE_ZERO)
+				continue;
+			blksize = xm_tensor_get_block_size(b, ib);
+			xm_tensor_read_block(b, ib, buf1);
+			xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
+			    buf2, blksize);
+			xm_tensor_read_block(a, ia, buf1);
+			xm_tensor_unfold_block(a, ia, cidxa, zero, buf1,
+			    buf3, blksize);
+			scalara = xm_tensor_get_block_scalar(a, ia);
+			scalarb = xm_tensor_get_block_scalar(b, ib);
+			dot += scalara * scalarb * xm_scalar_dot(buf2, buf3,
+			    blksize, scalartype);
+		}
+	}
+	free(buf1);
+	free(buf2);
+	free(buf3);
+}
+#ifdef XM_USE_MPI
+	MPI_Allreduce(MPI_IN_PLACE, &dot, 1, MPI_DOUBLE_COMPLEX, MPI_SUM,
+	    MPI_COMM_WORLD);
+#endif
+	return dot;
+}
+
 void
 xm_print_banner(void)
 {
