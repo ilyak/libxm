@@ -30,7 +30,7 @@ void xm_print_banner(void);
 void xm_set(xm_tensor_t *a, xm_scalar_t x);
 
 /* Copy tensor block data from "b" to "a" while multiplying by a scaling factor
- * (a = s * b). Tensors must have compatible block-structures. Permutation is
+ * (a = s * b). Tensors must have compatible block-structures. Permutations are
  * specified using strings idxa and idxb. This function does not change the
  * original block-structure of the output tensor.
  *
@@ -41,7 +41,7 @@ void xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
 
 /* Add tensors (a = alpha * a + beta * b). Tensors must have compatible
- * block-structures. Permutation is specified using strings idxa and idxb.
+ * block-structures. Permutations are specified using strings idxa and idxb.
  * This function does not change the original block-structure of the output
  * tensor.
  *
@@ -52,7 +52,7 @@ void xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
     const xm_tensor_t *b, const char *idxa, const char *idxb);
 
 /* Divide tensor elements. Tensors must have compatible block-structures.
- * Permutation is specified using strings idxa and idxb. This function does
+ * Permutations are specified using strings idxa and idxb. This function does
  * not change the original block-structure of the output tensor.
  *
  * Example: xm_div(a, b, "ij", "ji");
@@ -62,7 +62,7 @@ void xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
     const char *idxb);
 
 /* Dot product of two tensors. Tensors must have compatible block-structures.
- * Permutation is specified using strings idxa and idxb. */
+ * Permutations are specified using strings idxa and idxb. */
 xm_scalar_t xm_dot(const xm_tensor_t *a, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
 
