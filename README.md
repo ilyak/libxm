@@ -1,4 +1,4 @@
-# libxm 2.0 (beta)
+# libxm 2.0
 
 Libxm is a distributed-parallel C/C++ library that provides routines for
 efficient operations (e.g., contractions) on very large (terabytes in size)
