@@ -37,45 +37,74 @@ extern "C" {
 /** Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
 
-/** Create new block-tensor with all blocks set to zero-blocks. Type argument
- *  specifies floating point type of a tensor and should be one of the
- *  XM_SCALAR_ values. */
+/** Create new block-tensor with all blocks set to zero-blocks.
+ *  \param bs Tensor block-space.
+ *  \param type Scalar type of tensor data. One of XM_SCALAR_ values.
+ *  \param allocator Allocator for tensor data.
+ *  \return Newly created tensor. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, int type,
     xm_allocator_t *allocator);
 
 /** Create new block-tensor with all blocks set to newly allocated canonical
- *  blocks. */
+ *  blocks.
+ *  \param bs Tensor block-space.
+ *  \param type Scalar type of tensor data. One of XM_SCALAR_ values.
+ *  \param allocator Allocator for tensor data.
+ *  \return Newly created tensor. */
 xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
     xm_allocator_t *allocator);
 
-/** Create new block-tensor using block structure from "tensor". This function
- *  only copies the block structure and does not copy actual data. */
+/** Create new block-tensor using block structure from \p tensor. This function
+ *  only copies the block structure and does not copy actual data.
+ *  \param tensor Source tensor.
+ *  \param type Scalar type of new tensor. One of XM_SCALAR_ values.
+ *  \param allocator Allocator for new tensor.
+ *  \return Newly created tensor. */
 xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor, int type,
     xm_allocator_t *allocator);
 
-/** Return block-space associated with this tensor. */
+/** Return block-space associated with the tensor.
+ *  \param tensor Input tensor.
+ *  \return Block-space of the tensor. */
 const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 
-/** Return scalar type of this tensor. */
+/** Return scalar type of the tensor.
+ *  \param tensor Input tensor.
+ *  \return Scalar type of the tensor. */
 int xm_tensor_get_scalar_type(const xm_tensor_t *tensor);
 
-/** Return allocator associated with this tensor. */
+/** Return allocator associated with the tensor.
+ *  \param tensor Input tensor.
+ *  \return Allocator associated with the tensor. */
 xm_allocator_t *xm_tensor_get_allocator(const xm_tensor_t *tensor);
 
-/** Return absolute tensor dimensions in total number of elements. */
+/** Return absolute tensor dimensions in total number of elements.
+ *  \param tensor Input tensor.
+ *  \return Absolute tensor dimensions. */
 xm_dim_t xm_tensor_get_abs_dims(const xm_tensor_t *tensor);
 
-/** Return tensor dimensions in number of blocks. */
+/** Return tensor dimensions in number of blocks.
+ *  \param tensor Input tensor.
+ *  \return Tensor dimensions in blocks. */
 xm_dim_t xm_tensor_get_nblocks(const xm_tensor_t *tensor);
 
 /** Return an individual element of a tensor given its absolute index.
- *  Note: this function is relatively slow. */
+ *  Note: this function is relatively slow.
+ *  \param tensor Input tensor.
+ *  \param idx Index of an element.
+ *  \return Tensor element. */
 xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx);
 
-/** Return type of a block. This returns one of the XM_BLOCK_TYPE_ values. */
+/** Return type of a block.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Block type: one of XM_BLOCK_TYPE_ values. */
 int xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/** Return dimensions of a specific block. */
+/** Return dimensions of a specific block.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Block dimensions. */
 xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /** Return size in number of elements of a specific tensor block. */
