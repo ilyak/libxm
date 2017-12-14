@@ -24,7 +24,7 @@
 #include "util.h"
 
 struct xm_block {
-	int type;
+	xm_block_type_t type;
 	xm_dim_t permutation;
 	xm_scalar_t scalar;
 	uint64_t data_ptr; /* for derivative blocks stores offset of the
@@ -199,7 +199,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	return ret;
 }
 
-int
+xm_block_type_t
 xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx)
 {
 	return tensor_get_block(tensor, blkidx)->type;

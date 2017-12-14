@@ -27,12 +27,15 @@
 extern "C" {
 #endif
 
-/** Zero tensor blocks. See xm_tensor_set_zero_block. */
-#define XM_BLOCK_TYPE_ZERO        0
-/** Canonical tensor blocks. See xm_tensor_set_canonical_block. */
-#define XM_BLOCK_TYPE_CANONICAL   1
-/** Derivative tensor blocks. See xm_tensor_set_derivative_block. */
-#define XM_BLOCK_TYPE_DERIVATIVE  2
+/** Tensor block type. */
+typedef enum {
+	/** Zero tensor blocks. See ::xm_tensor_set_zero_block. */
+	XM_BLOCK_TYPE_ZERO = 0,
+	/** Canonical tensor blocks. See ::xm_tensor_set_canonical_block. */
+	XM_BLOCK_TYPE_CANONICAL,
+	/** Derivative tensor blocks. See ::xm_tensor_set_derivative_block. */
+	XM_BLOCK_TYPE_DERIVATIVE,
+} xm_block_type_t;
 
 /** Opaque tensor structure. */
 typedef struct xm_tensor xm_tensor_t;
@@ -98,8 +101,9 @@ xm_scalar_t xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx);
 /** Return type of a block.
  *  \param tensor Input tensor.
  *  \param blkidx Index of the block.
- *  \return Block type: one of XM_BLOCK_TYPE_ values. */
-int xm_tensor_get_block_type(const xm_tensor_t *tensor, xm_dim_t blkidx);
+ *  \return Type of the block. */
+xm_block_type_t xm_tensor_get_block_type(const xm_tensor_t *tensor,
+    xm_dim_t blkidx);
 
 /** Return dimensions of a specific block.
  *  \param tensor Input tensor.
