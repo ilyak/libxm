@@ -19,66 +19,68 @@
 
 #include "dim.h"
 
+/** \file */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Multidimensional block-space. */
+/** Multidimensional block-space. */
 typedef struct xm_block_space xm_block_space_t;
 
-/* Create a block-space with specific absolute dimensions. */
+/** Create a block-space with specific absolute dimensions. */
 xm_block_space_t *xm_block_space_create(xm_dim_t dims);
 
-/* Create a deep copy of a block-space. */
+/** Create a deep copy of a block-space. */
 xm_block_space_t *xm_block_space_clone(const xm_block_space_t *bs);
 
-/* Create a deep copy of a block-space while applying permutation. */
+/** Create a deep copy of a block-space while applying permutation. */
 xm_block_space_t *xm_block_space_permute_clone(const xm_block_space_t *bs,
     xm_dim_t permutation);
 
-/* Return number of dimensions a block-space has. */
+/** Return number of dimensions a block-space has. */
 size_t xm_block_space_get_ndims(const xm_block_space_t *bs);
 
-/* Return absolute dimensions of a block-space. */
+/** Return absolute dimensions of a block-space. */
 xm_dim_t xm_block_space_get_abs_dims(const xm_block_space_t *bs);
 
-/* Return block-space dimensions in number of blocks. */
+/** Return block-space dimensions in number of blocks. */
 xm_dim_t xm_block_space_get_nblocks(const xm_block_space_t *bs);
 
-/* Split block-space along a dimension at point x. */
+/** Split block-space along a dimension at point x. */
 void xm_block_space_split(xm_block_space_t *bs, size_t dim, size_t x);
 
-/* Automatically split the block-space into optimally-sized blocks. */
+/** Automatically split the block-space into optimally-sized blocks. */
 void xm_block_space_autosplit(xm_block_space_t *bs);
 
-/* Return i-th split point along the dimension dim. */
+/** Return i-th split point along the dimension dim. */
 size_t xm_block_space_get_split(xm_block_space_t *bs, size_t dim, size_t i);
 
-/* Return dimensions of a block with specific index. */
+/** Return dimensions of a block with specific index. */
 xm_dim_t xm_block_space_get_block_dims(const xm_block_space_t *bs,
     xm_dim_t blkidx);
 
-/* Return size in number of elements of the specific block in block-space. */
+/** Return size in number of elements of the specific block in block-space. */
 size_t xm_block_space_get_block_size(const xm_block_space_t *bs,
     xm_dim_t blkidx);
 
-/* Return size in number of elements of the largest block in block-space. */
+/** Return size in number of elements of the largest block in block-space. */
 size_t xm_block_space_get_largest_block_size(const xm_block_space_t *bs);
 
-/* Decompose an absolute index into index of a block and index of an element
- * inside this block. */
+/** Decompose an absolute index into index of a block and index of an element
+ *  inside this block. */
 void xm_block_space_decompose_index(const xm_block_space_t *bs, xm_dim_t idx,
     xm_dim_t *blkidx, xm_dim_t *elidx);
 
-/* Return non-zero if the block-spaces have same block structures. */
+/** Return non-zero if the block-spaces have same block structures. */
 int xm_block_space_eq(const xm_block_space_t *bsa, const xm_block_space_t *bsb);
 
-/* Return non-zero if specific block-space dimensions have same block
- * structures. */
+/** Return non-zero if specific block-space dimensions have same block
+ *  structures. */
 int xm_block_space_eq1(const xm_block_space_t *bsa, size_t dima,
     const xm_block_space_t *bsb, size_t dimb);
 
-/* Release resources used by a block-space. */
+/** Release resources used by a block-space. */
 void xm_block_space_free(xm_block_space_t *bs);
 
 #ifdef __cplusplus
