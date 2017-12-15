@@ -45,7 +45,7 @@ typedef struct xm_tensor xm_tensor_t;
  *  \param type Scalar type of tensor data. One of XM_SCALAR_ values.
  *  \param allocator Allocator for tensor data.
  *  \return Newly created tensor. */
-xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, int type,
+xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, xm_scalar_type_t type,
     xm_allocator_t *allocator);
 
 /** Create new block-tensor with all blocks set to newly allocated canonical
@@ -54,8 +54,8 @@ xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, int type,
  *  \param type Scalar type of tensor data. One of XM_SCALAR_ values.
  *  \param allocator Allocator for tensor data.
  *  \return Newly created tensor. */
-xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
-    xm_allocator_t *allocator);
+xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs,
+    xm_scalar_type_t type, xm_allocator_t *allocator);
 
 /** Create new block-tensor using block structure from \p tensor. This function
  *  only copies the block structure and does not copy actual data.
@@ -63,8 +63,8 @@ xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
  *  \param type Scalar type of new tensor. One of XM_SCALAR_ values.
  *  \param allocator Allocator for new tensor.
  *  \return Newly created tensor. */
-xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor, int type,
-    xm_allocator_t *allocator);
+xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor,
+    xm_scalar_type_t type, xm_allocator_t *allocator);
 
 /** Return block-space associated with the tensor.
  *  \param tensor Input tensor.
@@ -74,7 +74,7 @@ const xm_block_space_t *xm_tensor_get_block_space(const xm_tensor_t *tensor);
 /** Return scalar type of the tensor.
  *  \param tensor Input tensor.
  *  \return Scalar type of the tensor. */
-int xm_tensor_get_scalar_type(const xm_tensor_t *tensor);
+xm_scalar_type_t xm_tensor_get_scalar_type(const xm_tensor_t *tensor);
 
 /** Return allocator associated with the tensor.
  *  \param tensor Input tensor.

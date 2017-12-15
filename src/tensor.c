@@ -32,7 +32,7 @@ struct xm_block {
 };
 
 struct xm_tensor {
-	int type;
+	xm_scalar_type_t type;
 	xm_block_space_t *bs;
 	xm_allocator_t *allocator;
 	struct xm_block *blocks;
@@ -51,7 +51,7 @@ tensor_get_block(const xm_tensor_t *tensor, xm_dim_t blkidx)
 }
 
 xm_tensor_t *
-xm_tensor_create(const xm_block_space_t *bs, int type,
+xm_tensor_create(const xm_block_space_t *bs, xm_scalar_type_t type,
     xm_allocator_t *allocator)
 {
 	xm_dim_t idx, nblocks;
@@ -82,7 +82,7 @@ xm_tensor_create(const xm_block_space_t *bs, int type,
 }
 
 xm_tensor_t *
-xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
+xm_tensor_create_canonical(const xm_block_space_t *bs, xm_scalar_type_t type,
     xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
@@ -99,7 +99,7 @@ xm_tensor_create_canonical(const xm_block_space_t *bs, int type,
 }
 
 xm_tensor_t *
-xm_tensor_create_structure(const xm_tensor_t *tensor, int type,
+xm_tensor_create_structure(const xm_tensor_t *tensor, xm_scalar_type_t type,
     xm_allocator_t *allocator)
 {
 	xm_tensor_t *ret;
@@ -128,7 +128,7 @@ xm_tensor_get_block_space(const xm_tensor_t *tensor)
 	return tensor->bs;
 }
 
-int
+xm_scalar_type_t
 xm_tensor_get_scalar_type(const xm_tensor_t *tensor)
 {
 	return tensor->type;
