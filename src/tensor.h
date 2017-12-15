@@ -157,50 +157,77 @@ xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
 /** Set tensor block as zero-block (all elements of a block are zeros).
- *  No actual data are stored for zero-blocks. */
+ *  No actual data are stored for zero-blocks.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block. */
 void xm_tensor_set_zero_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 
 /** Set tensor block as canonical block allocating necessary data for storage.
  *  Canonical blocks are the only ones that store actual data. Note: if blocks
  *  are allocated using disk-backed allocator they should be at least several
- *  megabytes in size for best performance. Use xm_block_space_autosplit to
- *  split block-spaces into optimally-sized blocks. */
+ *  megabytes in size for best performance. Use ::xm_block_space_autosplit to
+ *  split block-spaces into optimally-sized blocks.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block. */
 void xm_tensor_set_canonical_block(xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/** Same as xm_tensor_set_canonical_block with the ability to specify
+/** Same as ::xm_tensor_set_canonical_block with the ability to specify
  *  preallocated data pointer for storage.
  *  The data_ptr argument must be allocated using the same allocator that was
  *  used during tensor creation. Allocation must be large enough to hold block
- *  data. */
+ *  data.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \param data_ptr Allocated pointer to the block data. */
 void xm_tensor_set_canonical_block_raw(xm_tensor_t *tensor, xm_dim_t blkidx,
     uint64_t data_ptr);
 
 /** Set tensor block as derivative block. A derivative block is a copy of some
  *  canonical block with applied permutation and multiplication by a scalar
- *  factor. No actual data are stored for derivative blocks. */
+ *  factor. No actual data are stored for derivative blocks.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \param source_blkidx Index of the corresponding source block.
+ *  \param permutation Permutation applied to the source block data.
+ *  \param scalar Scalar factor applied to the source block data. */
 void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t source_blkidx, xm_dim_t permutation, xm_scalar_t scalar);
 
 /** Create a list of all canonical blocks of this tensor. The memory used by
  *  the list should be released using free() function when it is no longer
  *  needed. The number of elements in the blklist array will be stored in the
- *  nblklist variable. */
+ *  nblklist variable.
+ *  \param tensor Input tensor.
+ *  \param blklist Newly allocated output block list.
+ *  \param nblklist Number of elements in the \p blklist. */
 void xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
     xm_dim_t **blklist, size_t *nblklist);
 
-/** Read tensor block data into memory buffer. The buffer has to be large
- *  enough to hold the data. */
+/** Read tensor block data into memory buffer.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \param buf Output buffer. It has to be large enough to hold the data. */
 void xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     void *buf);
 
-/** Write tensor block data from memory buffer. */
+/** Write tensor block data from memory buffer.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \param buf Buffer with data to be written to the block. */
 void xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     const void *buf);
 
 /** Unfold block into the matrix form. The sequences of unfolding indices are
  *  specified using the masks. The from parameter should point to the raw block
  *  data in memory. The stride must be equal to or greater than the product of
- *  mask_i block dimensions. */
+ *  mask_i block dimensions.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \param mask_i Mask along row matrix dimension.
+ *  \param mask_j Mask along column matrix dimension.
+ *  \param from Input data buffer.
+ *  \param to Output data buffer.
+ *  \param stride Data stride in the output buffer. */
 void xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride);
@@ -208,17 +235,26 @@ void xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 /** Fold block back from the matrix form. This is the inverse of the
  *  xm_tensor_unfold_block function. On return, "to" will contain raw block
  *  data that can be directly written to the block. Only canonical blocks
- *  can be folded. */
+ *  can be folded.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \param mask_i Mask along row matrix dimension.
+ *  \param mask_j Mask along column matrix dimension.
+ *  \param from Input data buffer.
+ *  \param to Output data buffer.
+ *  \param stride Data stride in the input buffer. */
 void xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride);
 
 /** Deallocate associated data for all blocks of this tensor. This resets all
- *  blocks to zero. */
+ *  blocks to zero.
+ *  \param tensor Input tensor. */
 void xm_tensor_free_block_data(xm_tensor_t *tensor);
 
 /** Release resources associated with a tensor. The actual block data are not
- *  freed by this function. Use xm_tensor_free_block_data to do it. */
+ *  freed by this function. Use ::xm_tensor_free_block_data to do it.
+ *  \param tensor Input tensor. */
 void xm_tensor_free(xm_tensor_t *tensor);
 
 #ifdef __cplusplus
