@@ -312,7 +312,7 @@ xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
 {
 	struct xm_block *block;
 	xm_dim_t blkdims1, blkdims2, nblocks;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if (xm_tensor_get_block_type(tensor, blkidx) != XM_BLOCK_TYPE_ZERO)
 		fatal("block must be zero");
@@ -337,12 +337,13 @@ xm_tensor_get_canonical_block_list(const xm_tensor_t *tensor,
     xm_dim_t **blklist, size_t *nblklist)
 {
 	xm_dim_t idx, nblocks, *list = NULL;
+	xm_block_type_t blocktype;
 	size_t nlist = 0;
 
 	nblocks = xm_tensor_get_nblocks(tensor);
 	idx = xm_dim_zero(nblocks.n);
 	while (xm_dim_ne(&idx, &nblocks)) {
-		int blocktype = xm_tensor_get_block_type(tensor, idx);
+		blocktype = xm_tensor_get_block_type(tensor, idx);
 		if (blocktype == XM_BLOCK_TYPE_CANONICAL) {
 			nlist++;
 			list = realloc(list, nlist * sizeof *list);
@@ -361,7 +362,7 @@ xm_tensor_read_block(const xm_tensor_t *tensor, xm_dim_t blkidx, void *buf)
 {
 	size_t blkbytes;
 	uint64_t data_ptr;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	blocktype = xm_tensor_get_block_type(tensor, blkidx);
 	if (blocktype == XM_BLOCK_TYPE_ZERO)
@@ -376,7 +377,7 @@ xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 {
 	size_t blkbytes;
 	uint64_t data_ptr;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	blocktype = xm_tensor_get_block_type(tensor, blkidx);
 	if (blocktype != XM_BLOCK_TYPE_CANONICAL)
@@ -547,7 +548,7 @@ xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride)
 {
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if (from == NULL || to == NULL || from == to)
 		fatal("invalid argument");
@@ -583,7 +584,7 @@ xm_tensor_free_block_data(xm_tensor_t *tensor)
 {
 	xm_dim_t idx, nblocks;
 	uint64_t data_ptr;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	nblocks = xm_tensor_get_nblocks(tensor);
 	idx = xm_dim_zero(nblocks.n);
