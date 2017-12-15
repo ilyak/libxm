@@ -111,27 +111,48 @@ xm_block_type_t xm_tensor_get_block_type(const xm_tensor_t *tensor,
  *  \return Block dimensions. */
 xm_dim_t xm_tensor_get_block_dims(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/** Return size in number of elements of a specific tensor block. */
+/** Return size in number of elements of a specific tensor block.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Total number of elements in the block. */
 size_t xm_tensor_get_block_size(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/** Return size in number of bytes of a specific tensor block. */
+/** Return size in number of bytes of a specific tensor block.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Total size of the block in bytes. */
 size_t xm_tensor_get_block_bytes(const xm_tensor_t *tensor, xm_dim_t blkidx);
 
-/** Return size in number of elements of the largest tensor block. */
+/** Return size in number of elements of the largest tensor block.
+ *  This is useful for allocating temporary buffers for storage of blocks.
+ *  \param tensor Input tensor.
+ *  \return Number of elements in the largest block of the tensor. */
 size_t xm_tensor_get_largest_block_size(const xm_tensor_t *tensor);
 
-/** Return size in number of bytes of the largest tensor block. */
+/** Return size in number of bytes of the largest tensor block.
+ *  This is useful for allocating temporary buffers for storage of blocks.
+ *  \param tensor Input tensor.
+ *  \return Size in bytes of the largest block of the tensor. */
 size_t xm_tensor_get_largest_block_bytes(const xm_tensor_t *tensor);
 
-/** Return block data pointer. This returns XM_NULL_PTR for zero blocks. */
+/** Return block data pointer.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Virtual pointer to data or XM_NULL_PTR for zero-blocks. */
 uint64_t xm_tensor_get_block_data_ptr(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
-/** Return permutation of a specific tensor block. */
+/** Return permutation of a specific tensor block.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Permutation for the block. */
 xm_dim_t xm_tensor_get_block_permutation(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
-/** Return scalar factor of a specific tensor block. */
+/** Return scalar factor of a specific tensor block.
+ *  \param tensor Input tensor.
+ *  \param blkidx Index of the block.
+ *  \return Scalar factor for the block. */
 xm_scalar_t xm_tensor_get_block_scalar(const xm_tensor_t *tensor,
     xm_dim_t blkidx);
 
