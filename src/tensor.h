@@ -42,7 +42,7 @@ typedef struct xm_tensor xm_tensor_t;
 
 /** Create new block-tensor with all blocks set to zero-blocks.
  *  \param bs Tensor block-space.
- *  \param type Scalar type of tensor data. One of XM_SCALAR_ values.
+ *  \param type Scalar type of tensor data.
  *  \param allocator Allocator for tensor data.
  *  \return Newly created tensor. */
 xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, xm_scalar_type_t type,
@@ -51,7 +51,7 @@ xm_tensor_t *xm_tensor_create(const xm_block_space_t *bs, xm_scalar_type_t type,
 /** Create new block-tensor with all blocks set to newly allocated canonical
  *  blocks.
  *  \param bs Tensor block-space.
- *  \param type Scalar type of tensor data. One of XM_SCALAR_ values.
+ *  \param type Scalar type of tensor data.
  *  \param allocator Allocator for tensor data.
  *  \return Newly created tensor. */
 xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs,
@@ -60,8 +60,8 @@ xm_tensor_t *xm_tensor_create_canonical(const xm_block_space_t *bs,
 /** Create new block-tensor using block structure from \p tensor. This function
  *  only copies the block structure and does not copy actual data.
  *  \param tensor Source tensor.
- *  \param type Scalar type of new tensor. One of XM_SCALAR_ values.
- *  \param allocator Allocator for new tensor.
+ *  \param type Scalar type of the new tensor.
+ *  \param allocator Allocator for the new tensor.
  *  \return Newly created tensor. */
 xm_tensor_t *xm_tensor_create_structure(const xm_tensor_t *tensor,
     xm_scalar_type_t type, xm_allocator_t *allocator);
