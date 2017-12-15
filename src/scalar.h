@@ -25,14 +25,22 @@
 #include <complex.h>
 #endif
 
+/** \file */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define XM_SCALAR_FLOAT           0
-#define XM_SCALAR_FLOAT_COMPLEX   1
-#define XM_SCALAR_DOUBLE          2
-#define XM_SCALAR_DOUBLE_COMPLEX  3
+typedef enum {
+	/** Scalar is float. */
+	XM_SCALAR_FLOAT = 0,
+	/** Scalar is float complex. */
+	XM_SCALAR_FLOAT_COMPLEX,
+	/** Scalar is double. */
+	XM_SCALAR_DOUBLE,
+	/** Scalar is double complex. */
+	XM_SCALAR_DOUBLE_COMPLEX,
+} xm_scalar_type_t;
 
 /* Largest floating point type convertible to all other types. */
 #ifdef __cplusplus
@@ -41,13 +49,15 @@ typedef std::complex<double> xm_scalar_t;
 typedef double complex xm_scalar_t;
 #endif
 
-size_t xm_scalar_sizeof(int type);
-void xm_scalar_set(void *buf, size_t len, int type, xm_scalar_t x);
-void xm_scalar_mul(void *buf, size_t len, int type, xm_scalar_t x);
+size_t xm_scalar_sizeof(xm_scalar_type_t type);
+void xm_scalar_set(void *buf, size_t len, xm_scalar_type_t type, xm_scalar_t x);
+void xm_scalar_mul(void *buf, size_t len, xm_scalar_type_t type, xm_scalar_t x);
 void xm_scalar_axpy(xm_scalar_t a, void *x, const void *y, size_t len,
-    int type);
-void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len, int type);
-xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len, int type);
+    xm_scalar_type_t type);
+void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
+    xm_scalar_type_t type);
+xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len,
+    xm_scalar_type_t type);
 
 #ifdef __cplusplus
 } /* extern "C" */
