@@ -95,7 +95,7 @@ xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 }
 
 void
-xm_scalar_axpy(xm_scalar_t a, void *x, const void *y, size_t len,
+xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type)
 {
 	size_t i;
