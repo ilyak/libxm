@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+/** Underlying type of the scalar. */
 typedef enum {
 	/** Scalar is float. */
 	XM_SCALAR_FLOAT = 0,
@@ -42,20 +43,57 @@ typedef enum {
 	XM_SCALAR_DOUBLE_COMPLEX,
 } xm_scalar_type_t;
 
-/* Largest floating point type convertible to all other types. */
+/** A scalar value. It is defined as a largest floating point type convertible
+ *  to all other types. */
 #ifdef __cplusplus
 typedef std::complex<double> xm_scalar_t;
 #else
 typedef double complex xm_scalar_t;
 #endif
 
+/** Return size of the scalar type in bytes.
+ *  \param type The scalar type.
+ *  \return Size of the scalar type in bytes. */
 size_t xm_scalar_sizeof(xm_scalar_type_t type);
+
+/** Set all values in a vector to x.
+ *  \param buf Data vector.
+ *  \param len Length of the vector in number of elements.
+ *  \param type Scalar type of data.
+ *  \param x Value to assign. */
 void xm_scalar_set(void *buf, size_t len, xm_scalar_type_t type, xm_scalar_t x);
+
+/** Multiply all values in a vector by x.
+ *  \param buf Data vector.
+ *  \param len Length of the vector in number of elements.
+ *  \param type Scalar type of data.
+ *  \param x Multiply value. */
 void xm_scalar_mul(void *buf, size_t len, xm_scalar_type_t type, xm_scalar_t x);
+
+/** Perform vector addition x = a * x + y.
+ *  \param a Scalar value a.
+ *  \param x Vector x.
+ *  \param y Vector y.
+ *  \param len Length of the vector in number of elements.
+ *  \param type Scalar type of data. */
 void xm_scalar_axpy(xm_scalar_t a, void *x, const void *y, size_t len,
     xm_scalar_type_t type);
+
+/** Perform division of vector elements: x = x / (a * y).
+ *  \param x Vector x.
+ *  \param a Scalar value a.
+ *  \param y Vector y.
+ *  \param len Length of the vector in number of elements.
+ *  \param type Scalar type of data. */
 void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type);
+
+/** Compute dot product of two vectors.
+ *  \param x First vector.
+ *  \param y Second vector.
+ *  \param len Length of the vector in number of elements.
+ *  \param type Scalar type of data.
+ *  \return Dot product of the vectors. */
 xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len,
     xm_scalar_type_t type);
 
