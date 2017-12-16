@@ -31,66 +31,66 @@ xm_scalar_sizeof(xm_scalar_type_t type)
 }
 
 void
-xm_scalar_set(void *buf, size_t len, xm_scalar_type_t type, xm_scalar_t x)
+xm_scalar_set(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a)
 {
 	size_t i;
 
 	switch (type) {
 	case XM_SCALAR_FLOAT: {
-		float *xbuf = buf;
+		float *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] = x;
+			xx[i] = a;
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
-		float complex *xbuf = buf;
+		float complex *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] = x;
+			xx[i] = a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
-		double *xbuf = buf;
+		double *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] = x;
+			xx[i] = a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
-		double complex *xbuf = buf;
+		double complex *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] = x;
+			xx[i] = a;
 		return;
 	}
 	}
 }
 
 void
-xm_scalar_mul(void *buf, size_t len, xm_scalar_type_t type, xm_scalar_t x)
+xm_scalar_mul(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a)
 {
 	size_t i;
 
 	switch (type) {
 	case XM_SCALAR_FLOAT: {
-		float *xbuf = buf;
+		float *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] *= x;
+			xx[i] *= a;
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
-		float complex *xbuf = buf;
+		float complex *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] *= x;
+			xx[i] *= a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
-		double *xbuf = buf;
+		double *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] *= x;
+			xx[i] *= a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
-		double complex *xbuf = buf;
+		double complex *xx = x;
 		for (i = 0; i < len; i++)
-			xbuf[i] *= x;
+			xx[i] *= a;
 		return;
 	}
 	}
