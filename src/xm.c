@@ -29,6 +29,7 @@ void
 xm_set(xm_tensor_t *a, xm_scalar_t x)
 {
 	xm_dim_t *blklist;
+	xm_scalar_type_t scalartype;
 	size_t i, maxblksize, nblklist;
 	void *buf;
 	int mpirank = 0, mpisize = 1;
@@ -40,24 +41,8 @@ xm_set(xm_tensor_t *a, xm_scalar_t x)
 	if ((buf = malloc(xm_tensor_get_largest_block_bytes(a))) == NULL)
 		fatal("out of memory");
 	maxblksize = xm_tensor_get_largest_block_size(a);
-	switch (xm_tensor_get_scalar_type(a)) {
-	case XM_SCALAR_FLOAT:
-		for (i = 0; i < maxblksize; i++)
-			((float *)buf)[i] = (float)x;
-		break;
-	case XM_SCALAR_FLOAT_COMPLEX:
-		for (i = 0; i < maxblksize; i++)
-			((float complex *)buf)[i] = (float complex)x;
-		break;
-	case XM_SCALAR_DOUBLE:
-		for (i = 0; i < maxblksize; i++)
-			((double *)buf)[i] = (double)x;
-		break;
-	case XM_SCALAR_DOUBLE_COMPLEX:
-		for (i = 0; i < maxblksize; i++)
-			((double complex *)buf)[i] = (double complex)x;
-		break;
-	}
+	scalartype = xm_tensor_get_scalar_type(a);
+	xm_scalar_set(buf, x, maxblksize, scalartype);
 	xm_tensor_get_canonical_block_list(a, &blklist, &nblklist);
 #ifdef _OPENMP
 #pragma omp parallel private(i)
