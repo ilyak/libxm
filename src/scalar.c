@@ -29,7 +29,7 @@ xm_scalar_sizeof(xm_scalar_type_t type)
 }
 
 void
-xm_scalar_set(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a)
+xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 {
 	size_t i;
 
@@ -62,7 +62,7 @@ xm_scalar_set(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a)
 }
 
 void
-xm_scalar_mul(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a)
+xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 {
 	size_t i;
 

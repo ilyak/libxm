@@ -151,8 +151,8 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 				xm_tensor_read_block(b, ib, buf2);
 				xm_tensor_unfold_block(b, ib, cidxb, zero, buf2,
 				    buf1, blksize);
-				xm_scalar_mul(buf1, blksize, scalartype,
-				    scalar);
+				xm_scalar_mul(buf1, scalar, blksize,
+				    scalartype);
 				xm_tensor_fold_block(a, ia, cidxa, zero, buf1,
 				    buf2, blksize);
 			}

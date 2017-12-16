@@ -58,17 +58,17 @@ size_t xm_scalar_sizeof(xm_scalar_type_t type);
 
 /** Set all elements of a vector to same scalar value.
  *  \param x Data vector.
+ *  \param a Scalar value.
  *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data.
- *  \param a Scalar value. */
-void xm_scalar_set(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a);
+ *  \param type Scalar type of data. */
+void xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 
 /** Multiply all elements of a vector by a scalar.
  *  \param x Data vector.
+ *  \param a Scalar factor.
  *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data.
- *  \param a Scalar factor. */
-void xm_scalar_mul(void *x, size_t len, xm_scalar_type_t type, xm_scalar_t a);
+ *  \param type Scalar type of data. */
+void xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 
 /** Perform vector addition x = a * x + y.
  *  \param a Scalar value a.
