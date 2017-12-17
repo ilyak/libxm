@@ -28,43 +28,65 @@ extern "C" {
 /** Print libxm banner to the standard output. */
 void xm_print_banner(void);
 
-/** Set all canonical block elements of tensor "a" to value "x". */
+/** Set all elements of a tensor to the same value.
+ *  \param a Input tensor.
+ *  \param x Scalar value. */
 void xm_set(xm_tensor_t *a, xm_scalar_t x);
 
-/** Copy tensor block data from "b" to "a" while multiplying by a scaling factor
- *  (a = s * b). Tensors must have compatible block-structures. Permutations are
- *  specified using strings idxa and idxb. This function does not change the
- *  original block-structure of the output tensor.
+/** Copy tensor block data from "b" to "a" while multiplying by a scaling
+ *  factor (a = s * b). Tensors must have compatible block-structures.
+ *  This function does not change the original block-structure of the output
+ *  tensor.
+ *  \param a Output tensor.
+ *  \param s Scaling factor.
+ *  \param b Input tensor.
+ *  \param idxa Indices of \p a.
+ *  \param idxb Indices of \p b.
  *
+ *  \code
  *  Example: xm_copy(a, 2.0, b, "ijk", "kij");
  *           a_ijk = 2 * b_kij
- */
+ *  \endcode */
 void xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
 
 /** Add tensors (a = alpha * a + beta * b). Tensors must have compatible
- *  block-structures. Permutations are specified using strings idxa and idxb.
- *  This function does not change the original block-structure of the output
- *  tensor.
+ *  block-structures. This function does not change the block-structure of the
+ *  output tensor.
+ *  \param alpha Scalar factor.
+ *  \param a First tensor.
+ *  \param beta Scalar factor.
+ *  \param b Second tensor.
+ *  \param idxa Indices of \p a.
+ *  \param idxb Indices of \p b.
  *
+ *  \code
  *  Example: xm_add(1.0, a, 2.0, b, "ij", "ji");
  *           a_ij = a_ij + 2 * b_ji
- */
+ *  \endcode */
 void xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
     const xm_tensor_t *b, const char *idxa, const char *idxb);
 
 /** Divide tensor elements. Tensors must have compatible block-structures.
- *  Permutations are specified using strings idxa and idxb. This function does
- *  not change the original block-structure of the output tensor.
+ *  This function does not change the block-structure of the output tensor.
+ *  \param a First tensor.
+ *  \param b Second tensor.
+ *  \param idxa Indices of \p a.
+ *  \param idxb Indices of \p b.
  *
+ *  \code
  *  Example: xm_div(a, b, "ij", "ji");
  *           a_ij = a_ij / b_ji
- */
+ *  \endcode */
 void xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
     const char *idxb);
 
 /** Dot product of two tensors. Tensors must have compatible block-structures.
- *  Permutations are specified using strings idxa and idxb. */
+ *  \param a First tensor.
+ *  \param b Second tensor.
+ *  \param idxa Indices of \p a.
+ *  \param idxb Indices of \p b.
+ *  \return Dot product of two tensors. */
 xm_scalar_t xm_dot(const xm_tensor_t *a, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
 
@@ -75,10 +97,19 @@ xm_scalar_t xm_dot(const xm_tensor_t *a, const xm_tensor_t *b,
  *  user's responsibility to setup all tensors so that they have correct
  *  symmetries. This function does not change the original block-structure of
  *  the output tensor.
+ *  \param alpha Scalar factor.
+ *  \param a First tensor.
+ *  \param b Second tensor.
+ *  \param beta Scalar factor.
+ *  \param c Third tensor.
+ *  \param idxa Indices of \p a.
+ *  \param idxb Indices of \p b.
+ *  \param idxc Indices of \p c.
  *
+ *  \code
  *  Example: xm_contract(1.0, a, b, 2.0, c, "abcd", "ijcd", "ijab");
  *           c_ijab = a_abcd * b_ijcd + 2 * c_ijab
- */
+ *  \endcode */
 void xm_contract(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, const char *idxa, const char *idxb,
     const char *idxc);
