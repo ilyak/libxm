@@ -48,5 +48,6 @@ clean:
 	cd src && $(MAKE) clean
 	rm -f $(EXAMPLE) $(EXAMPLE_O) $(TEST) $(TEST_O)
 	rm -f *.core xmpagefile libxm.tgz
+	rm -rf doxygen_html
 
 .PHONY: all check checkmpi clean dist
