@@ -30,8 +30,10 @@ extern "C" {
 
 /** Multidimensional index. */
 typedef struct {
-	size_t n; /** Number of dimensions. */
-	size_t i[XM_MAX_DIM]; /** Dimension sizes. */
+	/** Number of dimensions. Must not be greater than ::XM_MAX_DIM. */
+	size_t n;
+	/** Dimension sizes. Only the first \p n values are used. */
+	size_t i[XM_MAX_DIM];
 } xm_dim_t;
 
 /** Return new ::xm_dim_t with all indices initialized to zero.
