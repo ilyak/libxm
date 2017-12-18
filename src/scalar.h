@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-/** Underlying type of the scalar. */
+/** Underlying type of scalar values. */
 typedef enum {
 	/** Scalar is float. */
 	XM_SCALAR_FLOAT = 0,
@@ -43,7 +43,7 @@ typedef enum {
 	XM_SCALAR_DOUBLE_COMPLEX,
 } xm_scalar_type_t;
 
-/** A scalar value. It is defined as a largest floating point type convertible
+/** Scalar type. It is defined as the largest floating point type convertible
  *  to all other types. */
 #ifdef __cplusplus
 typedef std::complex<double> xm_scalar_t;
@@ -52,30 +52,30 @@ typedef double complex xm_scalar_t;
 #endif
 
 /** Return size of the scalar type in bytes.
- *  \param type The scalar type.
+ *  \param type One of ::xm_scalar_type_t values.
  *  \return Size of the scalar type in bytes. */
 size_t xm_scalar_sizeof(xm_scalar_type_t type);
 
-/** Set all elements of a vector to same scalar value.
+/** Set all elements of a vector to same value.
  *  \param x Data vector.
  *  \param a Scalar value.
- *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data. */
+ *  \param len Length of vector \p x in number of elements.
+ *  \param type Scalar type. */
 void xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 
-/** Multiply all elements of a vector by a scalar.
+/** Multiply all elements of a vector by a scalar factor.
  *  \param x Data vector.
  *  \param a Scalar factor.
- *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data. */
+ *  \param len Length of vector \p x in number of elements.
+ *  \param type Scalar type. */
 void xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 
 /** Perform vector addition x = a * x + y.
  *  \param x Vector x.
  *  \param a Scalar value a.
  *  \param y Vector y.
- *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data. */
+ *  \param len Length of vector \p x in number of elements.
+ *  \param type Scalar type. */
 void xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type);
 
@@ -83,17 +83,17 @@ void xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, size_t len,
  *  \param x Vector x.
  *  \param a Scalar value a.
  *  \param y Vector y.
- *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data. */
+ *  \param len Length of vectors in number of elements.
+ *  \param type Scalar type. */
 void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type);
 
 /** Compute dot product of two vectors.
  *  \param x First vector.
  *  \param y Second vector.
- *  \param len Length of the vector in number of elements.
- *  \param type Scalar type of data.
- *  \return Dot product of the vectors. */
+ *  \param len Length of vectors in number of elements.
+ *  \param type Scalar type.
+ *  \return Dot product of two vectors. */
 xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len,
     xm_scalar_type_t type);
 
