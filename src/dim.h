@@ -30,47 +30,103 @@ extern "C" {
 
 /** Multidimensional index. */
 typedef struct {
-	size_t n, i[XM_MAX_DIM];
+	size_t n; /** Number of dimensions. */
+	size_t i[XM_MAX_DIM]; /** Dimension sizes. */
 } xm_dim_t;
 
-/** Return a dim with all indices initialized to zero. */
+/** Return new ::xm_dim_t with all indices initialized to zero.
+ *  \param ndim Number of dimensions in the returned dim.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_zero(size_t ndim);
 
-/** Return a dim with all indices initialized to the same value. */
+/** Return new ::xm_dim_t with all indices initialized to the same value.
+ *  \param ndim Number of dimensions in the returned dim.
+ *  \param dim Size of the dimensions.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_same(size_t ndim, size_t dim);
 
-/** Initialize a 1-D dim. */
+/** Initialize a 1-D dim.
+ *  \param dim1 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_1(size_t dim1);
 
-/** Initialize a 2-D dim. */
+/** Initialize a 2-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_2(size_t dim1, size_t dim2);
 
-/** Initialize a 3-D dim. */
+/** Initialize a 3-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \param dim3 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_3(size_t dim1, size_t dim2, size_t dim3);
 
-/** Initialize a 4-D dim. */
+/** Initialize a 4-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \param dim3 Dimension size.
+ *  \param dim4 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_4(size_t dim1, size_t dim2, size_t dim3, size_t dim4);
 
-/** Initialize a 5-D dim. */
+/** Initialize a 5-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \param dim3 Dimension size.
+ *  \param dim4 Dimension size.
+ *  \param dim5 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_5(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5);
 
-/** Initialize a 6-D dim. */
+/** Initialize a 6-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \param dim3 Dimension size.
+ *  \param dim4 Dimension size.
+ *  \param dim5 Dimension size.
+ *  \param dim6 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_6(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5, size_t dim6);
 
-/** Initialize a 7-D dim. */
+/** Initialize a 7-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \param dim3 Dimension size.
+ *  \param dim4 Dimension size.
+ *  \param dim5 Dimension size.
+ *  \param dim6 Dimension size.
+ *  \param dim7 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_7(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5, size_t dim6, size_t dim7);
 
-/** Initialize a 8-D dim. */
+/** Initialize a 8-D dim.
+ *  \param dim1 Dimension size.
+ *  \param dim2 Dimension size.
+ *  \param dim3 Dimension size.
+ *  \param dim4 Dimension size.
+ *  \param dim5 Dimension size.
+ *  \param dim6 Dimension size.
+ *  \param dim7 Dimension size.
+ *  \param dim8 Dimension size.
+ *  \return New ::xm_dim_t. */
 xm_dim_t xm_dim_8(size_t dim1, size_t dim2, size_t dim3, size_t dim4,
     size_t dim5, size_t dim6, size_t dim7, size_t dim8);
 
-/** Return non-zero if two dims are equal. */
+/** Test equality of two dims.
+ *  \param a First dim.
+ *  \param b Second dim.
+ *  \return Non-zero if the dims are equal. */
 int xm_dim_eq(const xm_dim_t *a, const xm_dim_t *b);
 
-/** Return non-zero if two dims are not equal. */
+/** Test inequality of two dims.
+ *  \param a First dim.
+ *  \param b Second dim.
+ *  \return Non-zero if the dims are NOT equal. */
 int xm_dim_ne(const xm_dim_t *a, const xm_dim_t *b);
 
 /** Return non-zero if an index is within zero and dim. */
