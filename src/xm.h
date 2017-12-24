@@ -33,8 +33,8 @@ void xm_print_banner(void);
  *  \param x Scalar value. */
 void xm_set(xm_tensor_t *a, xm_scalar_t x);
 
-/** Copy tensor block data from "b" to "a" while multiplying by a scaling
- *  factor (a = s * b). Tensors must have compatible block-structures.
+/** Copy tensor data while multiplying by a scaling factor (a = s * b).
+ *  Tensors must have compatible block-structures.
  *  This function does not change the original block-structure of the output
  *  tensor.
  *  \param a Output tensor.
@@ -86,17 +86,22 @@ void xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
  *  \param b Second tensor.
  *  \param idxa Indices of \p a.
  *  \param idxb Indices of \p b.
- *  \return Dot product of two tensors. */
+ *  \return Dot product of two tensors.
+ *
+ *  \code
+ *  Example: dot = xm_dot(a, b, "ij", "ij");
+ *           dot = a * b
+ *  \endcode */
 xm_scalar_t xm_dot(const xm_tensor_t *a, const xm_tensor_t *b,
     const char *idxa, const char *idxb);
 
-/** Contract two tensors over contraction indices specified by strings idxa and
- *  idxb (c = alpha * a * b + beta * c). Permutation of tensor "c" is specified
- *  by idxc. The routine will perform optimal contraction using symmetry and
- *  sparsity information obtained from tensors' block-structures. It is the
- *  user's responsibility to setup all tensors so that they have correct
- *  symmetries. This function does not change the original block-structure of
- *  the output tensor.
+/** Contract tensors over contraction indices specified by strings \p idxa and
+ *  \p idxb (c = alpha * a * b + beta * c). Permutation of tensor \p c is
+ *  specified by \p idxc. The routine will perform optimal contraction using
+ *  symmetry and sparsity information obtained from tensors' block-structures.
+ *  Tensors must be setup beforehand so that they have correct symmetries.
+ *  This function does not change the original block-structure of the output
+ *  tensor.
  *  \param alpha Scalar factor.
  *  \param a First tensor.
  *  \param b Second tensor.
