@@ -33,15 +33,15 @@ extern "C" {
 typedef struct xm_allocator xm_allocator_t;
 
 /** Create a disk-backed allocator. The file specified by \p path will be
- *  created and used by the allocator for data storage. If \p path is NULL, all
- *  data will be allocated from RAM.
+ *  created and used by the allocator for data storage. If \p path is NULL,
+ *  all data will be stored in RAM.
  *  \param path Path to file backing the allocator.
  *  \return New instance of ::xm_allocator_t. */
 xm_allocator_t *xm_allocator_create(const char *path);
 
-/** Return to the file backing this allocator.
+/** Return path to the file backing this allocator.
  *  \param allocator An allocator.
- *  \return File path. */
+ *  \return File path or NULL if the \p allocator is backed by RAM. */
 const char *xm_allocator_get_path(xm_allocator_t *allocator);
 
 /** Allocate storage of the specified size from this allocator. This function
@@ -76,7 +76,7 @@ void xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 void xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr);
 
 /** Destroy an allocator.
- *  \param allocator An allocator. */
+ *  \param allocator An allocator to destroy. The pointer can be NULL. */
 void xm_allocator_destroy(xm_allocator_t *allocator);
 
 #ifdef __cplusplus
