@@ -72,7 +72,7 @@ void xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 
 /** Deallocate data pointed to by the \p data_ptr.
  *  \param allocator An allocator.
- *  \param data_ptr Pointer to deallocate. */
+ *  \param data_ptr Virtual pointer to deallocate. */
 void xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr);
 
 /** Destroy an allocator.

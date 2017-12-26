@@ -37,12 +37,12 @@ typedef struct {
 } xm_dim_t;
 
 /** Return new ::xm_dim_t with all indices initialized to zero.
- *  \param ndim Number of dimensions in the returned dim.
+ *  \param ndim Number of dimensions of the new dim.
  *  \return New instance of ::xm_dim_t. */
 xm_dim_t xm_dim_zero(size_t ndim);
 
 /** Return new ::xm_dim_t with all indices initialized to the same value.
- *  \param ndim Number of dimensions in the returned dim.
+ *  \param ndim Number of dimensions of the new dim.
  *  \param dim Size of the dimensions.
  *  \return New instance of ::xm_dim_t. */
 xm_dim_t xm_dim_same(size_t ndim, size_t dim);

@@ -194,9 +194,9 @@ void xm_tensor_set_derivative_block(xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t source_blkidx, xm_dim_t permutation, xm_scalar_t scalar);
 
 /** Create a list of all canonical blocks of this tensor. The memory used by
- *  the \p blklist should be released using standard free function when it is
- *  no longer needed. The number of elements in the \p blklist array will be
- *  stored in the \p nblklist variable.
+ *  the \p blklist should be released using standard \p free function when it
+ *  is no longer needed. The number of elements in the \p blklist array will
+ *  be stored in the \p nblklist variable.
  *  \param tensor Input tensor.
  *  \param blklist List of canonical blocks.
  *  \param nblklist Number of elements in the \p blklist. */

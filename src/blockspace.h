@@ -47,7 +47,7 @@ xm_block_space_t *xm_block_space_permute_clone(const xm_block_space_t *bs,
 
 /** Return number of dimensions a block-space has.
  *  \param bs Block-space.
- *  \return Number of dimensions of the block-space. */
+ *  \return Number of dimensions. */
 size_t xm_block_space_get_ndims(const xm_block_space_t *bs);
 
 /** Return absolute dimensions of a block-space.
