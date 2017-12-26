@@ -1,4 +1,3 @@
-CC= cc
 CFLAGS= -Wall -Wextra -g -fopenmp -Isrc
 LDFLAGS= -L/usr/local/lib
 LIBS= -lblas -lm
