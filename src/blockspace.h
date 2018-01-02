@@ -19,7 +19,8 @@
 
 #include "dim.h"
 
-/** \file */
+/** \file
+ *  \brief Operations on block-spaces. */
 
 #ifdef __cplusplus
 extern "C" {

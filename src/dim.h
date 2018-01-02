@@ -19,7 +19,8 @@
 
 #include <stddef.h>
 
-/** \file */
+/** \file
+ *  \brief Operations on multidimensional indices. */
 
 #ifdef __cplusplus
 extern "C" {

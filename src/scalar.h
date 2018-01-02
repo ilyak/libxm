@@ -25,7 +25,8 @@
 #include <complex.h>
 #endif
 
-/** \file */
+/** \file
+ *  \brief Operations on vectors of scalar values. */
 
 #ifdef __cplusplus
 extern "C" {

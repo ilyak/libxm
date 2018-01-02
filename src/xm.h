@@ -19,7 +19,8 @@
 
 #include "tensor.h"
 
-/** \file */
+/** \file
+ *  \brief Main libxm include file and tensor operations. */
 
 #ifdef __cplusplus
 extern "C" {

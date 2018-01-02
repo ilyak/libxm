@@ -21,7 +21,8 @@
 #include "blockspace.h"
 #include "scalar.h"
 
-/** \file */
+/** \file
+ *  \brief Block-tensor creation and manipulation routines. */
 
 #ifdef __cplusplus
 extern "C" {

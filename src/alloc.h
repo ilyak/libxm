@@ -20,7 +20,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/** \file */
+/** \file
+ *  \brief MPI-aware thread-safe disk-backed memory allocator. */
 
 #ifdef __cplusplus
 extern "C" {
