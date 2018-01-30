@@ -246,6 +246,9 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 	return (data_ptr);
 }
 
+/* Maximum size for single pread/pwrite. */
+#define MAXSIZE (1<<30)
+
 void
 xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
     void *mem, size_t size_bytes)
@@ -260,9 +263,15 @@ xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
 		return;
 	}
 	offset = (off_t)get_block_offset(data_ptr);
-	read_bytes = pread(allocator->fd, mem, size_bytes, offset);
-	if (read_bytes != (ssize_t)size_bytes)
-		fatal("pread");
+	while (size_bytes > 0) {
+		size_t size = size_bytes > MAXSIZE ? MAXSIZE : size_bytes;
+		read_bytes = pread(allocator->fd, mem, size, offset);
+		if (read_bytes != (ssize_t)size)
+			fatal("pread");
+		mem += size;
+		offset += size;
+		size_bytes -= size;
+	}
 }
 
 void
@@ -279,9 +288,15 @@ xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 		return;
 	}
 	offset = (off_t)get_block_offset(data_ptr);
-	write_bytes = pwrite(allocator->fd, mem, size_bytes, offset);
-	if (write_bytes != (ssize_t)size_bytes)
-		fatal("pwrite");
+	while (size_bytes > 0) {
+		size_t size = size_bytes > MAXSIZE ? MAXSIZE : size_bytes;
+		write_bytes = pwrite(allocator->fd, mem, size, offset);
+		if (write_bytes != (ssize_t)size)
+			fatal("pwrite");
+		mem += size;
+		offset += size;
+		size_bytes -= size;
+	}
 }
 
 void
