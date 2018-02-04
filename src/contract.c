@@ -79,6 +79,37 @@ xgemm(char transa, char transb, long int m, long int n, long int k,
 	}
 }
 
+static int
+same_contraction(size_t i, size_t j, const struct blockpair *pairs,
+    xm_dim_t aidxa, xm_dim_t aidxb, const xm_tensor_t *a, const xm_tensor_t *b)
+{
+	xm_dim_t dia, dja, dib, djb, pia, pja, pib, pjb;
+	size_t ii;
+
+	dia = pairs[i].blkidxa;
+	dja = pairs[j].blkidxa;
+	dib = pairs[i].blkidxb;
+	djb = pairs[j].blkidxb;
+	if (xm_tensor_get_block_data_ptr(a, dia) !=
+	    xm_tensor_get_block_data_ptr(a, dja) ||
+	    xm_tensor_get_block_data_ptr(b, dib) !=
+	    xm_tensor_get_block_data_ptr(b, djb))
+		return 0;
+	pia = xm_tensor_get_block_permutation(a, dia);
+	pja = xm_tensor_get_block_permutation(a, dja);
+	pib = xm_tensor_get_block_permutation(b, dib);
+	pjb = xm_tensor_get_block_permutation(b, djb);
+	for (ii = 0; ii < aidxa.n; ii++) {
+		if (pia.i[aidxa.i[ii]] != pja.i[aidxa.i[ii]])
+			return 0;
+	}
+	for (ii = 0; ii < aidxb.n; ii++) {
+		if (pib.i[aidxb.i[ii]] != pjb.i[aidxb.i[ii]])
+			return 0;
+	}
+	return 1;
+}
+
 static void
 compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
     xm_scalar_t beta, xm_tensor_t *c, xm_dim_t cidxa, xm_dim_t aidxa,
@@ -142,32 +173,9 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 		if (pairs[i].alpha == 0)
 			continue;
 		for (j = i+1; j < nblkk; j++) {
-			xm_dim_t dia, dja, dib, djb, pia, pja, pib, pjb;
-			size_t ii, good = 1;
 			if (pairs[j].alpha == 0)
 				continue;
-			dia = pairs[i].blkidxa;
-			dja = pairs[j].blkidxa;
-			dib = pairs[i].blkidxb;
-			djb = pairs[j].blkidxb;
-			if (xm_tensor_get_block_data_ptr(a, dia) !=
-			    xm_tensor_get_block_data_ptr(a, dja) ||
-			    xm_tensor_get_block_data_ptr(b, dib) !=
-			    xm_tensor_get_block_data_ptr(b, djb))
-				continue;
-			pia = xm_tensor_get_block_permutation(a, dia);
-			pja = xm_tensor_get_block_permutation(a, dja);
-			pib = xm_tensor_get_block_permutation(b, dib);
-			pjb = xm_tensor_get_block_permutation(b, djb);
-			for (ii = 0; ii < aidxa.n && good; ii++) {
-				if (pia.i[aidxa.i[ii]] != pja.i[aidxa.i[ii]])
-					good = 0;
-			}
-			for (ii = 0; ii < aidxb.n && good; ii++) {
-				if (pib.i[aidxb.i[ii]] != pjb.i[aidxb.i[ii]])
-					good = 0;
-			}
-			if (good) {
+			if (same_contraction(i, j, pairs, aidxa, aidxb, a, b)) {
 				pairs[i].alpha += pairs[j].alpha;
 				pairs[j].alpha = 0;
 			}
