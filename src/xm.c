@@ -145,7 +145,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 				xm_tensor_write_block(a, ia, buf2);
 			else {
 				xm_tensor_read_block(a, ia, buf1);
-				xm_scalar_axpy(buf1, alpha, buf2, blksize,
+				xm_scalar_axpy(buf1, alpha, buf2, 1.0, blksize,
 				    scalartype);
 				xm_tensor_write_block(a, ia, buf1);
 			}

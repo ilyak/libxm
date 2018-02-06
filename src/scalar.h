@@ -71,14 +71,15 @@ void xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
  *  \param type Scalar type. */
 void xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 
-/** Perform vector addition x = a * x + y.
+/** Perform vector addition x = a * x + b * y.
  *  \param x Vector x.
  *  \param a Scalar value a.
  *  \param y Vector y.
+ *  \param b Scalar value b.
  *  \param len Length of vector \p x in number of elements.
  *  \param type Scalar type. */
-void xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, size_t len,
-    xm_scalar_type_t type);
+void xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b,
+    size_t len, xm_scalar_type_t type);
 
 /** Perform division of vector elements: x = x / (a * y).
  *  \param x Vector x.

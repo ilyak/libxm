@@ -95,7 +95,7 @@ xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 }
 
 void
-xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, size_t len,
+xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b, size_t len,
     xm_scalar_type_t type)
 {
 	size_t i;
@@ -105,28 +105,28 @@ xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, size_t len,
 		float *xx = x;
 		const float *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + yy[i];
+			xx[i] = a * xx[i] + b * yy[i];
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *xx = x;
 		const float complex *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + yy[i];
+			xx[i] = a * xx[i] + b * yy[i];
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *xx = x;
 		const double *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + yy[i];
+			xx[i] = a * xx[i] + b * yy[i];
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *xx = x;
 		const double complex *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + yy[i];
+			xx[i] = a * xx[i] + b * yy[i];
 		return;
 	}
 	}
