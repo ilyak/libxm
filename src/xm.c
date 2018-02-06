@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Ilya Kaliman
+ * Copyright (c) 2014-2018 Ilya Kaliman
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -335,6 +335,6 @@ void
 xm_print_banner(void)
 {
 	printf("Libxm Tensor Library\n");
-	printf("Copyright (c) 2014-2017 Ilya Kaliman\n");
+	printf("Copyright (c) 2014-2018 Ilya Kaliman\n");
 	printf("https://github.com/ilyak/libxm\n");
 }
