@@ -80,7 +80,7 @@ xgemm(char transa, char transb, long int m, long int n, long int k,
 }
 
 static int
-same_contraction(size_t i, size_t j, const struct blockpair *pairs,
+same_contraction(const struct blockpair *pairs, size_t i, size_t j,
     xm_dim_t aidxa, xm_dim_t aidxb, const xm_tensor_t *a, const xm_tensor_t *b)
 {
 	xm_dim_t dia, dja, dib, djb, pia, pja, pib, pjb;
@@ -175,7 +175,7 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 		for (j = i+1; j < nblkk; j++) {
 			if (pairs[j].alpha == 0)
 				continue;
-			if (same_contraction(i, j, pairs, aidxa, aidxb, a, b)) {
+			if (same_contraction(pairs, i, j, aidxa, aidxb, a, b)) {
 				pairs[i].alpha += pairs[j].alpha;
 				pairs[j].alpha = 0;
 			}
