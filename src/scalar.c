@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
+
 #include "scalar.h"
 #include "util.h"
 
@@ -216,6 +218,10 @@ xm_scalar_convert(void *x, const void *y, size_t len, xm_scalar_type_t xtype,
 {
 	size_t i;
 
+	if (xtype == ytype) {
+		memcpy(x, y, len * xm_scalar_sizeof(xtype));
+		return;
+	}
 	if (xtype == XM_SCALAR_DOUBLE && ytype == XM_SCALAR_FLOAT) {
 		double *xx = x;
 		const float *yy = y;
