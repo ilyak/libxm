@@ -76,8 +76,9 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 {
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, *blklist;
+	xm_scalar_type_t scalartype;
 	size_t i, maxblkbytes, nblklist;
-	int mpirank = 0, mpisize = 1, scalartype;
+	int mpirank = 0, mpisize = 1;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
 		fatal("tensors must use same allocator");
@@ -166,8 +167,9 @@ xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 {
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, *blklist;
+	xm_scalar_type_t scalartype;
 	size_t i, maxblkbytes, nblklist;
-	int mpirank = 0, mpisize = 1, scalartype;
+	int mpirank = 0, mpisize = 1;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
 		fatal("tensors must use same allocator");
@@ -247,8 +249,9 @@ xm_dot(const xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, nblocks;
 	xm_scalar_t dot = 0;
+	xm_scalar_type_t scalartype;
 	size_t i, maxblkbytes, nblklist;
-	int mpirank = 0, mpisize = 1, scalartype;
+	int mpirank = 0, mpisize = 1;
 
 	if (xm_tensor_get_allocator(a) != xm_tensor_get_allocator(b))
 		fatal("tensors must use same allocator");
