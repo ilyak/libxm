@@ -99,6 +99,15 @@ void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
 xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len,
     xm_scalar_type_t type);
 
+/** Convert data from one scalar type to another.
+ *  \param x Destination vector.
+ *  \param y Source vector.
+ *  \param len Length of vectors in number of elements.
+ *  \param xtype Destination scalar type.
+ *  \param ytype Source scalar type. */
+void xm_scalar_convert(void *x, const void *y, size_t len,
+    xm_scalar_type_t xtype, xm_scalar_t ytype);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

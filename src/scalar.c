@@ -15,6 +15,7 @@
  */
 
 #include "scalar.h"
+#include "util.h"
 
 size_t
 xm_scalar_sizeof(xm_scalar_type_t type)
@@ -207,4 +208,43 @@ xm_scalar_dot(const void *x, const void *y, size_t len, xm_scalar_type_t type)
 	}
 	}
 	return dot;
+}
+
+void
+xm_scalar_convert(void *x, const void *y, size_t len, xm_scalar_type_t xtype,
+    xm_scalar_t ytype)
+{
+	size_t i;
+
+	if (xtype == XM_SCALAR_DOUBLE && ytype == XM_SCALAR_FLOAT) {
+		double *xx = x;
+		const float *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = yy[i];
+		return;
+	}
+	if (xtype == XM_SCALAR_FLOAT && ytype == XM_SCALAR_DOUBLE) {
+		float *xx = x;
+		const double *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = yy[i];
+		return;
+	}
+	if (xtype == XM_SCALAR_DOUBLE_COMPLEX &&
+	    ytype == XM_SCALAR_FLOAT_COMPLEX) {
+		double complex *xx = x;
+		const float complex *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = yy[i];
+		return;
+	}
+	if (xtype == XM_SCALAR_FLOAT_COMPLEX &&
+	    ytype == XM_SCALAR_DOUBLE_COMPLEX) {
+		float complex *xx = x;
+		const double complex *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = yy[i];
+		return;
+	}
+	fatal("unsupported scalar conversion");
 }
