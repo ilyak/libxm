@@ -35,6 +35,7 @@ void xm_print_banner(void);
 void xm_set(xm_tensor_t *a, xm_scalar_t x);
 
 /** Copy tensor data while multiplying by a scaling factor (a = s * b).
+ *  Tensors can have different scalar types.
  *  Tensors must have compatible block-structures.
  *  This function does not change the original block-structure of the output
  *  tensor.
