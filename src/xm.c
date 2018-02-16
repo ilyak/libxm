@@ -425,4 +425,5 @@ xm_print_banner(void)
 	printf("Libxm Tensor Library\n");
 	printf("Copyright (c) 2014-2018 Ilya Kaliman\n");
 	printf("https://github.com/ilyak/libxm\n");
+	printf("Reference: https://dx.doi.org/10.1002/jcc.24713\n");
 }
