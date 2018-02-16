@@ -1630,6 +1630,49 @@ test_copy_5(const char *path, int type)
 }
 
 static void
+test_copy_6(const char *path, int typea)
+{
+	xm_allocator_t *allocator;
+	xm_block_space_t *bsa;
+	xm_tensor_t *a, *b;
+	int typeb = typea;
+
+	if (typea == XM_SCALAR_FLOAT)
+		typeb = XM_SCALAR_DOUBLE;
+	if (typea == XM_SCALAR_FLOAT_COMPLEX)
+		typeb = XM_SCALAR_DOUBLE_COMPLEX;
+	allocator = xm_allocator_create(path);
+	bsa = xm_block_space_create(xm_dim_4(2, 9, 11, 3));
+	xm_block_space_split(bsa, 0, 1);
+	xm_block_space_split(bsa, 1, 2);
+	xm_block_space_split(bsa, 1, 4);
+	xm_block_space_split(bsa, 2, 8);
+	xm_block_space_split(bsa, 2, 4);
+	xm_block_space_split(bsa, 2, 3);
+	a = xm_tensor_create(bsa, typea, allocator);
+	b = xm_tensor_create_canonical(bsa, typeb, allocator);
+	xm_block_space_free(bsa);
+
+	xm_tensor_set_canonical_block(a, xm_dim_4(0, 0, 0, 0));
+	xm_tensor_set_derivative_block(a, xm_dim_4(1, 1, 3, 0),
+	    xm_dim_4(0, 0, 0, 0), xm_dim_4(0, 1, 2, 3), -3);
+	xm_tensor_set_canonical_block(a, xm_dim_4(0, 1, 1, 0));
+	xm_tensor_set_canonical_block(a, xm_dim_4(1, 2, 0, 0));
+	xm_tensor_set_canonical_block(a, xm_dim_4(1, 2, 2, 0));
+
+	fill_random(a);
+	fill_random(b);
+	xm_copy(b, 1, a, "abcd", "abcd");
+	compare_tensors(a, b);
+
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_allocator_destroy(allocator);
+}
+
+static void
 test_dim(void)
 {
 	xm_dim_t idx1, idx2, dim;
@@ -1776,6 +1819,7 @@ static const test_fn copy_tests[] = {
 	test_copy_3,
 	test_copy_4,
 	test_copy_5,
+	test_copy_6,
 };
 
 static const struct two_tensor_test add_tests[] = {
