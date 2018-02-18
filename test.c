@@ -172,6 +172,29 @@ check_add(xm_tensor_t *aa, xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 }
 
 static void
+check_mul(xm_tensor_t *aa, xm_tensor_t *a, xm_tensor_t *b, const char *idxa,
+    const char *idxb)
+{
+	xm_dim_t absdimsa, absdimsb, cidxa, cidxb, ia, ib;
+	xm_scalar_t eaa, ref;
+
+	xm_make_masks(idxa, idxb, &cidxa, &cidxb);
+	absdimsa = xm_tensor_get_abs_dims(a);
+	absdimsb = xm_tensor_get_abs_dims(b);
+	ia = xm_dim_zero(absdimsa.n);
+	ib = xm_dim_zero(absdimsb.n);
+	while (xm_dim_ne(&ia, &absdimsa)) {
+		xm_dim_set_mask(&ib, &cidxb, &ia, &cidxa);
+		ref = xm_tensor_get_element(a, ia) *
+		      xm_tensor_get_element(b, ib);
+		eaa = xm_tensor_get_element(aa, ia);
+		if (!scalar_eq(eaa, ref, xm_tensor_get_scalar_type(aa)))
+			fatal("result != reference");
+		xm_dim_inc(&ia, &absdimsa);
+	}
+}
+
+static void
 check_div(xm_tensor_t *aa, xm_tensor_t *a, xm_tensor_t *b, const char *idxa,
     const char *idxb)
 {
@@ -272,6 +295,32 @@ test_add(const struct two_tensor_test *test, const char *path, int type,
 	xm_copy(aa, 1, a, test->idxa, test->idxa);
 	xm_add(alpha, aa, beta, b, test->idxa, test->idxb);
 	check_add(aa, alpha, a, beta, b, test->idxa, test->idxb);
+	xm_tensor_free_block_data(a);
+	xm_tensor_free_block_data(b);
+	xm_tensor_free_block_data(aa);
+	xm_tensor_free(a);
+	xm_tensor_free(b);
+	xm_tensor_free(aa);
+	xm_allocator_destroy(allocator);
+}
+
+static void
+test_mul(const struct two_tensor_test *test, const char *path, int type)
+{
+	xm_allocator_t *allocator;
+	xm_tensor_t *a, *b, *aa;
+
+	allocator = xm_allocator_create(path);
+	assert(allocator);
+	test->make_ab(allocator, &a, &b, type);
+	assert(a);
+	assert(b);
+	fill_random(a);
+	fill_random(b);
+	aa = xm_tensor_create_structure(a, type, allocator);
+	xm_copy(aa, 1, a, test->idxa, test->idxa);
+	xm_mul(aa, b, test->idxa, test->idxb);
+	check_mul(aa, a, b, test->idxa, test->idxb);
 	xm_tensor_free_block_data(a);
 	xm_tensor_free_block_data(b);
 	xm_tensor_free_block_data(aa);
@@ -1834,7 +1883,7 @@ static const struct two_tensor_test add_tests[] = {
 	{ make_ab_4, "ij", "ji" },
 };
 
-static const struct two_tensor_test div_tests[] = {
+static const struct two_tensor_test mul_div_tests[] = {
 	{ make_ab_1, "abcdefgh", "abcdefgh" },
 	{ make_ab_2, "ijkl", "ijkl" },
 	{ make_ab_2, "ijkl", "ijlk" },
@@ -1947,10 +1996,16 @@ run_tests(const char *path, int type)
 		    random_scalar(type));
 		printf("success\n");
 	}
-	for (i = 0; i < sizeof div_tests / sizeof *div_tests; i++) {
+	for (i = 0; i < sizeof mul_div_tests / sizeof *mul_div_tests; i++) {
+		printf("mul test %zu... ", i+1);
+		fflush(stdout);
+		test_mul(&mul_div_tests[i], path, type);
+		printf("success\n");
+	}
+	for (i = 0; i < sizeof mul_div_tests / sizeof *mul_div_tests; i++) {
 		printf("div test %zu... ", i+1);
 		fflush(stdout);
-		test_div(&div_tests[i], path, type);
+		test_div(&mul_div_tests[i], path, type);
 		printf("success\n");
 	}
 	for (i = 0; i < sizeof dot_tests / sizeof *dot_tests; i++) {
