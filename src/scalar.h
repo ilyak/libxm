@@ -69,7 +69,7 @@ void xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
  *  \param a Scalar factor.
  *  \param len Length of vector \p x in number of elements.
  *  \param type Scalar type. */
-void xm_scalar_mul(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
+void xm_scalar_scale(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 
 /** Perform vector addition x = a * x + b * y.
  *  \param x Vector x.
