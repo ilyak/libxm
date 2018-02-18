@@ -136,6 +136,44 @@ xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b, size_t len,
 }
 
 void
+xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
+    xm_scalar_type_t type)
+{
+	size_t i;
+
+	switch (type) {
+	case XM_SCALAR_FLOAT: {
+		float *xx = x;
+		const float *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = xx[i] * (a * yy[i]);
+		return;
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		float complex *xx = x;
+		const float complex *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = xx[i] * (a * yy[i]);
+		return;
+	}
+	case XM_SCALAR_DOUBLE: {
+		double *xx = x;
+		const double *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = xx[i] * (a * yy[i]);
+		return;
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		double complex *xx = x;
+		const double complex *yy = y;
+		for (i = 0; i < len; i++)
+			xx[i] = xx[i] * (a * yy[i]);
+		return;
+	}
+	}
+}
+
+void
 xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type)
 {

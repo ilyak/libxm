@@ -81,6 +81,15 @@ void xm_scalar_scale(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type);
 void xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b,
     size_t len, xm_scalar_type_t type);
 
+/** Perform multiplication of vector elements: x = x * (a * y).
+ *  \param x Vector x.
+ *  \param a Scalar value a.
+ *  \param y Vector y.
+ *  \param len Length of vectors in number of elements.
+ *  \param type Scalar type. */
+void xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
+    xm_scalar_type_t type);
+
 /** Perform division of vector elements: x = x / (a * y).
  *  \param x Vector x.
  *  \param a Scalar value a.
