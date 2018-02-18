@@ -28,6 +28,11 @@ xm_scalar_sizeof(xm_scalar_type_t type)
 		sizeof(double),
 		sizeof(double complex),
 	};
+	if (type != XM_SCALAR_FLOAT &&
+	    type != XM_SCALAR_FLOAT_COMPLEX &&
+	    type != XM_SCALAR_DOUBLE &&
+	    type != XM_SCALAR_DOUBLE_COMPLEX)
+		fatal("unexpected scalar type");
 	return tbl[type];
 }
 
