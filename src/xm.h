@@ -69,6 +69,21 @@ void xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b,
 void xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
     const xm_tensor_t *b, const char *idxa, const char *idxb);
 
+/** Multiply tensors element-wise. Tensors must have compatible
+ *  block-structures.
+ *  This function does not change the block-structure of the output tensor.
+ *  \param a First tensor.
+ *  \param b Second tensor.
+ *  \param idxa Indices of \p a.
+ *  \param idxb Indices of \p b.
+ *
+ *  \code
+ *  Example: xm_mul(a, b, "ij", "ji");
+ *           a_ij = a_ij * b_ji
+ *  \endcode */
+void xm_mul(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
+    const char *idxb);
+
 /** Divide tensors element-wise. Tensors must have compatible block-structures.
  *  This function does not change the block-structure of the output tensor.
  *  \param a First tensor.
