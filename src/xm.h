@@ -69,7 +69,7 @@ void xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b,
 void xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
     const xm_tensor_t *b, const char *idxa, const char *idxb);
 
-/** Divide tensor elements. Tensors must have compatible block-structures.
+/** Divide tensors element-wise. Tensors must have compatible block-structures.
  *  This function does not change the block-structure of the output tensor.
  *  \param a First tensor.
  *  \param b Second tensor.
