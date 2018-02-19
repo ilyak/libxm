@@ -151,7 +151,8 @@ xm_allocator_create(const char *path)
 	xm_allocator_t *allocator;
 
 #ifdef XM_USE_MPI
-	assert(path); /* data must be on a shared filesystem */
+	if (path == NULL)
+		fatal("data must be on a shared filesystem when using MPI");
 #endif
 	if ((allocator = calloc(1, sizeof(*allocator))) == NULL) {
 		perror("malloc");
@@ -256,8 +257,8 @@ xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
 	ssize_t read_bytes;
 	off_t offset;
 
-	assert(data_ptr != XM_NULL_PTR);
-
+	if (data_ptr == XM_NULL_PTR)
+		fatal("data pointer is NULL");
 	if (allocator->path == NULL) {
 		memcpy(mem, (const void *)data_ptr, size_bytes);
 		return;
@@ -281,8 +282,8 @@ xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 	ssize_t write_bytes;
 	off_t offset;
 
-	assert(data_ptr != XM_NULL_PTR);
-
+	if (data_ptr == XM_NULL_PTR)
+		fatal("data pointer is NULL");
 	if (allocator->path == NULL) {
 		memcpy((void *)data_ptr, mem, size_bytes);
 		return;
