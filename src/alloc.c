@@ -53,26 +53,25 @@ struct xm_allocator {
 #endif
 };
 
-/* 64-bit data_ptr handle: 16-bit size in number of pages + 48-bit file offset
- * in bytes. */
+/* 64-bit data_ptr handle: 32-bit size in number of pages + 32-bit file offset
+ * in page size. */
 static uint64_t
 make_data_ptr(uint64_t offset, uint64_t npages)
 {
-	if (npages >= 65536)
-		fatal("allocation size is too large");
-	return (offset | (npages << 48));
+	return (offset | (npages << 32));
 }
 
+/* Return block offset in bytes. */
 static size_t
 get_block_offset(uint64_t data_ptr)
 {
-	return (data_ptr & ((1ULL << 48) - 1));
+	return (data_ptr & ((1ULL << 32) - 1)) * XM_PAGE_SIZE;
 }
 
 static size_t
 get_block_npages(uint64_t data_ptr)
 {
-	return (data_ptr >> 48);
+	return (data_ptr >> 32);
 }
 
 static int
@@ -121,7 +120,7 @@ find_pages(xm_allocator_t *allocator, size_t n_pages)
 			uint64_t offset;
 			for (offset = i + 1 - n_free; offset <= i; offset++)
 				bitmap_set(allocator->pages, offset);
-			offset = (uint64_t)(i + 1 - n_free) * XM_PAGE_SIZE;
+			offset = (uint64_t)(i + 1 - n_free);
 			return make_data_ptr(offset, n_pages);
 		}
 	}
