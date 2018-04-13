@@ -310,13 +310,20 @@ xm_allocator_deallocate(xm_allocator_t *allocator, uint64_t data_ptr)
 	omp_set_lock(&allocator->mutex);
 #endif
 	if (allocator->path) {
+		unsigned char zero[XM_PAGE_SIZE];
 		size_t i, start;
 		size_t offset = get_block_offset(data_ptr);
 		size_t npages = get_block_npages(data_ptr);
+
 		assert(offset % XM_PAGE_SIZE == 0);
 		start = offset / XM_PAGE_SIZE;
-		for (i = 0; i < npages; i++)
+		memset(zero, 0, sizeof zero);
+		for (i = 0; i < npages; i++) {
+			if (pwrite(allocator->fd, zero, XM_PAGE_SIZE,
+			    offset + i * XM_PAGE_SIZE) != XM_PAGE_SIZE)
+				fatal("pwrite");
 			bitmap_clear(allocator->pages, start + i);
+		}
 	} else {
 		free((void *)data_ptr);
 	}
