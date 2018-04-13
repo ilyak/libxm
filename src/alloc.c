@@ -154,7 +154,7 @@ xm_allocator_create(const char *path)
 		fatal("data must be on a shared filesystem when using MPI");
 #endif
 	if ((allocator = calloc(1, sizeof(*allocator))) == NULL) {
-		perror("malloc");
+		perror("calloc");
 		return (NULL);
 	}
 #ifdef XM_USE_MPI
@@ -193,7 +193,7 @@ xm_allocator_create(const char *path)
 			}
 		}
 		if ((allocator->path = strdup(path)) == NULL) {
-			perror("malloc");
+			perror("strdup");
 			if (close(allocator->fd))
 				perror("close");
 			free(allocator);
