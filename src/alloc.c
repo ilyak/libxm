@@ -162,7 +162,7 @@ xm_allocator_create(const char *path)
 #endif
 	if (path) {
 		allocator->file_bytes = XM_PAGE_SIZE;
-		if ((allocator->pages = calloc(1,1)) == NULL)
+		if ((allocator->pages = calloc(1, 1)) == NULL)
 			fatal("out of memory");
 		if (allocator->mpirank == 0) {
 			if ((allocator->fd = open(path, O_CREAT|O_RDWR,
