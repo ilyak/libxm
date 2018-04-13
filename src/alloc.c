@@ -231,8 +231,8 @@ xm_allocator_allocate(xm_allocator_t *allocator, size_t size_bytes)
 	if (allocator->path) {
 		data_ptr = allocate_pages(allocator, size_bytes);
 	} else {
-		if ((data = malloc(size_bytes)) == NULL) {
-			perror("malloc");
+		if ((data = calloc(1, size_bytes)) == NULL) {
+			perror("calloc");
 			data_ptr = XM_NULL_PTR;
 		} else
 			data_ptr = (uint64_t)data;
