@@ -19,6 +19,15 @@
 #include "scalar.h"
 #include "util.h"
 
+int
+xm_scalar_check_type(xm_scalar_type_t type)
+{
+	return (type == XM_SCALAR_FLOAT ||
+		type == XM_SCALAR_FLOAT_COMPLEX ||
+		type == XM_SCALAR_DOUBLE ||
+		type == XM_SCALAR_DOUBLE_COMPLEX);
+}
+
 size_t
 xm_scalar_sizeof(xm_scalar_type_t type)
 {
