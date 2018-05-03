@@ -52,6 +52,9 @@ typedef std::complex<double> xm_scalar_t;
 typedef double complex xm_scalar_t;
 #endif
 
+/** Check validity of scalar type.
+ *  \param type Scalar type.
+ *  \return Zero if the scalar type is invalid. */
 int xm_scalar_check_type(xm_scalar_type_t type);
 
 /** Return size of the scalar type in bytes.
