@@ -72,6 +72,8 @@ xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 			xx[i] = a;
 		return;
 	}
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
@@ -105,6 +107,8 @@ xm_scalar_scale(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 			xx[i] *= a;
 		return;
 	}
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
@@ -143,6 +147,8 @@ xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b, size_t len,
 			xx[i] = a * xx[i] + b * yy[i];
 		return;
 	}
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
@@ -181,6 +187,8 @@ xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
 			xx[i] = xx[i] * (a * yy[i]);
 		return;
 	}
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
@@ -219,6 +227,8 @@ xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
 			xx[i] = xx[i] / (a * yy[i]);
 		return;
 	}
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
@@ -257,6 +267,8 @@ xm_scalar_dot(const void *x, const void *y, size_t len, xm_scalar_type_t type)
 			dot += xx[i] * yy[i];
 		return dot;
 	}
+	default:
+		fatal("unexpected scalar type");
 	}
 	return dot;
 }
