@@ -42,6 +42,32 @@ xm_scalar_sizeof(xm_scalar_type_t type)
 	return tbl[type];
 }
 
+xm_scalar_t
+xm_scalar_get_element(void *x, size_t idx, xm_scalar_type_t type)
+{
+	switch (type) {
+	case XM_SCALAR_FLOAT: {
+		float *y = x;
+		return y[idx];
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		float complex *y = x;
+		return y[idx];
+	}
+	case XM_SCALAR_DOUBLE: {
+		double *y = x;
+		return y[idx];
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		double complex *y = x;
+		return y[idx];
+	}
+	default:
+		fatal("unexpected scalar type");
+	}
+	return 0;
+}
+
 void
 xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 {

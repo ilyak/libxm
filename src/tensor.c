@@ -157,7 +157,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	struct xm_block *block;
 	xm_dim_t blkidx, blkdims, elidx;
 	size_t eloff, blkbytes;
-	xm_scalar_t ret = 0;
+	xm_scalar_t ret;
 	void *buf;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
@@ -172,30 +172,9 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	if ((buf = malloc(blkbytes)) == NULL)
 		fatal("out of memory");
 	xm_tensor_read_block(tensor, blkidx, buf);
-	switch (tensor->type) {
-	case XM_SCALAR_FLOAT: {
-		float *x = buf;
-		ret = block->scalar * x[eloff];
-		break;
-	}
-	case XM_SCALAR_FLOAT_COMPLEX: {
-		float complex *x = buf;
-		ret = block->scalar * x[eloff];
-		break;
-	}
-	case XM_SCALAR_DOUBLE: {
-		double *x = buf;
-		ret = block->scalar * x[eloff];
-		break;
-	}
-	case XM_SCALAR_DOUBLE_COMPLEX: {
-		double complex *x = buf;
-		ret = block->scalar * x[eloff];
-		break;
-	}
-	}
+	ret = xm_scalar_get_element(buf, eloff, tensor->type);
 	free(buf);
-	return ret;
+	return (block->scalar * ret);
 }
 
 xm_block_type_t
