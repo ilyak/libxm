@@ -62,6 +62,11 @@ int xm_scalar_check_type(xm_scalar_type_t type);
  *  \return Size of the scalar type in bytes. */
 size_t xm_scalar_sizeof(xm_scalar_type_t type);
 
+/** Return element of a vector.
+ *  \param x Data vector.
+ *  \param idx Zero-based element index.
+ *  \param type Scalar type.
+ *  \return Element of a vector at a specified index. */
 xm_scalar_t xm_scalar_get_element(void *x, size_t idx, xm_scalar_type_t type);
 
 /** Set all elements of a vector to same value.
