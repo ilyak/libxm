@@ -365,6 +365,32 @@ xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 	xm_allocator_write(tensor->allocator, data_ptr, buf, blkbytes);
 }
 
+static void
+unfold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
+    xm_dim_t permutation, size_t block_size_i, size_t block_size_j,
+    const void *from, void *to, size_t lead_ii_nel, size_t stride,
+    size_t size)
+{
+	xm_dim_t blkdimsp, elidx, idx;
+	size_t i, j, offset;
+
+	blkdimsp = xm_dim_permute(&blkdims, &permutation);
+	elidx = xm_dim_zero(blkdims.n);
+
+	for (j = 0; j < block_size_j; j++) {
+		xm_dim_zero_mask(&elidx, &mask_i);
+		for (i = 0; i < block_size_i; i += lead_ii_nel) {
+			idx = xm_dim_permute(&elidx, &permutation);
+			offset = xm_dim_offset(&idx, &blkdimsp);
+			memcpy((char *)to + (j * stride + i) * size,
+			    (const char *)from + offset * size,
+			    lead_ii_nel * size);
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+		}
+		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
+	}
+}
+
 typedef float complex float_complex;
 typedef double complex double_complex;
 
@@ -397,18 +423,10 @@ xm_tensor_unfold_block_ ## _type(const xm_tensor_t *tensor, xm_dim_t blkidx,   \
 		mask_i.n--;						       \
 		lead_ii_nel = blkdims.i[lead_ii];			       \
 	}								       \
-	if (inc == 1) { /* use memcpy */				       \
-		for (jj = 0; jj < block_size_j; jj++) {			       \
-			xm_dim_zero_mask(&elidx, &mask_i);		       \
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {   \
-				idx = xm_dim_permute(&elidx, &permutation);    \
-				offset = xm_dim_offset(&idx, &blkdimsp);       \
-				memcpy(&to[jj * stride + ii], from + offset,   \
-				    sizeof(_type) * lead_ii_nel);	       \
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);    \
-			}						       \
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);	       \
-		}							       \
+	if (inc == 1) {							       \
+		unfold_memcpy(blkdims, mask_i, mask_j, permutation,	       \
+		    block_size_i, block_size_j, from, to, lead_ii_nel,	       \
+		    stride, xm_scalar_sizeof(tensor->type));		       \
 	} else {							       \
 		for (jj = 0; jj < block_size_j; jj++) {			       \
 			xm_dim_zero_mask(&elidx, &mask_i);		       \
