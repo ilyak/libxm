@@ -365,6 +365,17 @@ xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 	xm_allocator_write(tensor->allocator, data_ptr, buf, blkbytes);
 }
 
+typedef void (*fold_kernel_fn)(void *, const void *, size_t, size_t, size_t,
+    size_t, size_t, size_t);
+
+static void
+unfold_kernel_memcpy(void *to, const void *from, size_t i, size_t j,
+    size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
+{
+	memcpy((char *)to + (j * stride + i) * size,
+	    (const char *)from + offset * size, lead_ii_nel * size);
+}
+
 static void
 unfold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
     xm_dim_t permutation, size_t block_size_i, size_t block_size_j,
@@ -373,6 +384,7 @@ unfold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
 {
 	xm_dim_t blkdimsp, elidx, idx;
 	size_t i, j, offset;
+	fold_kernel_fn kernel_fn = unfold_kernel_memcpy;
 
 	blkdimsp = xm_dim_permute(&blkdims, &permutation);
 	elidx = xm_dim_zero(blkdims.n);
@@ -382,9 +394,8 @@ unfold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
 		for (i = 0; i < block_size_i; i += lead_ii_nel) {
 			idx = xm_dim_permute(&elidx, &permutation);
 			offset = xm_dim_offset(&idx, &blkdimsp);
-			memcpy((char *)to + (j * stride + i) * size,
-			    (const char *)from + offset * size,
-			    lead_ii_nel * size);
+			kernel_fn(to, from, i, j, offset, stride,
+			    size, lead_ii_nel);
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
 		}
 		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
