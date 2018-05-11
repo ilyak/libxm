@@ -373,7 +373,17 @@ unfold_kernel_memcpy(void *to, const void *from, size_t i, size_t j,
     size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
 {
 	memcpy((char *)to + (j * stride + i) * size,
-	    (const char *)from + offset * size, lead_ii_nel * size);
+	    (const char *)from + offset * size,
+	    lead_ii_nel * size);
+}
+
+static void
+fold_kernel_memcpy(void *to, const void *from, size_t i, size_t j,
+    size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
+{
+	memcpy((char *)to + offset * size,
+	    (const char *)from + (j * stride + i) * size,
+	    lead_ii_nel * size);
 }
 
 static void
@@ -382,9 +392,9 @@ unfold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
     const void *from, void *to, size_t lead_ii_nel, size_t stride,
     size_t size)
 {
+	fold_kernel_fn kernel_fn = unfold_kernel_memcpy;
 	xm_dim_t blkdimsp, elidx, idx;
 	size_t i, j, offset;
-	fold_kernel_fn kernel_fn = unfold_kernel_memcpy;
 
 	blkdimsp = xm_dim_permute(&blkdims, &permutation);
 	elidx = xm_dim_zero(blkdims.n);
@@ -407,6 +417,7 @@ fold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
     size_t block_size_i, size_t block_size_j, const void *from, void *to,
     size_t lead_ii_nel, size_t stride, size_t size)
 {
+	fold_kernel_fn kernel_fn = fold_kernel_memcpy;
 	xm_dim_t elidx;
 	size_t i, j, offset;
 
@@ -416,9 +427,8 @@ fold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
 		xm_dim_zero_mask(&elidx, &mask_i);
 		for (i = 0; i < block_size_i; i += lead_ii_nel) {
 			offset = xm_dim_offset(&elidx, &blkdims);
-			memcpy((char *)to + offset * size,
-			    (const char *)from + (j * stride + i) * size,
-			    lead_ii_nel * size);
+			kernel_fn(to, from, i, j, offset, stride,
+			    size, lead_ii_nel);
 			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
 		}
 		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
