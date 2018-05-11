@@ -500,6 +500,8 @@ xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 		xm_tensor_unfold_block_double_complex(tensor, blkidx, mask_i,
 		    mask_j, from, to, stride);
 		return;
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
@@ -588,6 +590,8 @@ xm_tensor_fold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 		xm_tensor_fold_block_double_complex(tensor, blkidx, mask_i,
 		    mask_j, from, to, stride);
 		return;
+	default:
+		fatal("unexpected scalar type");
 	}
 }
 
