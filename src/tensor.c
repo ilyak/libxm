@@ -365,7 +365,7 @@ xm_tensor_write_block(xm_tensor_t *tensor, xm_dim_t blkidx, const void *buf)
 	xm_allocator_write(tensor->allocator, data_ptr, buf, blkbytes);
 }
 
-typedef void (*fold_kernel_fn)(void *, const void *, size_t, size_t, size_t,
+typedef void (*kernel_fn_t)(void *, const void *, size_t, size_t, size_t,
     size_t, size_t, size_t);
 
 static void
@@ -447,7 +447,7 @@ fold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
     size_t block_size_i, size_t block_size_j, const void *from, void *to,
     size_t lead_ii_nel, size_t stride, size_t size)
 {
-	fold_kernel_fn kernel_fn = fold_kernel_memcpy;
+	kernel_fn_t kernel_fn = fold_kernel_memcpy;
 	xm_dim_t elidx;
 	size_t i, j, offset;
 
@@ -470,7 +470,7 @@ xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride)
 {
-	fold_kernel_fn kernel_fn;
+	kernel_fn_t kernel_fn;
 	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;
 	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
 	size_t block_size_i, block_size_j, size;
