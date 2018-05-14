@@ -378,6 +378,62 @@ fold_kernel_memcpy(void *to, const void *from, size_t i, size_t j,
 }
 
 static void
+unfold_kernel_float(void *to, const void *from, size_t i, size_t j,
+    size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
+{
+	float *xto = to;
+	const float *xfrom = from;
+	size_t k;
+
+	for (k = 0; k < lead_ii_nel; k++) {
+		xto[j * stride + i + k] = xfrom[offset];
+		offset += size;
+	}
+}
+
+static void
+unfold_kernel_float_complex(void *to, const void *from, size_t i, size_t j,
+    size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
+{
+	float complex *xto = to;
+	const float complex *xfrom = from;
+	size_t k;
+
+	for (k = 0; k < lead_ii_nel; k++) {
+		xto[j * stride + i + k] = xfrom[offset];
+		offset += size;
+	}
+}
+
+static void
+unfold_kernel_double(void *to, const void *from, size_t i, size_t j,
+    size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
+{
+	double *xto = to;
+	const double *xfrom = from;
+	size_t k;
+
+	for (k = 0; k < lead_ii_nel; k++) {
+		xto[j * stride + i + k] = xfrom[offset];
+		offset += size;
+	}
+}
+
+static void
+unfold_kernel_double_complex(void *to, const void *from, size_t i, size_t j,
+    size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
+{
+	double complex *xto = to;
+	const double complex *xfrom = from;
+	size_t k;
+
+	for (k = 0; k < lead_ii_nel; k++) {
+		xto[j * stride + i + k] = xfrom[offset];
+		offset += size;
+	}
+}
+
+static void
 unfold_kernel_memcpy(void *to, const void *from, size_t i, size_t j,
     size_t offset, size_t stride, size_t size, size_t lead_ii_nel)
 {
@@ -409,40 +465,15 @@ fold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
 	}
 }
 
-static void
-unfold_memcpy(xm_dim_t blkdims, xm_dim_t mask_i, xm_dim_t mask_j,
-    xm_dim_t permutation, size_t block_size_i, size_t block_size_j,
-    const void *from, void *to, size_t lead_ii_nel, size_t stride,
-    size_t size)
-{
-	fold_kernel_fn kernel_fn = unfold_kernel_memcpy;
-	xm_dim_t blkdimsp, elidx, idx;
-	size_t i, j, offset;
-
-	blkdimsp = xm_dim_permute(&blkdims, &permutation);
-	elidx = xm_dim_zero(blkdims.n);
-
-	for (j = 0; j < block_size_j; j++) {
-		xm_dim_zero_mask(&elidx, &mask_i);
-		for (i = 0; i < block_size_i; i += lead_ii_nel) {
-			idx = xm_dim_permute(&elidx, &permutation);
-			offset = xm_dim_offset(&idx, &blkdimsp);
-			kernel_fn(to, from, i, j, offset, stride,
-			    size, lead_ii_nel);
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-		}
-		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-	}
-}
-
 void
 xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
     xm_dim_t mask_i, xm_dim_t mask_j, const void *from, void *to,
     size_t stride)
 {
+	fold_kernel_fn kernel_fn;
 	xm_dim_t blkdims, blkdimsp, elidx, idx, permutation;
 	size_t ii, jj, kk, offset, inc, lead_ii, lead_ii_nel;
-	size_t block_size_i, block_size_j;
+	size_t block_size_i, block_size_j, size;
 
 	if (from == NULL || to == NULL || from == to)
 		fatal("invalid argument");
@@ -469,92 +500,38 @@ xm_tensor_unfold_block(const xm_tensor_t *tensor, xm_dim_t blkidx,
 		lead_ii_nel = blkdims.i[lead_ii];
 	}
 	if (inc == 1) {
-		unfold_memcpy(blkdims, mask_i, mask_j, permutation,
-		    block_size_i, block_size_j, from, to, lead_ii_nel,
-		    stride, xm_scalar_sizeof(tensor->type));
+		size = xm_scalar_sizeof(tensor->type);
+		kernel_fn = unfold_kernel_memcpy;
 	} else {
+		size = inc;
 		switch (tensor->type) {
-		case XM_SCALAR_FLOAT: {
-		const float *xfrom = from;
-		float *xto = to;
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				idx = xm_dim_permute(&elidx, &permutation);
-				offset = xm_dim_offset(&idx, &blkdimsp);
-				for (kk = 0; kk < lead_ii_nel; kk++) {
-					xto[jj * stride + ii + kk] =
-					    xfrom[offset];
-					offset += inc;
-				}
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
-		return;
-		}
-		case XM_SCALAR_FLOAT_COMPLEX: {
-		const float complex *xfrom = from;
-		float complex *xto = to;
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				idx = xm_dim_permute(&elidx, &permutation);
-				offset = xm_dim_offset(&idx, &blkdimsp);
-				for (kk = 0; kk < lead_ii_nel; kk++) {
-					xto[jj * stride + ii + kk] =
-					    xfrom[offset];
-					offset += inc;
-				}
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
-		return;
-		}
-		case XM_SCALAR_DOUBLE: {
-		const double *xfrom = from;
-		double *xto = to;
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				idx = xm_dim_permute(&elidx, &permutation);
-				offset = xm_dim_offset(&idx, &blkdimsp);
-				for (kk = 0; kk < lead_ii_nel; kk++) {
-					xto[jj * stride + ii + kk] =
-					    xfrom[offset];
-					offset += inc;
-				}
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
-		return;
-		}
-		case XM_SCALAR_DOUBLE_COMPLEX: {
-		const double complex *xfrom = from;
-		double complex *xto = to;
-		for (jj = 0; jj < block_size_j; jj++) {
-			xm_dim_zero_mask(&elidx, &mask_i);
-			for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
-				idx = xm_dim_permute(&elidx, &permutation);
-				offset = xm_dim_offset(&idx, &blkdimsp);
-				for (kk = 0; kk < lead_ii_nel; kk++) {
-					xto[jj * stride + ii + kk] =
-					    xfrom[offset];
-					offset += inc;
-				}
-				xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
-			}
-			xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
-		}
-		return;
-		}
+		case XM_SCALAR_FLOAT:
+			kernel_fn = unfold_kernel_float;
+			break;
+		case XM_SCALAR_FLOAT_COMPLEX:
+			kernel_fn = unfold_kernel_float_complex;
+			break;
+		case XM_SCALAR_DOUBLE:
+			kernel_fn = unfold_kernel_double;
+			break;
+		case XM_SCALAR_DOUBLE_COMPLEX:
+			kernel_fn = unfold_kernel_double_complex;
+			break;
 		default:
 			fatal("unexpected scalar type");
 		}
 	}
-
+	for (jj = 0; jj < block_size_j; jj++) {
+		xm_dim_zero_mask(&elidx, &mask_i);
+		for (ii = 0; ii < block_size_i; ii += lead_ii_nel) {
+			idx = xm_dim_permute(&elidx, &permutation);
+			offset = xm_dim_offset(&idx, &blkdimsp);
+			kernel_fn(to, from, ii, jj, offset, stride, size,
+			    lead_ii_nel);
+			xm_dim_inc_mask(&elidx, &blkdims, &mask_i);
+		}
+		xm_dim_inc_mask(&elidx, &blkdims, &mask_j);
+	}
 }
 
 void
