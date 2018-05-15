@@ -106,7 +106,7 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 	xm_dim_t ia, ib;
 	void *buf1a, *buf2a, *buf1b, *buf2b;
 	size_t blksize;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if ((buf1a = malloc(maxblkbytesa)) == NULL)
 		fatal("out of memory");
@@ -198,7 +198,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 	xm_dim_t ia, ib;
 	void *buf1, *buf2;
 	size_t blksize;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if ((buf1 = malloc(maxblkbytes)) == NULL)
 		fatal("out of memory");
@@ -289,7 +289,7 @@ xm_mul(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 	xm_dim_t ia, ib;
 	void *buf1, *buf2;
 	size_t blksize;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if ((buf1 = malloc(maxblkbytes)) == NULL)
 		fatal("out of memory");
@@ -372,7 +372,7 @@ xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 	xm_dim_t ia, ib;
 	void *buf1, *buf2;
 	size_t blksize;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if ((buf1 = malloc(maxblkbytes)) == NULL)
 		fatal("out of memory");
@@ -455,7 +455,7 @@ xm_dot(const xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 	xm_dim_t ia, ib;
 	void *buf1, *buf2, *buf3;
 	size_t blksize;
-	int blocktype;
+	xm_block_type_t blocktype;
 
 	if ((buf1 = malloc(maxblkbytes)) == NULL)
 		fatal("out of memory");
