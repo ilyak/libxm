@@ -301,7 +301,7 @@ xm_scalar_dot(const void *x, const void *y, size_t len, xm_scalar_type_t type)
 
 void
 xm_scalar_convert(void *x, const void *y, size_t len, xm_scalar_type_t xtype,
-    xm_scalar_t ytype)
+    xm_scalar_type_t ytype)
 {
 	size_t i;
 

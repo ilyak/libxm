@@ -127,7 +127,7 @@ xm_scalar_t xm_scalar_dot(const void *x, const void *y, size_t len,
  *  \param xtype Destination scalar type.
  *  \param ytype Source scalar type. */
 void xm_scalar_convert(void *x, const void *y, size_t len,
-    xm_scalar_type_t xtype, xm_scalar_t ytype);
+    xm_scalar_type_t xtype, xm_scalar_type_t ytype);
 
 #ifdef __cplusplus
 } /* extern "C" */
