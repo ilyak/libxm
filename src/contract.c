@@ -120,6 +120,7 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	size_t maxblockbytesb = xm_tensor_get_largest_block_bytes(b);
 	size_t maxblockbytesc = xm_tensor_get_largest_block_bytes(c);
 	xm_dim_t dims, blkidxa, blkidxb, nblocksa, nblocksb;
+	xm_scalar_t al;
 	void *bufa1, *bufa2, *bufb1, *bufb2, *bufc1, *bufc2;
 	size_t i, j, m, n, k, nblkk, blksize;
 	int type;
@@ -164,7 +165,7 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 		    blktypeb != XM_BLOCK_TYPE_ZERO) {
 			xm_scalar_t sa = xm_tensor_get_block_scalar(a, blkidxa);
 			xm_scalar_t sb = xm_tensor_get_block_scalar(b, blkidxb);
-			pairs[i].alpha = sa * sb;
+			pairs[i].alpha = xm_scalar_mul(sa, sb, type);
 		}
 		xm_dim_inc_mask(&blkidxa, &nblocksa, &cidxa);
 		xm_dim_inc_mask(&blkidxb, &nblocksb, &cidxb);
@@ -176,7 +177,8 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			if (pairs[j].alpha == 0)
 				continue;
 			if (same_contraction(pairs, i, j, aidxa, aidxb, a, b)) {
-				pairs[i].alpha += pairs[j].alpha;
+				pairs[i].alpha = xm_scalar_add(pairs[i].alpha,
+				    pairs[j].alpha, type);
 				pairs[j].alpha = 0;
 			}
 		}
@@ -195,14 +197,15 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 			xm_tensor_unfold_block(b, blkidxb, cidxb,
 			    aidxb, bufb1, bufb2, k);
 
+			al = xm_scalar_mul(alpha, pairs[i].alpha, type);
 			if (aidxc.n > 0 && aidxc.i[0] == 0) {
-				xgemm('T', 'N', (int)n, (int)m, (int)k,
-				    alpha*pairs[i].alpha, bufb2, (int)k, bufa2,
-				    (int)k, 1.0, bufc1, (int)n, type);
+				xgemm('T', 'N', (int)n, (int)m, (int)k, al,
+				    bufb2, (int)k, bufa2, (int)k, 1, bufc1,
+				    (int)n, type);
 			} else {
-				xgemm('T', 'N', (int)m, (int)n, (int)k,
-				    alpha*pairs[i].alpha, bufa2, (int)k, bufb2,
-				    (int)k, 1.0, bufc1, (int)m, type);
+				xgemm('T', 'N', (int)m, (int)n, (int)k, al,
+				    bufa2, (int)k, bufb2, (int)k, 1, bufc1,
+				    (int)m, type);
 			}
 		}
 	}

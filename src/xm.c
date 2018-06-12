@@ -129,8 +129,9 @@ xm_copy(xm_tensor_t *a, xm_scalar_t s, const xm_tensor_t *b, const char *idxa,
 			if (s == 0 || blocktype == XM_BLOCK_TYPE_ZERO) {
 				memset(buf2a, 0, maxblkbytesa);
 			} else {
-				xm_scalar_t scalar = s;
-				scalar *= xm_tensor_get_block_scalar(b, ib);
+				xm_scalar_t scalar = xm_scalar_mul(s,
+				    xm_tensor_get_block_scalar(b, ib),
+				    scalartypeb);
 				xm_tensor_read_block(b, ib, buf2b);
 				xm_tensor_unfold_block(b, ib, cidxb, zero,
 				    buf2b, buf1b, blksize);
@@ -217,8 +218,9 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 			if (beta == 0 || blocktype == XM_BLOCK_TYPE_ZERO) {
 				memset(buf2, 0, maxblkbytes);
 			} else {
-				xm_scalar_t scalar = beta;
-				scalar *= xm_tensor_get_block_scalar(b, ib);
+				xm_scalar_t scalar = xm_scalar_mul(beta,
+				    xm_tensor_get_block_scalar(b, ib),
+				    scalartype);
 				xm_tensor_read_block(b, ib, buf2);
 				xm_tensor_unfold_block(b, ib, cidxb, zero, buf2,
 				    buf1, blksize);
@@ -231,7 +233,7 @@ xm_add(xm_scalar_t alpha, xm_tensor_t *a, xm_scalar_t beta,
 				xm_tensor_write_block(a, ia, buf2);
 			else {
 				xm_tensor_read_block(a, ia, buf1);
-				xm_scalar_axpy(buf1, alpha, buf2, 1.0, blksize,
+				xm_scalar_axpy(buf1, alpha, buf2, 1, blksize,
 				    scalartype);
 				xm_tensor_write_block(a, ia, buf1);
 			}
@@ -314,7 +316,7 @@ xm_mul(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 				xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
 				    buf2, blksize);
 				xm_tensor_read_block(a, ia, buf1);
-				xm_scalar_mul(buf1, scalar, buf2, blksize,
+				xm_scalar_vec_mul(buf1, scalar, buf2, blksize,
 				    scalartype);
 			}
 			xm_tensor_write_block(a, ia, buf1);
@@ -396,7 +398,7 @@ xm_div(xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 			xm_tensor_unfold_block(b, ib, cidxb, zero, buf1,
 			    buf2, blksize);
 			xm_tensor_read_block(a, ia, buf1);
-			xm_scalar_div(buf1, scalar, buf2, blksize,
+			xm_scalar_vec_div(buf1, scalar, buf2, blksize,
 			    scalartype);
 			xm_tensor_write_block(a, ia, buf1);
 		}
@@ -416,8 +418,8 @@ xm_dot(const xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 {
 	const xm_block_space_t *bsa, *bsb;
 	xm_dim_t cidxa, cidxb, zero, nblocks;
-	xm_scalar_t dot = 0;
 	xm_scalar_type_t scalartype;
+	xm_scalar_t dot = 0;
 	size_t i, maxblkbytes, nblklist;
 	int mpirank = 0, mpisize = 1;
 
@@ -487,8 +489,11 @@ xm_dot(const xm_tensor_t *a, const xm_tensor_t *b, const char *idxa,
 			    buf3, blksize);
 			scalara = xm_tensor_get_block_scalar(a, ia);
 			scalarb = xm_tensor_get_block_scalar(b, ib);
-			dot += scalara * scalarb * xm_scalar_dot(buf2, buf3,
-			    blksize, scalartype);
+			scalara = xm_scalar_mul(scalara, scalarb, scalartype);
+			scalarb = xm_scalar_dot(buf2, buf3, blksize,
+			    scalartype);
+			scalara = xm_scalar_mul(scalara, scalarb, scalartype);
+			dot = xm_scalar_add(dot, scalara, scalartype);
 		}
 	}
 	free(buf1);

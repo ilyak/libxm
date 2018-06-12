@@ -157,13 +157,13 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	struct xm_block *block;
 	xm_dim_t blkidx, blkdims, elidx;
 	size_t eloff, blkbytes;
-	xm_scalar_t ret;
+	xm_scalar_t ret = 0;
 	void *buf;
 
 	xm_block_space_decompose_index(tensor->bs, idx, &blkidx, &elidx);
 	block = tensor_get_block(tensor, blkidx);
 	if (block->type == XM_BLOCK_TYPE_ZERO)
-		return 0;
+		return ret;
 	elidx = xm_dim_permute(&elidx, &block->permutation);
 	blkdims = xm_tensor_get_block_dims(tensor, blkidx);
 	blkbytes = xm_dim_dot(&blkdims) * xm_scalar_sizeof(tensor->type);
@@ -174,7 +174,7 @@ xm_tensor_get_element(const xm_tensor_t *tensor, xm_dim_t idx)
 	xm_tensor_read_block(tensor, blkidx, buf);
 	ret = xm_scalar_get_element(buf, eloff, tensor->type);
 	free(buf);
-	return (block->scalar * ret);
+	return xm_scalar_mul(block->scalar, ret, tensor->type);
 }
 
 xm_block_type_t
