@@ -268,7 +268,7 @@ xm_allocator_read(xm_allocator_t *allocator, uint64_t data_ptr,
 		read_bytes = pread(allocator->fd, mem, size, offset);
 		if (read_bytes != (ssize_t)size)
 			fatal("pread");
-		mem += size;
+		mem = (char *)mem + size;
 		offset += size;
 		size_bytes -= size;
 	}
@@ -293,7 +293,7 @@ xm_allocator_write(xm_allocator_t *allocator, uint64_t data_ptr,
 		write_bytes = pwrite(allocator->fd, mem, size, offset);
 		if (write_bytes != (ssize_t)size)
 			fatal("pwrite");
-		mem += size;
+		mem = (const char *)mem + size;
 		offset += size;
 		size_bytes -= size;
 	}
