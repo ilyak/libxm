@@ -104,7 +104,7 @@ extend_file(xm_allocator_t *allocator)
 static uint64_t
 find_pages(xm_allocator_t *allocator, size_t n_pages)
 {
-	unsigned int i, n_free, n_total, start;
+	size_t i, n_free, n_total, start;
 
 	assert(n_pages > 0);
 
