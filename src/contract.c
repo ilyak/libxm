@@ -123,7 +123,7 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 	xm_scalar_t al;
 	void *bufa1, *bufa2, *bufb1, *bufb2, *bufc1, *bufc2;
 	size_t i, j, m, n, k, nblkk, blksize;
-	int type;
+	xm_scalar_type_t type;
 
 	bufa1 = buf;
 	bufa2 = (char *)bufa1 + maxblockbytesa;
