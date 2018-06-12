@@ -62,6 +62,10 @@ int xm_scalar_check_type(xm_scalar_type_t type);
  *  \return Size of the scalar type in bytes. */
 size_t xm_scalar_sizeof(xm_scalar_type_t type);
 
+xm_scalar_t xm_scalar_add(xm_scalar_t a, xm_scalar_t b, xm_scalar_type_t type);
+
+xm_scalar_t xm_scalar_mul(xm_scalar_t a, xm_scalar_t b, xm_scalar_type_t type);
+
 /** Return element of a vector.
  *  \param x Data vector.
  *  \param idx Zero-based element index.
@@ -99,7 +103,7 @@ void xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b,
  *  \param y Vector y.
  *  \param len Length of vectors in number of elements.
  *  \param type Scalar type. */
-void xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
+void xm_scalar_vec_mul(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type);
 
 /** Perform division of vector elements: x = x / (a * y).
@@ -108,7 +112,7 @@ void xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
  *  \param y Vector y.
  *  \param len Length of vectors in number of elements.
  *  \param type Scalar type. */
-void xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
+void xm_scalar_vec_div(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type);
 
 /** Compute dot product of two vectors.

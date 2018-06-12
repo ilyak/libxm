@@ -43,24 +43,76 @@ xm_scalar_sizeof(xm_scalar_type_t type)
 }
 
 xm_scalar_t
+xm_scalar_add(xm_scalar_t a, xm_scalar_t b, xm_scalar_type_t type)
+{
+	switch (type) {
+	case XM_SCALAR_FLOAT: {
+		float x = (float)a + (float)b;
+		return (xm_scalar_t)x;
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		float complex x = (float complex)a + (float complex)b;
+		return (xm_scalar_t)x;
+	}
+	case XM_SCALAR_DOUBLE: {
+		double x = (double)a + (double)b;
+		return (xm_scalar_t)x;
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		double complex x = (double complex)a + (double complex)b;
+		return (xm_scalar_t)x;
+	}
+	default:
+		fatal("unexpected scalar type");
+	}
+	return 0;
+}
+
+xm_scalar_t
+xm_scalar_mul(xm_scalar_t a, xm_scalar_t b, xm_scalar_type_t type)
+{
+	switch (type) {
+	case XM_SCALAR_FLOAT: {
+		float x = (float)a * (float)b;
+		return (xm_scalar_t)x;
+	}
+	case XM_SCALAR_FLOAT_COMPLEX: {
+		float complex x = (float complex)a * (float complex)b;
+		return (xm_scalar_t)x;
+	}
+	case XM_SCALAR_DOUBLE: {
+		double x = (double)a * (double)b;
+		return (xm_scalar_t)x;
+	}
+	case XM_SCALAR_DOUBLE_COMPLEX: {
+		double complex x = (double complex)a * (double complex)b;
+		return (xm_scalar_t)x;
+	}
+	default:
+		fatal("unexpected scalar type");
+	}
+	return 0;
+}
+
+xm_scalar_t
 xm_scalar_get_element(void *x, size_t idx, xm_scalar_type_t type)
 {
 	switch (type) {
 	case XM_SCALAR_FLOAT: {
 		float *y = x;
-		return y[idx];
+		return (xm_scalar_t)y[idx];
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *y = x;
-		return y[idx];
+		return (xm_scalar_t)y[idx];
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *y = x;
-		return y[idx];
+		return (xm_scalar_t)y[idx];
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *y = x;
-		return y[idx];
+		return (xm_scalar_t)y[idx];
 	}
 	default:
 		fatal("unexpected scalar type");
@@ -77,25 +129,25 @@ xm_scalar_set(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 	case XM_SCALAR_FLOAT: {
 		float *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] = a;
+			xx[i] = (float)a;
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] = a;
+			xx[i] = (float complex)a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] = a;
+			xx[i] = (double)a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] = a;
+			xx[i] = (double complex)a;
 		return;
 	}
 	default:
@@ -112,25 +164,25 @@ xm_scalar_scale(void *x, xm_scalar_t a, size_t len, xm_scalar_type_t type)
 	case XM_SCALAR_FLOAT: {
 		float *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] *= a;
+			xx[i] *= (float)a;
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] *= a;
+			xx[i] *= (float complex)a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] *= a;
+			xx[i] *= (double)a;
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *xx = x;
 		for (i = 0; i < len; i++)
-			xx[i] *= a;
+			xx[i] *= (double complex)a;
 		return;
 	}
 	default:
@@ -148,29 +200,37 @@ xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b, size_t len,
 	case XM_SCALAR_FLOAT: {
 		float *xx = x;
 		const float *yy = y;
+		float aa = (float)a;
+		float bb = (float)b;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + b * yy[i];
+			xx[i] = aa * xx[i] + bb * yy[i];
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *xx = x;
 		const float complex *yy = y;
+		float complex aa = (float complex)a;
+		float complex bb = (float complex)b;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + b * yy[i];
+			xx[i] = aa * xx[i] + bb * yy[i];
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *xx = x;
 		const double *yy = y;
+		double aa = (double)a;
+		double bb = (double)b;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + b * yy[i];
+			xx[i] = aa * xx[i] + bb * yy[i];
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *xx = x;
 		const double complex *yy = y;
+		double complex aa = (double complex)a;
+		double complex bb = (double complex)b;
 		for (i = 0; i < len; i++)
-			xx[i] = a * xx[i] + b * yy[i];
+			xx[i] = aa * xx[i] + bb * yy[i];
 		return;
 	}
 	default:
@@ -179,7 +239,7 @@ xm_scalar_axpy(void *x, xm_scalar_t a, const void *y, xm_scalar_t b, size_t len,
 }
 
 void
-xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
+xm_scalar_vec_mul(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type)
 {
 	size_t i;
@@ -188,29 +248,33 @@ xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
 	case XM_SCALAR_FLOAT: {
 		float *xx = x;
 		const float *yy = y;
+		float aa = (float)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] * (a * yy[i]);
+			xx[i] = aa * xx[i] * yy[i];
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *xx = x;
 		const float complex *yy = y;
+		float complex aa = (float complex)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] * (a * yy[i]);
+			xx[i] = aa * xx[i] * yy[i];
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *xx = x;
 		const double *yy = y;
+		double aa = (double)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] * (a * yy[i]);
+			xx[i] = aa * xx[i] * yy[i];
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *xx = x;
 		const double complex *yy = y;
+		double complex aa = (double complex)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] * (a * yy[i]);
+			xx[i] = aa * xx[i] * yy[i];
 		return;
 	}
 	default:
@@ -219,7 +283,7 @@ xm_scalar_mul(void *x, xm_scalar_t a, const void *y, size_t len,
 }
 
 void
-xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
+xm_scalar_vec_div(void *x, xm_scalar_t a, const void *y, size_t len,
     xm_scalar_type_t type)
 {
 	size_t i;
@@ -228,29 +292,33 @@ xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
 	case XM_SCALAR_FLOAT: {
 		float *xx = x;
 		const float *yy = y;
+		float aa = (float)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] / (a * yy[i]);
+			xx[i] = xx[i] / (aa * yy[i]);
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		float complex *xx = x;
 		const float complex *yy = y;
+		float complex aa = (float complex)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] / (a * yy[i]);
+			xx[i] = xx[i] / (aa * yy[i]);
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
 		double *xx = x;
 		const double *yy = y;
+		double aa = (double)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] / (a * yy[i]);
+			xx[i] = xx[i] / (aa * yy[i]);
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		double complex *xx = x;
 		const double complex *yy = y;
+		double complex aa = (double complex)a;
 		for (i = 0; i < len; i++)
-			xx[i] = xx[i] / (a * yy[i]);
+			xx[i] = xx[i] / (aa * yy[i]);
 		return;
 	}
 	default:
@@ -261,42 +329,45 @@ xm_scalar_div(void *x, xm_scalar_t a, const void *y, size_t len,
 xm_scalar_t
 xm_scalar_dot(const void *x, const void *y, size_t len, xm_scalar_type_t type)
 {
-	xm_scalar_t dot = 0;
 	size_t i;
 
 	switch (type) {
 	case XM_SCALAR_FLOAT: {
 		const float *xx = x;
 		const float *yy = y;
+		float dot = 0.0;
 		for (i = 0; i < len; i++)
 			dot += xx[i] * yy[i];
-		return dot;
+		return (xm_scalar_t)dot;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
 		const float complex *xx = x;
 		const float complex *yy = y;
+		float complex dot = 0.0;
 		for (i = 0; i < len; i++)
 			dot += xx[i] * yy[i];
-		return dot;
+		return (xm_scalar_t)dot;
 	}
 	case XM_SCALAR_DOUBLE: {
 		const double *xx = x;
 		const double *yy = y;
+		double dot = 0.0;
 		for (i = 0; i < len; i++)
 			dot += xx[i] * yy[i];
-		return dot;
+		return (xm_scalar_t)dot;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
 		const double complex *xx = x;
 		const double complex *yy = y;
+		double complex dot = 0.0;
 		for (i = 0; i < len; i++)
 			dot += xx[i] * yy[i];
-		return dot;
+		return (xm_scalar_t)dot;
 	}
 	default:
 		fatal("unexpected scalar type");
 	}
-	return dot;
+	return 0;
 }
 
 void
@@ -313,14 +384,14 @@ xm_scalar_convert(void *x, const void *y, size_t len, xm_scalar_type_t xtype,
 		double *xx = x;
 		const float *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = yy[i];
+			xx[i] = (double)yy[i];
 		return;
 	}
 	if (xtype == XM_SCALAR_FLOAT && ytype == XM_SCALAR_DOUBLE) {
 		float *xx = x;
 		const double *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = yy[i];
+			xx[i] = (float)yy[i];
 		return;
 	}
 	if (xtype == XM_SCALAR_DOUBLE_COMPLEX &&
@@ -328,7 +399,7 @@ xm_scalar_convert(void *x, const void *y, size_t len, xm_scalar_type_t xtype,
 		double complex *xx = x;
 		const float complex *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = yy[i];
+			xx[i] = (double complex)yy[i];
 		return;
 	}
 	if (xtype == XM_SCALAR_FLOAT_COMPLEX &&
@@ -336,7 +407,7 @@ xm_scalar_convert(void *x, const void *y, size_t len, xm_scalar_type_t xtype,
 		float complex *xx = x;
 		const double complex *yy = y;
 		for (i = 0; i < len; i++)
-			xx[i] = yy[i];
+			xx[i] = (float complex)yy[i];
 		return;
 	}
 	fatal("unsupported scalar conversion");
