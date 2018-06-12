@@ -53,25 +53,29 @@ xgemm(char transa, char transb, long int m, long int n, long int k,
 {
 	switch (type) {
 	case XM_SCALAR_FLOAT: {
-		float al = alpha, bt = beta;
+		float al = (float)alpha;
+		float bt = (float)beta;
 		sgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
 		    &bt, c, &ldc);
 		return;
 	}
 	case XM_SCALAR_FLOAT_COMPLEX: {
-		float complex al = alpha, bt = beta;
+		float complex al = (float complex)alpha;
+		float complex bt = (float complex)beta;
 		cgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
 		    &bt, c, &ldc);
 		return;
 	}
 	case XM_SCALAR_DOUBLE: {
-		double al = alpha, bt = beta;
+		double al = (double)alpha;
+		double bt = (double)beta;
 		dgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
 		    &bt, c, &ldc);
 		return;
 	}
 	case XM_SCALAR_DOUBLE_COMPLEX: {
-		double complex al = alpha, bt = beta;
+		double complex al = (double complex)alpha;
+		double complex bt = (double complex)beta;
 		zgemm_(&transa, &transb, &m, &n, &k, &al, a, &lda, b, &ldb,
 		    &bt, c, &ldc);
 		return;
