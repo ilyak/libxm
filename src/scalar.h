@@ -62,8 +62,18 @@ int xm_scalar_check_type(xm_scalar_type_t type);
  *  \return Size of the scalar type in bytes. */
 size_t xm_scalar_sizeof(xm_scalar_type_t type);
 
+/** Perform addition of two xm_scalar_t values.
+ *  \param a First value.
+ *  \param b Second value.
+ *  \param type Scalar type.
+ *  \return Sum of a and b. */
 xm_scalar_t xm_scalar_add(xm_scalar_t a, xm_scalar_t b, xm_scalar_type_t type);
 
+/** Perform multiplication of two xm_scalar_t values.
+ *  \param a First value.
+ *  \param b Second value.
+ *  \param type Scalar type.
+ *  \return Product of a and b. */
 xm_scalar_t xm_scalar_mul(xm_scalar_t a, xm_scalar_t b, xm_scalar_type_t type);
 
 /** Return element of a vector.
