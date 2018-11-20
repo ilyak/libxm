@@ -152,7 +152,10 @@ compute_block(xm_scalar_t alpha, const xm_tensor_t *a, const xm_tensor_t *b,
 		xm_tensor_unfold_block(c, blkidxc, cidxc, aidxc,
 		    bufc2, bufc1, m);
 	blksize = xm_tensor_get_block_size(c, blkidxc);
-	xm_scalar_scale(bufc1, beta, blksize, type);
+	if (beta == 0)
+		xm_scalar_set(bufc1, 0, blksize, type);
+	else
+		xm_scalar_scale(bufc1, beta, blksize, type);
 	if (alpha == 0)
 		goto done;
 	blkidxa = xm_dim_zero(nblocksa.n);
