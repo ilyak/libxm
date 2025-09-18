@@ -31,7 +31,7 @@ compiled static library `libxm.a`.
 Step-by-step tutorial on how to use libxm can be found in the
 [example.c](example.c) file.
 Full API documentation is available
-[here](https://ilyak.github.io/libxm/doxygen_html/files.html).
+[here](https://3ions.com).
 
 ### Parallel scaling
 
@@ -54,8 +54,3 @@ relative to 1 node shown in parenthesis.
 Please reference the following paper when using libxm:
 
 [I.A. Kaliman and A.I. Krylov, JCC 2017](https://dx.doi.org/10.1002/jcc.24713)
-
-### Libxm users
-
-- libxm is integrated with the [Q-Chem](http://www.q-chem.com) quantum
-  chemistry package to accelerate large electronic structure calculations
